@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Secrets
+.env
+.env.*
+api-keys.md
+
+# Logs and temp
+*.log
+screenshots/
+*.tmp
+*.bak
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Embedded repos
+interview-bot/
+VisionClaw/
+TerminatorBot/
+arbitrage-pharma/
