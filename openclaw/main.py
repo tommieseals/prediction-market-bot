@@ -199,8 +199,10 @@ def run_proactive_cycle() -> dict:
     from openclaw.source_registry import SourceRegistry
     from openclaw.model_registry import ModelRegistry
     from openclaw.quota_ledger import QuotaLedger
+    from openclaw.shadow_replay import ShadowReplay
 
     sm = StateMachine()
+    mm = MissionManager()
     results = {"steps_completed": 0, "errors": [], "fitness": 0.0}
 
     try:
@@ -208,6 +210,8 @@ def run_proactive_cycle() -> dict:
         log.info("Step 1: Acquiring run lock...")
         with RunLock("proactive_cycle"):
             sm.transition(AgentState.PROACTIVE_CYCLE)
+            mm.enqueue_mission("proactive_cycle", "22-step proactive cycle")
+            mm.start_mission()
 
             # Step 2: Loyalty gate
             log.info("Step 2: Loyalty gate...")
@@ -215,9 +219,11 @@ def run_proactive_cycle() -> dict:
             if not ok:
                 results["errors"].append(f"Loyalty failed: {msg}")
                 _telegram_send(f"LOYALTY FAILED: {msg}")
+                mm.mark_failed(f"Loyalty: {msg}")
                 sm.transition(AgentState.IDLE)
                 return results
             results["steps_completed"] = 2
+            mm.checkpoint("loyalty_gate")
 
             # Step 3: Load genome + conditional assembler
             log.info("Step 3: Loading genome...")
@@ -238,10 +244,27 @@ def run_proactive_cycle() -> dict:
                 manager.rollback_to_elite()
             results["steps_completed"] = 4
 
-            # Step 5: Shadow graduation check
+            # Step 5: Shadow graduation check + replay scoring
             log.info("Step 5: Shadow graduation check...")
+            active = manager.get_active_variant()  # refresh after potential step 4 rollback
+            if active and active.get("shadow_mode"):
+                # Run shadow replay to score the variant against corrections
+                replay = ShadowReplay()
+                variant_path = manager.get_active_variant_path()
+                if variant_path:
+                    replay_score = replay.run_shadow_replay(
+                        active["variant_id"],
+                        active.get("generation", 1),
+                        variant_path,
+                    )
+                    log.info(f"Shadow replay score: {replay_score:.2f}/10")
+                    _audit("shadow_replay", {
+                        "variant": active["variant_id"],
+                        "score": replay_score,
+                    })
             manager.select_variant()  # handles auto-graduation internally
             results["steps_completed"] = 5
+            mm.checkpoint("shadow_check")
 
             # Step 6: Memory tier management
             log.info("Step 6: Memory tier management...")
@@ -298,11 +321,35 @@ What would make Rusty money right now? Be specific. Name the project, the action
                 _telegram_send(f"Health issues: {', '.join(unhealthy)}")
             results["steps_completed"] = 9
 
-            # Step 10: Recurrence check
+            # Step 10: Recurrence check (SRE-style)
             log.info("Step 10: Recurrence check...")
             recurrence = RecurrenceEngine()
+            # Build alerts from health check issues
+            health_alerts = []
+            for key, val in health_report.items():
+                if key == "timestamp":
+                    continue
+                if isinstance(val, dict):
+                    status = val.get("status", "ok")
+                    if status not in ("ok", None):
+                        health_alerts.append({
+                            "alert_signature": f"{key}:{status}",
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                        })
+            # Check for recurring patterns (3+ in 7 days = auto-open RCA)
+            if health_alerts:
+                recurring = recurrence.detect_recurring_incidents(health_alerts)
+                for r in recurring:
+                    sig = r["alert_signature"]
+                    count = r["occurrences"]
+                    log.warning(f"Recurring alert: {sig} ({count}x in 7 days) — opening RCA mission")
+                    recurrence.open_rca_mission(sig, count)
+                    _telegram_send(f"RCA mission opened: {sig} ({count}x in 7 days)")
             open_incidents = recurrence.get_open_incidents()
+            if open_incidents:
+                log.info(f"Open incidents: {len(open_incidents)}")
             results["steps_completed"] = 10
+            mm.checkpoint("recurrence_check")
 
             # Step 11: Money momentum report
             log.info("Step 11: Money momentum report...")
@@ -493,12 +540,14 @@ Self-Thought: {thought[:300]}
             _audit("proactive_complete", {"fitness": fitness, "steps": 22})
             results["steps_completed"] = 22
 
+            mm.mark_complete(f"22/22 steps, fitness {fitness:.2f}")
             sm.transition(AgentState.IDLE)
 
     except Exception as e:
         log.error(f"Proactive cycle failed at step {results['steps_completed']}: {e}")
         results["errors"].append(str(e))
         try:
+            mm.mark_failed(f"Failed at step {results['steps_completed']}: {e}")
             StateMachine().force_state(AgentState.IDLE)
         except Exception:
             pass
@@ -596,7 +645,7 @@ def main():
     parser = argparse.ArgumentParser(description="OpenClaw Anomaly")
     parser.add_argument(
         "--mode",
-        choices=["proactive", "morning-pulse", "server", "assemble", "meta"],
+        choices=["proactive", "morning-pulse", "server", "assemble", "meta", "eval"],
         required=True,
         help="Execution mode",
     )
@@ -642,6 +691,33 @@ def main():
         log.info(f"META complete. Gen {result.get('generation')}, offspring: {len(result.get('offspring', []))}")
         if result.get("errors"):
             log.warning(f"Errors: {result['errors']}")
+
+    elif args.mode == "eval":
+        log.info("Running independent eval harness...")
+        from openclaw.eval_harness import EvalHarness
+        from openclaw.genome_manager import GenomeManager
+        manager = GenomeManager()
+        active = manager.get_active_variant()
+        vid = active["variant_id"] if active else "unknown"
+        harness = EvalHarness()
+        result = harness.run_eval(vid)
+        log.info(f"Eval complete. Variant: {vid}, Aggregate: {result['aggregate_score']:.2f}")
+        log.info(f"Fixed tasks: {len(result['fixed_tasks'])}, Hidden tests: {len(result['hidden_tests'])}")
+        # Also run project regressions
+        proj_reg = harness.run_project_regressions()
+        log.info(f"Project regressions: {proj_reg}")
+        _audit("eval_harness", {
+            "variant": vid,
+            "aggregate": result["aggregate_score"],
+            "project_regressions": proj_reg,
+        })
+        _telegram_send(
+            f"<b>Eval Harness — {vid}</b>\n"
+            f"Aggregate: {result['aggregate_score']:.2f}\n"
+            f"Fixed: {len(result['fixed_tasks'])} tasks\n"
+            f"Hidden: {len(result['hidden_tests'])} tests\n"
+            f"Projects: {proj_reg.get('checked', 0)} checked"
+        )
 
 
 if __name__ == "__main__":
