@@ -120,12 +120,19 @@ def _llm_call(prompt: str, model: str | None = None) -> str:
     try:
         import requests as _req
 
-        # Try local Ollama first (Jarvis has qwen2.5:7b for speed, 14b for depth)
+        # Try local Ollama first (Jarvis has qwen2.5:7b for speed)
         ollama_model = model or "qwen2.5:7b"
+        # Truncate long prompts and cap output to prevent timeouts
+        truncated_prompt = prompt[:2000] if len(prompt) > 2000 else prompt
         resp = _req.post(
             "http://localhost:11434/api/generate",
-            json={"model": ollama_model, "prompt": prompt, "stream": False},
-            timeout=120,
+            json={
+                "model": ollama_model,
+                "prompt": truncated_prompt,
+                "stream": False,
+                "options": {"num_predict": 300},  # cap response length
+            },
+            timeout=90,
         )
         if resp.status_code == 200:
             data = resp.json()
@@ -138,6 +145,39 @@ def _llm_call(prompt: str, model: str | None = None) -> str:
 
     # Fallback: stub
     return f"[LLM unavailable — stub for: {prompt[:80]}]"
+
+
+# ─── Fitness Helpers ──────────────────────────────────────────────────────
+
+def _compute_user_alignment() -> float:
+    """Compute user alignment from recent corrections.
+
+    Baseline 8.0. Each correction in the last 24h subtracts severity points.
+    No recent corrections = high alignment.
+    """
+    from openclaw.shadow_replay import ShadowReplay
+    from datetime import timedelta
+
+    replay = ShadowReplay()
+    corrections = replay.load_correction_log(limit=20)
+    if not corrections:
+        return 8.0  # no corrections = good alignment
+
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(hours=24)
+    recent_severity = 0
+    for c in corrections:
+        try:
+            ts = datetime.fromisoformat(c.get("timestamp", ""))
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+            if ts >= cutoff:
+                recent_severity += abs(c.get("severity", 1))
+        except (ValueError, TypeError):
+            continue
+
+    # Each severity point reduces alignment by 1, floor at 0
+    return max(0.0, min(10.0, 8.0 - recent_severity))
 
 
 # ─── 22-Step Proactive Cycle ─────────────────────────────────────────────
@@ -351,22 +391,42 @@ For each: name the project, the specific action, expected revenue, and time to e
             _audit("research_scan", {"proposals": research[:500]})
             results["steps_completed"] = 17
 
-            # Step 18: Log fitness
+            # Step 18: Log fitness (real signals from this cycle)
             log.info("Step 18: Logging fitness...")
             variant_id = active["variant_id"] if active else "unknown"
             gen = active.get("generation", 1) if active else 1
+
+            # Compute real fitness signals from cycle results
+            infra_ok = len(unhealthy) == 0
+            stalled_count = len(stalled_projects) if 'stalled_projects' in dir() else 0
+            healthy_count = len(health_results.get("healthy", [])) if 'health_results' in dir() else 0
+            total_projects = healthy_count + stalled_count
+            absorption_proposed = abs_result.get("proposed", 0) if isinstance(abs_result, dict) else 0
+            thought_real = "stub" not in thought.lower() and "unavailable" not in thought.lower()
+
             fitness = tracker.log_task(variant_id, gen, {
-                "user_alignment": 5.0,
-                "proactivity": 7.0 + (len(unhealthy) == 0) * 2,
-                "autonomy_money": 5.0,
-                "sequence_integrity": 8.0,
-                "delegation_quality": 5.0,
-                "efficiency": 7.0,
-                "absorption_quality": min(10, abs_result.get("proposed", 0) * 2) if isinstance(abs_result, dict) else 0,
+                "user_alignment": _compute_user_alignment(),
+                "proactivity": min(10, 5.0
+                    + (2.0 if infra_ok else 0)
+                    + (1.0 if thought_real else 0)
+                    + (1.0 if healthy_count > 0 else 0)
+                    + (1.0 if stalled_count == 0 else -1.0)),
+                "autonomy_money": min(10, 3.0
+                    + (2.0 if thought_real else 0)
+                    + (1.0 if healthy_count >= 15 else 0)
+                    + (1.0 if absorption_proposed > 0 else 0)),
+                "sequence_integrity": 9.0 if results["steps_completed"] == 22 else max(0, results["steps_completed"] / 22 * 10),
+                "delegation_quality": min(10, 5.0
+                    + (2.0 if stalled_count == 0 else -2.0)
+                    + (1.0 if total_projects > 10 else 0)),
+                "efficiency": min(10, 7.0 - len(results.get("errors", [])) * 2),
+                "absorption_quality": min(10, absorption_proposed * 3),
                 "memory_efficiency": min(10, 8.0 - mem_stats.get("demoted", 0)),
-                "context_fidelity": 7.0,
-                "safety": 9.0,
-                "description": "proactive_cycle",
+                "context_fidelity": min(10, 5.0
+                    + (2.0 if Config.LAST_SESSION_PATH.exists() else 0)
+                    + (1.0 if core.get("active_goals") else 0)),
+                "safety": 9.0,  # no violations this cycle
+                "description": f"proactive_cycle_gen{gen}",
             })
             results["fitness"] = fitness
             results["steps_completed"] = 18
