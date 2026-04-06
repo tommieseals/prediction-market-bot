@@ -53,6 +53,8 @@ def handle_command(text: str) -> str:
         "/gen": _handle_gen,
         "/absorb": _handle_absorb,
         "/memory": _handle_memory,
+        "/health": _handle_health,
+        "/projects": _handle_health,  # alias
         "/eval": _handle_eval,
         "/state": _handle_state,
         "/workers": _handle_workers,
@@ -280,6 +282,28 @@ def _handle_recall(args: str) -> str:
     if result:
         return f"Recalled {worker_id}."
     return f"Worker {worker_id} not found or already terminated."
+
+
+def _handle_health(args: str) -> str:
+    from openclaw.project_health import ProjectHealth
+
+    ph = ProjectHealth()
+    results = ph.check_all()
+
+    lines = ["<b>Project Health</b>\n"]
+    for pid, data in results.get("projects", {}).items():
+        status = data.get("status", "?")
+        idle = data.get("days_idle", "?")
+        icon = "🟢" if status == "active" else "🔴" if idle and isinstance(idle, int) and idle > 14 else "🟡"
+        lines.append(f"{icon} <b>{pid}</b>: {status} ({idle}d idle)")
+
+    stalled = results.get("stalled", [])
+    if stalled:
+        lines.append(f"\n⚠️ Stalled: {', '.join(stalled)}")
+    else:
+        lines.append("\n✅ No stalled projects")
+
+    return "\n".join(lines)
 
 
 def _handle_dashboard(args: str) -> str:

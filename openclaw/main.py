@@ -150,6 +150,7 @@ def run_proactive_cycle() -> dict:
     from openclaw.genome_manager import GenomeManager
     from openclaw.genome_assembler import assemble_and_write
     from openclaw.fitness_tracker import FitnessTracker
+    from openclaw.project_health import ProjectHealth
     from openclaw.memory_manager import MemoryManager, retrieve_relevant_memory
     from openclaw.mission_manager import MissionManager
     from openclaw.worker_manager import WorkerManager
@@ -214,9 +215,32 @@ def run_proactive_cycle() -> dict:
             recent_memory = retrieve_relevant_memory("revenue project status opportunity", top_k=5)
             results["steps_completed"] = 7
 
-            # Step 8: Self-thought protocol
+            # Step 8: Self-thought protocol (with real project context)
             log.info("Step 8: Self-thought protocol...")
-            thought = _llm_call("What would make Rusty money right now? Think about active projects, market opportunities, and stalled work.")
+            project_context = ""
+            try:
+                ph = ProjectHealth()
+                health_results = ph.check_all()
+                stalled = health_results.get("stalled", [])
+                healthy = health_results.get("healthy", [])
+                project_details = []
+                for pid, data in health_results.get("projects", {}).items():
+                    idle = data.get("days_idle", 0)
+                    status = data.get("status", "unknown")
+                    project_details.append(f"  - {pid}: {status}, idle {idle}d")
+                project_context = "\n".join(project_details) if project_details else "No project data."
+            except Exception as e:
+                project_context = f"Project health check failed: {e}"
+                health_results = {"stalled": [], "healthy": [], "projects": {}}
+
+            thought_prompt = f"""You are Jarvis, Rusty's autonomous super-agent. Current project status:
+{project_context}
+
+Active machines: RTX (Windows, compute), Tom (Mac Mini, job automation), Jarvis (Mac Pro, you — shared memory + monitoring).
+Revenue status: $0.
+
+What would make Rusty money right now? Be specific. Name the project, the action, and the expected outcome. Give 3 concrete actions ranked by impact."""
+            thought = _llm_call(thought_prompt)
             _audit("self_thought", {"thought": thought[:500]})
             results["steps_completed"] = 8
 
@@ -244,22 +268,37 @@ def run_proactive_cycle() -> dict:
             log.info("Step 11: Money momentum report...")
             revenue_state = core.get("recent_revenue_state")
             if revenue_state is None or revenue_state == 0:
-                actions = _llm_call("Revenue is $0. Generate 3 concrete revenue actions based on active projects: Legion (job automation), TerminatorBot (trading), TaskBot (enterprise).")
+                money_prompt = f"""Revenue is $0. You have these active projects:
+- Legion (Tom/Mac Mini): browser-driven job automation — finds and applies to jobs
+- TerminatorBot (RTX): prediction market trading — arb detection, contrarian bets
+- TaskBot (RTX): enterprise automation platform
+
+Current project health:
+{project_context}
+
+Generate 3 concrete revenue actions ranked by fastest path to money.
+For each: name the project, the specific action, expected revenue, and time to execute."""
+                actions = _llm_call(money_prompt)
                 _audit("money_momentum", {"revenue": 0, "proposed_actions": actions[:500]})
             results["steps_completed"] = 11
 
-            # Step 12: Stalled project detection
+            # Step 12: Stalled project detection (uses real health data from step 8)
             log.info("Step 12: Stalled project detection...")
-            if Config.PROJECT_STATUS_PATH.exists():
-                try:
-                    pdata = json.loads(Config.PROJECT_STATUS_PATH.read_text())
-                    for proj in pdata.get("projects", []):
-                        idle = proj.get("days_idle", 0)
-                        if idle > 14:
-                            log.warning(f"Stalled: {proj['project_name']} idle {idle} days")
-                            _telegram_send(f"Stalled: {proj['project_name']} idle {idle} days. Next: {proj.get('next_action', 'review')}")
-                except (json.JSONDecodeError, OSError):
-                    pass
+            stalled_projects = health_results.get("stalled", [])
+            if stalled_projects:
+                for pid in stalled_projects:
+                    pdata = health_results.get("projects", {}).get(pid, {})
+                    idle = pdata.get("days_idle", 0)
+                    log.warning(f"Stalled: {pid} idle {idle} days")
+                    # Generate follow-up action for stalled projects
+                    followup = _llm_call(
+                        f"Project '{pid}' has been idle for {idle} days. "
+                        f"Details: {json.dumps(pdata, default=str)[:500]}. "
+                        f"Draft a specific next action to unblock it. One sentence."
+                    )
+                    _telegram_send(f"Stalled: {pid} ({idle}d idle). Proposed: {followup[:200]}")
+            else:
+                log.info("No stalled projects.")
             results["steps_completed"] = 12
 
             # Step 13: Business opportunity scan
@@ -302,7 +341,13 @@ def run_proactive_cycle() -> dict:
 
             # Step 17: Research scan
             log.info("Step 17: Research scan...")
-            research = _llm_call("Scan for top 3 new AI tools or frameworks relevant to our stack. Focus on agents, trading bots, automation.")
+            research = _llm_call(
+                "Scan for top 3 new AI tools or frameworks relevant to our stack. "
+                "Our stack: ClawdBot (Node.js agents), Ollama (local LLM), Python automation, "
+                "TerminatorBot (prediction markets), Legion (job automation), FastAPI dashboards, "
+                "Tailscale mesh, Mac + Windows. Focus on: agent frameworks, trading tools, "
+                "job automation, browser automation. For each: name, what it does, how to integrate."
+            )
             _audit("research_scan", {"proposals": research[:500]})
             results["steps_completed"] = 17
 
@@ -373,11 +418,15 @@ Self-Thought: {thought[:300]}
 
             # Step 22: Telegram summary + release lock
             log.info("Step 22: Telegram summary...")
+            stalled_count = len(stalled_projects) if 'stalled_projects' in dir() else 0
+            healthy_count = len(health_results.get("healthy", [])) if 'health_results' in dir() else 0
             summary = (
-                f"Proactive cycle complete. "
-                f"Fitness: {fitness:.2f} | "
-                f"Health: {'OK' if not unhealthy else 'ISSUES'} | "
-                f"Absorption: {abs_result.get('proposed', 0) if isinstance(abs_result, dict) else 0} proposed | "
+                f"<b>Proactive Cycle Complete</b>\n"
+                f"Variant: {variant_id} (Gen {gen})\n"
+                f"Fitness: {fitness:.2f}\n"
+                f"Infra: {'OK' if not unhealthy else ', '.join(unhealthy)}\n"
+                f"Projects: {healthy_count} healthy, {stalled_count} stalled\n"
+                f"Absorption: {abs_result.get('proposed', 0) if isinstance(abs_result, dict) else 0} proposed\n"
                 f"Incidents: {len(open_incidents)}"
             )
             _telegram_send(summary)
