@@ -1,0 +1,52 @@
+{
+  "keys": [
+    {
+      "provider": "openai",
+      "key_id_label": "openai_codex_primary",
+      "scope": ["clawdbot_gateway", "all_agents"],
+      "last_used": null,
+      "usage_today_tokens": 0,
+      "usage_today_requests": 0,
+      "daily_limit_tokens": null,
+      "daily_limit_requests": null,
+      "status": "active",
+      "notes": "Primary model: gpt-5.2-codex. Managed by Rusty."
+    },
+    {
+      "provider": "openai",
+      "key_id_label": "openai_mini",
+      "scope": ["interview_agent", "meta_jarvis"],
+      "last_used": null,
+      "usage_today_tokens": 0,
+      "usage_today_requests": 0,
+      "daily_limit_tokens": null,
+      "daily_limit_requests": null,
+      "status": "active",
+      "notes": "Haiku equivalent: gpt-4o-mini"
+    },
+    {
+      "provider": "ollama",
+      "key_id_label": "ollama_qwen2.5:7b",
+      "scope": ["jarvis_local", "proactive_cycle"],
+      "last_used": null,
+      "usage_today_tokens": 0,
+      "usage_today_requests": 0,
+      "daily_limit_tokens": null,
+      "daily_limit_requests": null,
+      "status": "active",
+      "notes": "Local Ollama on Jarvis. Free, no limits."
+    },
+    {
+      "provider": "ollama",
+      "key_id_label": "ollama_qwen2.5:14b",
+      "scope": ["jarvis_local", "deep_reasoning"],
+      "last_used": null,
+      "usage_today_tokens": 0,
+      "usage_today_requests": 0,
+      "daily_limit_tokens": null,
+      "daily_limit_requests": null,
+      "status": "active",
+      "notes": "Local Ollama on Jarvis. Heavier model for complex tasks."
+    }
+  ]
+}

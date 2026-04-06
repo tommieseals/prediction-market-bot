@@ -62,6 +62,8 @@ def handle_command(text: str) -> str:
         "/workers": _handle_workers,
         "/mission": _handle_mission,
         "/recall": _handle_recall,
+        "/spawn": _handle_spawn,
+        "/remote": _handle_remote,
         "/dashboard": _handle_dashboard,
         "/freeze": _handle_freeze,
         "/unfreeze": _handle_unfreeze,
@@ -385,6 +387,52 @@ def _handle_health(args: str) -> str:
         lines.append("\n✅ No stalled projects")
 
     return "\n".join(lines)
+
+
+def _handle_spawn(args: str) -> str:
+    """Spawn a local test worker. Usage: /spawn monitor test_mission"""
+    parts = args.strip().split()
+    worker_type = parts[0] if parts else "monitor"
+    mission = parts[1] if len(parts) > 1 else "test_mission"
+
+    from openclaw.worker_manager import WorkerManager
+    wm = WorkerManager()
+    try:
+        worker = wm.spawn_local_worker(mission_id=mission, worker_type=worker_type)
+        return (
+            f"<b>Worker Spawned</b>\n"
+            f"ID: {worker['worker_id']}\n"
+            f"Type: {worker['worker_type']}\n"
+            f"Mission: {mission}\n"
+            f"TTL: {worker['ttl_minutes']}m"
+        )
+    except Exception as e:
+        return f"Spawn failed: {e}"
+
+
+def _handle_remote(args: str) -> str:
+    """Run a remote command on a project. Usage: /remote legion ls"""
+    parts = args.strip().split(maxsplit=1)
+    if len(parts) < 2:
+        return "Usage: /remote <project_id> <command>"
+    project_id = parts[0]
+    command = parts[1]
+
+    from openclaw.remote_exec import RemoteExec
+    rx = RemoteExec()
+    try:
+        result = rx.run_remote_step(project_id, command, dry_run=False)
+        exit_code = result.get("exit_code", -1)
+        stdout = result.get("stdout", "")[:500]
+        stderr = result.get("stderr", "")[:200]
+        return (
+            f"<b>Remote: {project_id}</b>\n"
+            f"Exit: {exit_code}\n"
+            f"<code>{stdout}</code>"
+            + (f"\nStderr: {stderr}" if stderr else "")
+        )
+    except Exception as e:
+        return f"Remote exec failed: {e}"
 
 
 def _handle_dashboard(args: str) -> str:

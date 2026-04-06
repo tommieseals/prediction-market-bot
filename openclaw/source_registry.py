@@ -43,7 +43,24 @@ class SourceRegistry:
     def tag_provenance(self, finding: dict) -> dict:
         """Attach source class, trust baseline, and timestamp."""
         domain = finding.get("domain", "unknown")
+
+        # Try direct domain match first
         source_info = Config.TRUSTED_SOURCES.get(domain, {})
+
+        # If domain is empty/unknown, try to resolve from metadata source
+        if not source_info and domain in ("", "unknown"):
+            meta_source = (finding.get("metadata") or {}).get("source", "")
+            # Map absorption source names to trusted domains
+            source_domain_map = {
+                "anthropic": "anthropic.com",
+                "openai": "openai.com",
+                "google": "blog.google",
+            }
+            mapped_domain = source_domain_map.get(meta_source, "")
+            if mapped_domain:
+                source_info = Config.TRUSTED_SOURCES.get(mapped_domain, {})
+                finding["domain"] = mapped_domain
+
         finding["provenance"] = source_info.get("source_class", "unknown")
         finding["trust_score"] = source_info.get("trust", 0.0)
         finding["cooldown_hours"] = source_info.get("cooldown_hours", 168)
