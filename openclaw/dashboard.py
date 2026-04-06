@@ -193,11 +193,42 @@ async def api_status():
             for d in weights
         )
 
+    # Get detailed fitness dimensions
+    fitness_detail = {}
+    if fitness_scores:
+        for dim, weight in Config.FITNESS_WEIGHTS.items():
+            raw = fitness_scores.get(dim, 0.0)
+            fitness_detail[dim] = {"raw": round(raw, 2), "weight": weight, "weighted": round(raw * weight, 3)}
+
+    # Get eval harness score
+    eval_score = None
+    try:
+        from openclaw.eval_harness import EvalHarness
+        harness = EvalHarness()
+        vid = variant.get("variant_id", "unknown")
+        eval_result = harness.run_eval(vid)
+        eval_score = round(eval_result.get("aggregate_score", 0), 2)
+    except Exception:
+        pass
+
+    # Get correction count
+    correction_count = 0
+    try:
+        if Config.CORRECTION_LOG_PATH.exists():
+            with open(Config.CORRECTION_LOG_PATH) as f:
+                correction_count = sum(1 for l in f if l.strip())
+    except OSError:
+        pass
+
     return JSONResponse({
         "status": "operational",
         "generation": variant.get("generation", 0),
         "variant": variant.get("variant_id", "none"),
+        "shadow_mode": variant.get("shadow_mode", False),
         "fitness": round(overall_fitness, 4),
+        "fitness_dimensions": fitness_detail,
+        "eval_score": eval_score,
+        "corrections": correction_count,
         "budget_status": budget,
         "worker_count": worker_count,
         "mission_state": {
@@ -207,6 +238,7 @@ async def api_status():
         },
         "quarantine_count": quarantine_count,
         "last_heartbeat": _last_heartbeat.get("timestamp") if _last_heartbeat else None,
+        "projects_tracked": len(json.loads(Config.PROJECT_ADAPTERS_PATH.read_text())) if Config.PROJECT_ADAPTERS_PATH.exists() else 0,
     })
 
 
