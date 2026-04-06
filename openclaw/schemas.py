@@ -5,9 +5,7 @@ Every record type has a version, validate(), and field definitions.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, fields, asdict
-from datetime import datetime
-from typing import Any
+from dataclasses import dataclass
 
 
 class SchemaError(Exception):

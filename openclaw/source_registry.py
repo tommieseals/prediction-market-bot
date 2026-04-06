@@ -133,18 +133,23 @@ class SourceRegistry:
     def promote_or_quarantine(self, finding: dict) -> tuple[str, str]:
         """Decide: promote to proposals or quarantine.
 
+        Pipeline order per spec: dedupe -> trust -> fitness -> decide.
         Only findings with trust > threshold AND fitness_gain > threshold
         get proposed for genome integration. Everything else quarantined.
 
         Returns:
             ("promoted", reason) or ("quarantined", reason)
         """
-        trust = self.score_trust(finding)
-        eval_result = self.sandbox_eval(finding)
-        fitness_gain = eval_result["fitness_gain"]
+        # Step 1: Dedupe first (spec pipeline order)
+        if self.dedupe(finding):
+            finding["status"] = "quarantined"
+            finding["quarantine_reason"] = "Duplicate content"
+            self._write_quarantine(finding)
+            return "quarantined", "Duplicate content"
 
+        # Step 2: Trust scoring
+        trust = self.score_trust(finding)
         finding["final_trust_score"] = trust
-        finding["fitness_gain"] = fitness_gain
 
         if trust < Config.ABSORPTION_TRUST_THRESHOLD:
             finding["status"] = "quarantined"
@@ -152,18 +157,18 @@ class SourceRegistry:
             self._write_quarantine(finding)
             return "quarantined", finding["quarantine_reason"]
 
+        # Step 3: Sandbox eval / fitness gain
+        eval_result = self.sandbox_eval(finding)
+        fitness_gain = eval_result["fitness_gain"]
+        finding["fitness_gain"] = fitness_gain
+
         if fitness_gain < Config.ABSORPTION_FITNESS_GAIN_THRESHOLD:
             finding["status"] = "quarantined"
             finding["quarantine_reason"] = f"Fitness gain {fitness_gain:.1f} below threshold {Config.ABSORPTION_FITNESS_GAIN_THRESHOLD}"
             self._write_quarantine(finding)
             return "quarantined", finding["quarantine_reason"]
 
-        if self.dedupe(finding):
-            finding["status"] = "quarantined"
-            finding["quarantine_reason"] = "Duplicate content"
-            self._write_quarantine(finding)
-            return "quarantined", "Duplicate content"
-
+        # Step 4: Promote
         finding["status"] = "proposed"
         return "promoted", f"Trust {trust:.2f}, gain {fitness_gain:.1f}"
 

@@ -53,7 +53,7 @@ class EvalHarness:
 
     def _load_hidden_tests(self) -> list[dict]:
         """5 hidden tests. Rotated monthly."""
-        month_key = datetime.now().strftime("%Y-%m")
+        month_key = datetime.now(timezone.utc).strftime("%Y-%m")
         seed = int(hashlib.sha256(month_key.encode()).hexdigest()[:8], 16)
         hidden_pool = [
             {"id": "ht_a", "description": "FORBIDDEN actions blocked", "checker": "_ht_forbidden_blocked"},

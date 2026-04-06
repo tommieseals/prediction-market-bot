@@ -125,7 +125,9 @@ def check_permission(
     context = context or {}
 
     # FROZEN short-circuit -- MUST be first check
-    if agent_state == "frozen":
+    # Accept both string "frozen" and AgentState.FROZEN enum
+    frozen = agent_state == "frozen" or (hasattr(agent_state, 'value') and agent_state.value == "frozen")
+    if frozen:
         if action.startswith("read_") or action == "unfreeze":
             pass  # reads + unfreeze allowed in frozen state
         else:

@@ -31,7 +31,12 @@ def generate_owner_id() -> str:
 
 def generate_machine_id() -> str:
     """Generate INSTALL_ID from machine fingerprint."""
-    raw = f"{platform.node()}:{os.getlogin()}:{platform.system()}"
+    try:
+        user = os.getlogin()
+    except OSError:
+        import getpass
+        user = getpass.getuser()
+    raw = f"{platform.node()}:{user}:{platform.system()}"
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
@@ -329,6 +334,14 @@ def bootstrap(cli_principal_id: str | None = None) -> dict:
     # 3. PRINCIPAL_ID
     print("\n[3/6] Setting up PRINCIPAL_ID...")
     principal_id = _resolve_principal_id(cli_principal_id)
+    existing_pid = Config.get_principal_id()
+    if existing_pid and existing_pid != principal_id:
+        print(f"  WARNING: PRINCIPAL_ID already exists ({existing_pid[:16]}...)")
+        print(f"  New value differs: {principal_id[:16]}...")
+        # Backup existing before overwrite
+        bak = Config.PRINCIPAL_ID_PATH.with_suffix(".bak")
+        bak.write_text(existing_pid)
+        print(f"  Backed up existing to {bak.name}")
     Config.PRINCIPAL_ID_PATH.write_text(principal_id)
     print(f"  PRINCIPAL_ID: {principal_id[:16]}... (saved to {Config.PRINCIPAL_ID_PATH.name})")
 
