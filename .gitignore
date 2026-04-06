@@ -24,9 +24,14 @@ credentials/
 *.log
 tmp/
 temp/
+screenshots/
+docs-archive/
 
 # Node modules
 node_modules/
+__pycache__/
+dist/
+build/
 
 # macOS
 .DS_Store
@@ -40,3 +45,24 @@ node_modules/
 
 arbitrage-pharma/
 project-vault/
+interview-bot/
+VisionClaw/
+TerminatorBot/
+.claude/
+.clawdbot/backups/
+
+# OpenClaw OGE — runtime artifacts (excluded)
+openclaw/fitness.db
+openclaw/.run_lock
+openclaw/agent_state.json
+openclaw/.principal_id
+openclaw/.install_id
+openclaw/gene_pool/
+openclaw/quarantine/
+openclaw/pending_approvals.json
+openclaw/worker_registry.json
+openclaw/active_mission.json
+openclaw/memory_core.json
+
+# OpenClaw OGE — tracked JSONL (override global *.jsonl exclusion)
+!openclaw/correction_log.jsonl
