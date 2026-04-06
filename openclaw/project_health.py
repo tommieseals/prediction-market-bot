@@ -49,69 +49,41 @@ class ProjectHealth:
         return results
 
     def check_legion(self) -> dict:
-        """Check Project Legion on Tom (Mac Mini)."""
+        """Check Project Legion on Tom (Mac Mini).
+
+        Legion is browser-automation via Chrome with a dedicated profile
+        (chrome-legion-profile) on debug port 9223. Multiple repo versions
+        exist: legion-ultimate (main), legion-v3, legion-queue.
+        """
         return self._ssh_check(
             host="100.88.105.106",
             user="tommie",
             checks={
-                "repo_exists": "test -d ~/clawd/legion && echo 'yes' || echo 'no'",
-                "last_git_commit": "cd ~/clawd/legion 2>/dev/null && git log -1 --format='%ai %s' 2>/dev/null || echo 'no repo'",
-                "running_processes": "pgrep -f legion 2>/dev/null | wc -l",
-                "cron_jobs": "crontab -l 2>/dev/null | grep -c legion || echo 0",
-                "disk_free": "df -h ~ 2>/dev/null | tail -1 | awk '{print $4}'",
+                "main_repo": "test -d ~/legion-ultimate && echo 'yes' || echo 'no'",
+                "last_file_change": "find ~/legion-ultimate -maxdepth 2 -name '*.py' -newer ~/legion-ultimate/README.md -printf '%T@ %f\\n' 2>/dev/null | sort -rn | head -1 || echo 'unknown'",
+                "chrome_running": "pgrep -f 'chrome-legion-profile' 2>/dev/null | wc -l | tr -d ' '",
+                "chrome_debug_port": "curl -s http://localhost:9223/json/version 2>/dev/null | head -1 || echo 'not responding'",
+                "queue_pending": "ls ~/legion-queue/PENDING/ 2>/dev/null | wc -l | tr -d ' '",
+                "queue_complete": "ls ~/legion-queue/COMPLETE/ 2>/dev/null | wc -l | tr -d ' '",
+                "queue_failed": "ls ~/legion-queue/FAILED/ 2>/dev/null | wc -l | tr -d ' '",
+                "disk_free": "df -h /Users/tommie 2>/dev/null | tail -1 | awk '{print $4}'",
             },
             project_id="legion",
         )
 
     def check_terminatorbot(self) -> dict:
-        """Check TerminatorBot on RTX (local or via adapter)."""
-        tb_path = Path("C:/Users/User/clawd/TerminatorBot")
-        result = {
-            "project_id": "terminatorbot",
-            "machine": "rtx",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        }
-
-        # Check if repo exists
-        result["repo_exists"] = tb_path.exists()
-
-        # Last git activity
-        if tb_path.exists():
-            try:
-                proc = subprocess.run(
-                    "git log -1 --format=%ai\\ %s",
-                    shell=True, capture_output=True, text=True, timeout=10,
-                    cwd=str(tb_path),
-                )
-                result["last_commit"] = proc.stdout.strip()
-                # Parse date to compute days idle
-                if proc.stdout.strip():
-                    date_str = proc.stdout.strip()[:25]
-                    try:
-                        from datetime import datetime as dt
-                        commit_date = dt.fromisoformat(date_str.strip())
-                        if commit_date.tzinfo is None:
-                            commit_date = commit_date.replace(tzinfo=timezone.utc)
-                        days = (datetime.now(timezone.utc) - commit_date).days
-                        result["days_idle"] = days
-                    except (ValueError, TypeError):
-                        result["days_idle"] = -1
-            except (subprocess.TimeoutExpired, OSError):
-                result["last_commit"] = "error"
-
-            # Check for running processes
-            try:
-                proc = subprocess.run(
-                    "tasklist /fi \"imagename eq python*\" /fo csv 2>nul",
-                    shell=True, capture_output=True, text=True, timeout=10,
-                )
-                tb_processes = proc.stdout.lower().count("terminatorbot")
-                result["running_processes"] = tb_processes
-            except (subprocess.TimeoutExpired, OSError):
-                result["running_processes"] = -1
-
-        result["status"] = "active" if result.get("repo_exists") else "missing"
-        return result
+        """Check TerminatorBot on RTX via SSH."""
+        return self._ssh_check(
+            host="100.115.12.91",
+            user="User",
+            checks={
+                "repo_exists": "test -d '$USERPROFILE/clawd/TerminatorBot' && echo 'yes' || test -d '$HOME/clawd/TerminatorBot' && echo 'yes' || echo 'no'",
+                "last_git_commit": "cd '$USERPROFILE/clawd/TerminatorBot' 2>/dev/null && git log -1 --format='%ai %s' 2>/dev/null || cd '$HOME/clawd/TerminatorBot' 2>/dev/null && git log -1 --format='%ai %s' 2>/dev/null || echo 'no repo'",
+                "python_processes": "ps -W 2>/dev/null | grep -ic python || echo 0",
+                "config_exists": "test -f '$USERPROFILE/clawd/TerminatorBot/.env' && echo 'yes' || test -f '$HOME/clawd/TerminatorBot/.env' && echo 'yes' || echo 'no'",
+            },
+            project_id="terminatorbot",
+        )
 
     def check_shared_memory(self) -> dict:
         """Check Shared Memory Platform on Jarvis (local)."""
@@ -204,7 +176,16 @@ class ProjectHealth:
             except (ValueError, TypeError):
                 result["days_idle"] = -1
 
-        result["status"] = "active" if result.get("repo_exists") == "yes" else "unknown"
+        # Determine status from multiple signals
+        repo_ok = result.get("main_repo") == "yes" or result.get("repo_exists") == "yes"
+        chrome_running = int(result.get("chrome_running", 0) or 0) > 0
+        processes_running = int(result.get("python_processes", 0) or 0) > 0
+        if chrome_running or processes_running:
+            result["status"] = "active"
+        elif repo_ok:
+            result["status"] = "idle"
+        else:
+            result["status"] = "unknown"
         return result
 
     def _load_adapters(self) -> dict:

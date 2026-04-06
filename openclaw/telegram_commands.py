@@ -56,6 +56,8 @@ def handle_command(text: str) -> str:
         "/health": _handle_health,
         "/projects": _handle_health,  # alias
         "/eval": _handle_eval,
+        "/approve": _handle_approve,
+        "/pending": _handle_pending,
         "/state": _handle_state,
         "/workers": _handle_workers,
         "/mission": _handle_mission,
@@ -282,6 +284,85 @@ def _handle_recall(args: str) -> str:
     if result:
         return f"Recalled {worker_id}."
     return f"Worker {worker_id} not found or already terminated."
+
+
+def _handle_approve(args: str) -> str:
+    """Approve a pending action by request_id or 'last'."""
+    request_id = args.strip()
+    if not request_id:
+        return "Usage: /approve <request_id> or /approve last"
+
+    approvals_path = Config.PENDING_APPROVALS_PATH
+    if not approvals_path.exists():
+        return "No pending approvals."
+
+    try:
+        pending = json.loads(approvals_path.read_text())
+    except (json.JSONDecodeError, OSError):
+        return "Error reading pending approvals."
+
+    if not pending:
+        return "No pending approvals."
+
+    if request_id == "last":
+        target = pending[-1]
+    else:
+        target = None
+        for p in pending:
+            if p.get("request_id") == request_id:
+                target = p
+                break
+
+    if not target:
+        return f"Approval {request_id} not found."
+
+    # Mark as approved
+    target["approving_principal"] = "rusty"
+    target["approved_at"] = datetime.now(timezone.utc).isoformat()
+
+    # Remove from pending
+    pending = [p for p in pending if p.get("request_id") != target["request_id"]]
+    approvals_path.write_text(json.dumps(pending, indent=2))
+
+    # Execute the approved action
+    action = target.get("action", "unknown")
+    result = f"Approved: {target['request_id']}\nAction: {action}\n{target.get('summary', '')}"
+
+    if action == "activate_variant":
+        from openclaw.genome_manager import GenomeManager
+        vid = target.get("summary", "").split()[-1] if target.get("summary") else None
+        if vid:
+            try:
+                GenomeManager().activate_variant(vid, shadow=False)
+                result += f"\nVariant {vid} activated."
+            except Exception as e:
+                result += f"\nActivation failed: {e}"
+
+    elif action == "run_meta_cycle":
+        result += "\nMETA cycle approved. Will run on next scheduled trigger."
+
+    return result
+
+
+def _handle_pending(args: str) -> str:
+    """Show pending approvals."""
+    approvals_path = Config.PENDING_APPROVALS_PATH
+    if not approvals_path.exists():
+        return "No pending approvals."
+    try:
+        pending = json.loads(approvals_path.read_text())
+    except (json.JSONDecodeError, OSError):
+        return "Error reading approvals."
+    if not pending:
+        return "No pending approvals."
+    lines = [f"<b>Pending Approvals: {len(pending)}</b>\n"]
+    for p in pending[-5:]:  # show last 5
+        lines.append(
+            f"  {p.get('request_id', '?')}: {p.get('action', '?')}\n"
+            f"    {p.get('summary', '')[:100]}\n"
+            f"    Expires: {p.get('expires_at', '?')}"
+        )
+    return "\n".join(lines)
 
 
 def _handle_health(args: str) -> str:
