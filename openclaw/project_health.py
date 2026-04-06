@@ -131,19 +131,54 @@ class ProjectHealth:
         """Route to the right checker based on project_id."""
         if project_id == "legion":
             return self.check_legion()
-        elif project_id == "terminatorbot":
+        elif project_id in ("terminator", "terminatorbot"):
             return self.check_terminatorbot()
-        elif project_id in ("shared_memory", "monitoring"):
+        elif project_id in ("memory", "shared_memory", "monitoring", "fort_knox"):
             return self.check_shared_memory()
         else:
-            # Generic: just report from adapter
-            return {
-                "project_id": project_id,
-                "machine": adapter.get("machine", "unknown"),
-                "status": "unchecked",
-                "goals": adapter.get("current_goals", []),
-                "blockers": adapter.get("blockers", []),
-            }
+            return self._check_generic(project_id, adapter)
+
+    def _check_generic(self, project_id: str, adapter: dict) -> dict:
+        """Generic project check — test dashboard URL reachability."""
+        result = {
+            "project_id": project_id,
+            "machine": adapter.get("machine", "unknown"),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "goals": adapter.get("current_goals", []),
+            "blockers": adapter.get("blockers", []),
+        }
+
+        # Check if dashboard URL is reachable
+        dashboard_url = adapter.get("dashboard_url")
+        if dashboard_url:
+            try:
+                import requests
+                resp = requests.get(dashboard_url, timeout=8)
+                result["dashboard"] = "up" if resp.status_code == 200 else f"http_{resp.status_code}"
+                result["status"] = "active" if resp.status_code == 200 else "degraded"
+            except Exception:
+                result["dashboard"] = "unreachable"
+                result["status"] = "unknown"
+        else:
+            result["status"] = "no_dashboard"
+
+        # Check repo via SSH if repo_path is set
+        repo_path = adapter.get("repo_path")
+        machine = adapter.get("machine")
+        if repo_path and machine:
+            machine_map = {"rtx": ("User", "100.115.12.91"), "tom": ("tommie", "100.88.105.106")}
+            if machine in machine_map:
+                user, host = machine_map[machine]
+                try:
+                    proc = subprocess.run(
+                        f"ssh {user}@{host} \"test -d '{repo_path}' && echo yes || echo no\"",
+                        shell=True, capture_output=True, text=True, timeout=10,
+                    )
+                    result["repo_exists"] = proc.stdout.strip()
+                except (subprocess.TimeoutExpired, OSError):
+                    result["repo_exists"] = "check_failed"
+
+        return result
 
     def _ssh_check(self, host: str, user: str, checks: dict, project_id: str) -> dict:
         """Run checks on a remote machine via SSH."""
