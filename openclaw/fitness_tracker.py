@@ -185,7 +185,7 @@ class FitnessTracker:
         for r in rows:
             results.append({
                 "id": r[0], "variant_id": r[1], "generation": r[2],
-                "timestamp": r[3], "overall_fitness": r[14],
+                "timestamp": r[3], "overall_fitness": r[15],
                 "safety_violation": bool(r[16]), "description": r[17] if len(r) > 17 else "",
             })
         return results

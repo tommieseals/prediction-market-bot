@@ -217,6 +217,16 @@ def run_proactive_cycle() -> dict:
     mm = MissionManager()
     results = {"steps_completed": 0, "errors": [], "fitness": 0.0}
 
+    # Initialize variables that may be referenced in later steps
+    stalled_projects = []
+    health_results = {"stalled": [], "healthy": [], "projects": {}}
+    unhealthy = []
+    thought = ""
+    abs_result = {"proposed": 0}
+    open_incidents = []
+    mem_stats = {}
+    core = {}
+
     try:
         # Step 1: Acquire run_lock + transition
         log.info("Step 1: Acquiring run lock...")
@@ -457,8 +467,8 @@ For each: name the project, the specific action, expected revenue, and time to e
 
             # Compute real fitness signals from cycle results
             infra_ok = len(unhealthy) == 0
-            stalled_count = len(stalled_projects) if 'stalled_projects' in dir() else 0
-            healthy_count = len(health_results.get("healthy", [])) if 'health_results' in dir() else 0
+            stalled_count = len(stalled_projects)
+            healthy_count = len(health_results.get("healthy", []))
             total_projects = healthy_count + stalled_count
             absorption_proposed = abs_result.get("proposed", 0) if isinstance(abs_result, dict) else 0
             thought_real = "stub" not in thought.lower() and "unavailable" not in thought.lower()
@@ -537,8 +547,8 @@ Self-Thought: {thought[:300]}
 
             # Step 22: Telegram summary + release lock
             log.info("Step 22: Telegram summary...")
-            stalled_count = len(stalled_projects) if 'stalled_projects' in dir() else 0
-            healthy_count = len(health_results.get("healthy", [])) if 'health_results' in dir() else 0
+            stalled_count = len(stalled_projects)
+            healthy_count = len(health_results.get("healthy", []))
             summary = (
                 f"<b>Proactive Cycle Complete</b>\n"
                 f"Variant: {variant_id} (Gen {gen})\n"

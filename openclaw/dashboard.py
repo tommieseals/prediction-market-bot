@@ -47,6 +47,34 @@ class TelegramWebhookPayload(BaseModel):
 # File helpers (all blocking I/O -- called via asyncio.to_thread)
 # ---------------------------------------------------------------------------
 
+_eval_cache: dict = {"score": None, "timestamp": 0}
+
+
+def _get_cached_eval_score() -> float | None:
+    """Return cached eval score. Refreshes at most once per hour."""
+    import time
+    now = time.time()
+    if _eval_cache["score"] is not None and (now - _eval_cache["timestamp"]) < 3600:
+        return _eval_cache["score"]
+    try:
+        # Read last eval result from audit log instead of re-running
+        if Config.PAPERCLIP_AUDIT_PATH.exists():
+            with open(Config.PAPERCLIP_AUDIT_PATH) as f:
+                for line in f:
+                    line = line.strip()
+                    if line and "eval_harness" in line:
+                        try:
+                            entry = json.loads(line)
+                            if entry.get("event") == "eval_harness":
+                                _eval_cache["score"] = entry.get("aggregate")
+                                _eval_cache["timestamp"] = now
+                        except json.JSONDecodeError:
+                            pass
+        return _eval_cache["score"]
+    except OSError:
+        return None
+
+
 def _read_json(path: Path) -> dict | None:
     if not path.exists():
         return None
@@ -200,16 +228,8 @@ async def api_status():
             raw = fitness_scores.get(dim, 0.0)
             fitness_detail[dim] = {"raw": round(raw, 2), "weight": weight, "weighted": round(raw * weight, 3)}
 
-    # Get eval harness score
-    eval_score = None
-    try:
-        from openclaw.eval_harness import EvalHarness
-        harness = EvalHarness()
-        vid = variant.get("variant_id", "unknown")
-        eval_result = harness.run_eval(vid)
-        eval_score = round(eval_result.get("aggregate_score", 0), 2)
-    except Exception:
-        pass
+    # Get cached eval score (eval runs on separate 12h schedule, not per-request)
+    eval_score = _get_cached_eval_score()
 
     # Get correction count
     correction_count = 0

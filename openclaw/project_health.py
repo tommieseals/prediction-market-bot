@@ -162,7 +162,7 @@ class ProjectHealth:
         else:
             result["status"] = "no_dashboard"
 
-        # Check repo via SSH if repo_path is set
+        # Check repo via SSH if repo_path is set (no shell=True — prevent injection)
         repo_path = adapter.get("repo_path")
         machine = adapter.get("machine")
         if repo_path and machine:
@@ -171,8 +171,8 @@ class ProjectHealth:
                 user, host = machine_map[machine]
                 try:
                     proc = subprocess.run(
-                        f"ssh {user}@{host} \"test -d '{repo_path}' && echo yes || echo no\"",
-                        shell=True, capture_output=True, text=True, timeout=10,
+                        ["ssh", f"{user}@{host}", f"test -d '{repo_path}' && echo yes || echo no"],
+                        capture_output=True, text=True, timeout=10,
                     )
                     result["repo_exists"] = proc.stdout.strip()
                 except (subprocess.TimeoutExpired, OSError):
@@ -190,8 +190,8 @@ class ProjectHealth:
         for name, cmd in checks.items():
             try:
                 proc = subprocess.run(
-                    f"ssh {user}@{host} \"{cmd}\"",
-                    shell=True, capture_output=True, text=True, timeout=15,
+                    ["ssh", f"{user}@{host}", cmd],
+                    capture_output=True, text=True, timeout=15,
                 )
                 result[name] = proc.stdout.strip()
             except subprocess.TimeoutExpired:
