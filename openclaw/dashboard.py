@@ -489,6 +489,26 @@ async def dashboard():
 TELEGRAM_CHAT_ID = 939543801
 
 
+class CommandRequest(BaseModel):
+    command: str  # e.g., "/fitness details"
+    reply_telegram: bool = True
+
+
+@app.post("/api/command")
+async def api_command(req: CommandRequest):
+    """Execute an OGE command via HTTP API.
+
+    Accepts any /command string and returns the result.
+    Optionally sends the response to Telegram too.
+    """
+    from openclaw.telegram_commands import handle_command
+
+    response = await asyncio.to_thread(handle_command, req.command)
+    if response and req.reply_telegram:
+        await asyncio.to_thread(_send_telegram_reply, TELEGRAM_CHAT_ID, response)
+    return {"command": req.command, "response": response}
+
+
 @app.post("/telegram/webhook")
 async def telegram_webhook(payload: TelegramWebhookPayload):
     """Process incoming Telegram messages as commands."""
