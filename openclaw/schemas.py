@@ -284,7 +284,7 @@ class MissionCheckpointRecord:
     closed_at: str | None
 
     VALID_STATES = [
-        "queued", "active", "blocked", "waiting",
+        "idle", "queued", "active", "blocked", "waiting",
         "complete", "failed", "rolled_back",
     ]
 

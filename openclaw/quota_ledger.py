@@ -67,16 +67,18 @@ class QuotaLedger:
         ledger = self._load()
         for key in ledger.get("keys", []):
             if key.get("key_id_label") == key_label:
-                limit_tok = key.get("daily_limit_tokens") or float("inf")
-                limit_req = key.get("daily_limit_requests") or float("inf")
+                limit_tok = key.get("daily_limit_tokens")
+                limit_req = key.get("daily_limit_requests")
                 used_tok = key.get("usage_today_tokens", 0)
                 used_req = key.get("usage_today_requests", 0)
                 return {
                     "key_label": key_label,
-                    "tokens_remaining": max(0, limit_tok - used_tok),
-                    "requests_remaining": max(0, limit_req - used_req),
-                    "pct_tokens_used": (used_tok / limit_tok * 100) if limit_tok != float("inf") else 0,
-                    "pct_requests_used": (used_req / limit_req * 100) if limit_req != float("inf") else 0,
+                    "tokens_remaining": max(0, limit_tok - used_tok) if limit_tok else None,
+                    "requests_remaining": max(0, limit_req - used_req) if limit_req else None,
+                    "pct_tokens_used": (used_tok / limit_tok * 100) if limit_tok else 0,
+                    "pct_requests_used": (used_req / limit_req * 100) if limit_req else 0,
+                    "unlimited_tokens": limit_tok is None,
+                    "unlimited_requests": limit_req is None,
                 }
         return {"error": f"Key {key_label} not found"}
 

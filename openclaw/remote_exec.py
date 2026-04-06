@@ -132,15 +132,23 @@ class RemoteExec:
             return result
 
         try:
+            # Record rate limit BEFORE execution (prevents bypass on timeout)
+            now = time.time()
+            self._actions_this_hour.append(now)
+            self._host_actions.setdefault(machine, []).append(now)
+
             if transport == TransportProfile.LOCAL_RUNNER:
+                import shlex
                 proc = subprocess.run(
-                    command, shell=True, capture_output=True, text=True, timeout=timeout,
+                    shlex.split(command),
+                    capture_output=True, text=True, timeout=timeout,
                 )
             elif transport == TransportProfile.SSH:
                 ssh_target = MACHINE_SSH_MAP.get(machine, machine)
-                ssh_cmd = f"ssh {ssh_target} '{command}'"
+                # Pass command as single arg to SSH — no shell interpolation
                 proc = subprocess.run(
-                    ssh_cmd, shell=True, capture_output=True, text=True, timeout=timeout,
+                    ["ssh", ssh_target, command],
+                    capture_output=True, text=True, timeout=timeout,
                 )
             else:
                 result["stderr"] = f"Transport '{transport}' not yet implemented."
@@ -151,11 +159,6 @@ class RemoteExec:
             result["stdout"] = proc.stdout[:5000]
             result["stderr"] = proc.stderr[:5000]
             result["exit_code"] = proc.returncode
-
-            # Record rate limit event
-            now = time.time()
-            self._actions_this_hour.append(now)
-            self._host_actions.setdefault(machine, []).append(now)
 
         except subprocess.TimeoutExpired:
             result["stdout"] = ""

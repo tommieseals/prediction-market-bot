@@ -59,12 +59,16 @@ class EnvHealth:
         results = {}
         for name, ip in targets.items():
             try:
-                # Use ping (cross-platform: -n on Windows, -c on Unix)
                 import platform
-                flag = "-n" if platform.system() == "Windows" else "-c"
+                system = platform.system()
+                if system == "Windows":
+                    cmd = ["ping", "-n", "1", "-w", "3000", ip]
+                elif system == "Darwin":
+                    cmd = ["ping", "-c", "1", "-W", "3000", ip]
+                else:
+                    cmd = ["ping", "-c", "1", "-w", "3", ip]
                 proc = subprocess.run(
-                    ["ping", flag, "1", "-w", "3", ip],
-                    capture_output=True, text=True, timeout=5,
+                    cmd, capture_output=True, text=True, timeout=5,
                 )
                 results[name] = "reachable" if proc.returncode == 0 else "unreachable"
             except (subprocess.TimeoutExpired, OSError):

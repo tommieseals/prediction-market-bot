@@ -96,7 +96,7 @@ class RecurrenceEngine:
         return incident
 
     def update_incident(self, incident_id: str, updates: dict) -> dict | None:
-        """Update an existing incident (rewrite entire file)."""
+        """Update an existing incident (atomic rewrite)."""
         incidents = self._load_incidents()
         target = None
         for inc in incidents:
@@ -106,10 +106,12 @@ class RecurrenceEngine:
                 break
         if target is None:
             return None
-        # Rewrite
-        with open(self.path, "w") as f:
+        # Atomic rewrite via tmp + os.replace
+        tmp = self.path.with_suffix(".tmp")
+        with open(tmp, "w") as f:
             for inc in incidents:
                 f.write(json.dumps(inc) + "\n")
+        os.replace(str(tmp), str(self.path))
         return target
 
     def close_incident_after_verify(

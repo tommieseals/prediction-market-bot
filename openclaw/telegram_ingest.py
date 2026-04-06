@@ -150,7 +150,7 @@ class TelegramIngest:
         messages = self.parse_export(export_path)
         redacted = self.redact_secrets(messages)
         entities = self.extract_entities(redacted)
-        leads = self.emit_recovered_leads(messages)
+        leads = self.emit_recovered_leads(redacted)
         return {
             "total_messages": len(messages),
             "secrets_found": sum(1 for m in redacted if m.get("had_secrets")),
