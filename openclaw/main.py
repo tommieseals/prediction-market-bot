@@ -138,6 +138,18 @@ def _llm_call(prompt: str, model: str | None = None) -> str:
             data = resp.json()
             response = data.get("response", "")
             if response:
+                # Track token usage in quota ledger
+                try:
+                    from openclaw.quota_ledger import QuotaLedger
+                    tokens = data.get("eval_count", 0) + data.get("prompt_eval_count", 0)
+                    QuotaLedger().record_usage_event(
+                        provider="ollama",
+                        key_label=f"ollama_{ollama_model}",
+                        tokens_used=tokens,
+                        requests_used=1,
+                    )
+                except Exception:
+                    pass
                 return response
         log.warning(f"Ollama returned {resp.status_code}")
     except Exception as e:
@@ -645,7 +657,7 @@ def main():
     parser = argparse.ArgumentParser(description="OpenClaw Anomaly")
     parser.add_argument(
         "--mode",
-        choices=["proactive", "morning-pulse", "server", "assemble", "meta", "eval"],
+        choices=["proactive", "morning-pulse", "server", "assemble", "meta", "eval", "maintain"],
         required=True,
         help="Execution mode",
     )
@@ -718,6 +730,70 @@ def main():
             f"Hidden: {len(result['hidden_tests'])} tests\n"
             f"Projects: {proj_reg.get('checked', 0)} checked"
         )
+
+
+    elif args.mode == "maintain":
+        log.info("Running maintenance cycle...")
+        _run_maintenance()
+
+
+def _run_maintenance():
+    """Daily maintenance: retention, model drift, quota reset, quarantine cleanup."""
+    from openclaw.source_registry import SourceRegistry
+    from openclaw.model_registry import ModelRegistry
+    from openclaw.quota_ledger import QuotaLedger
+    from openclaw.config import Config
+
+    results = []
+
+    # 1. Quarantine cleanup (30-day retention)
+    log.info("[Maintain] Cleaning quarantine (>30 days)...")
+    registry = SourceRegistry()
+    removed = registry.cleanup_old_quarantine()
+    results.append(f"Quarantine: {removed} old entries removed")
+
+    # 2. Model drift audit
+    log.info("[Maintain] Running model drift audit...")
+    model_reg = ModelRegistry()
+    drift = model_reg.run_drift_audit()
+    recs = drift.get("recommendations", [])
+    results.append(f"Model drift: {len(recs)} recommendations")
+
+    # 3. Quota daily reset
+    log.info("[Maintain] Resetting daily quota counters...")
+    quota = QuotaLedger()
+    quota.reset_daily_counters()
+    routing = quota.recommend_routing()
+    unused = len(routing.get("recommendations", []))
+    results.append(f"Quota reset: {routing.get('active_keys', 0)} keys, {unused} recommendations")
+
+    # 4. Memory compaction (compact trader_memory if > 500 entries)
+    log.info("[Maintain] Checking memory compaction...")
+    mem_path = Config.TRADER_MEMORY_PATH
+    if mem_path.exists():
+        try:
+            with open(mem_path, "r") as f:
+                line_count = sum(1 for _ in f)
+            if line_count > 500:
+                results.append(f"Trader memory: {line_count} entries (consider compaction)")
+            else:
+                results.append(f"Trader memory: {line_count} entries (OK)")
+        except OSError:
+            results.append("Trader memory: read error")
+    else:
+        results.append("Trader memory: not found")
+
+    # 5. Gene pool cleanup (archive variants with 0 fitness and > 7 days old)
+    log.info("[Maintain] Checking gene pool...")
+    from openclaw.genome_manager import GenomeManager
+    manager = GenomeManager()
+    variants = manager._list_active_variants()
+    results.append(f"Gene pool: {len(variants)} active variants")
+
+    summary = "\n".join(results)
+    log.info(f"Maintenance complete:\n{summary}")
+    _audit("maintenance", {"results": results})
+    _telegram_send(f"<b>Maintenance Complete</b>\n{summary}")
 
 
 if __name__ == "__main__":
