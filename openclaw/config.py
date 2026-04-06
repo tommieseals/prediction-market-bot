@@ -137,7 +137,7 @@ class Config:
         "blog.google": {"trust": 0.75, "source_class": "competitor", "cooldown_hours": 48},
     }
     ABSORPTION_TRUST_THRESHOLD = 0.70
-    ABSORPTION_FITNESS_GAIN_THRESHOLD = 7.0
+    ABSORPTION_FITNESS_GAIN_THRESHOLD = 1.5  # lowered: blog titles are short, 1-3 keywords typical
 
     # -- Recurrence Engine (SRE) ----------------------------------------------
     RECURRENCE_THRESHOLD = 3          # alerts in window

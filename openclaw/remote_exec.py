@@ -32,6 +32,13 @@ class UndeclaredHostError(RemoteExecError):
     pass
 
 
+MACHINE_SSH_MAP = {
+    "tom": "tommie@100.88.105.106",
+    "rtx": "User@100.115.12.91",
+    "jarvis": "administrator@100.89.75.126",
+}
+
+
 class RemoteExec:
     """Execute commands on remote machines via declared transport profiles."""
 
@@ -130,7 +137,8 @@ class RemoteExec:
                     command, shell=True, capture_output=True, text=True, timeout=timeout,
                 )
             elif transport == TransportProfile.SSH:
-                ssh_cmd = f"ssh {machine} '{command}'"
+                ssh_target = MACHINE_SSH_MAP.get(machine, machine)
+                ssh_cmd = f"ssh {ssh_target} '{command}'"
                 proc = subprocess.run(
                     ssh_cmd, shell=True, capture_output=True, text=True, timeout=timeout,
                 )

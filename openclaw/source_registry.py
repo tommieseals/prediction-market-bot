@@ -44,8 +44,10 @@ class SourceRegistry:
         """Attach source class, trust baseline, and timestamp."""
         domain = finding.get("domain", "unknown")
 
-        # Try direct domain match first
+        # Try direct domain match, then without www prefix
         source_info = Config.TRUSTED_SOURCES.get(domain, {})
+        if not source_info and domain.startswith("www."):
+            source_info = Config.TRUSTED_SOURCES.get(domain[4:], {})
 
         # If domain is empty/unknown, try to resolve from metadata source
         if not source_info and domain in ("", "unknown"):
