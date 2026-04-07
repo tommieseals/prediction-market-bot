@@ -135,6 +135,58 @@ def _read_bot_token() -> str | None:
     return None
 
 
+def _build_memory_context() -> str:
+    """Build rich memory context for LLM calls. Prevents forgetfulness."""
+    parts = []
+    try:
+        from openclaw.memory_manager import MemoryManager
+        from openclaw.mission_manager import MissionManager
+        from openclaw.shadow_replay import ShadowReplay
+
+        # 1. Core memory (always — active goals, focus, revenue)
+        mem = MemoryManager()
+        core = mem.get_core()
+        goals = core.get("active_goals", [])
+        focus = core.get("current_focus", "none")
+        revenue = core.get("recent_revenue_state")
+        if goals:
+            parts.append(f"ACTIVE GOALS: {goals}")
+        if focus and focus != "none":
+            parts.append(f"CURRENT FOCUS: {focus}")
+        if revenue is not None:
+            parts.append(f"REVENUE: ${revenue}")
+
+        # 2. Last session handoff (what happened last)
+        if Config.LAST_SESSION_PATH.exists():
+            try:
+                last = Config.LAST_SESSION_PATH.read_text(encoding="utf-8")[-500:]
+                if last.strip():
+                    parts.append(f"LAST SESSION:\n{last.strip()}")
+            except OSError:
+                pass
+
+        # 3. Recent corrections (don't repeat mistakes)
+        replay = ShadowReplay()
+        corrections = replay.load_correction_log(limit=3)
+        if corrections:
+            corr_texts = [f"  - [{c.get('severity',0)}] {c['correction']}" for c in corrections]
+            parts.append(f"RECENT CORRECTIONS:\n" + "\n".join(corr_texts))
+
+        # 4. Active mission (are we in the middle of something?)
+        mm = MissionManager()
+        mission = mm.get_active_mission()
+        if mission and mission.get("mission_id"):
+            parts.append(
+                f"ACTIVE MISSION: {mission['mission_id']} "
+                f"(state: {mission.get('state')}, "
+                f"checkpoint: {mission.get('last_checkpoint_step', 'none')})"
+            )
+    except Exception as e:
+        parts.append(f"[Memory load error: {e}]")
+
+    return "\n".join(parts) if parts else ""
+
+
 def _llm_call(
     prompt: str,
     model: str | None = None,
@@ -142,8 +194,15 @@ def _llm_call(
     task_type: str = "general",
     max_cost: str = "free",
     quality: str = "standard",
+    inject_memory: bool = True,
 ) -> str:
-    """Route LLM work through the verified model router."""
+    """Route LLM work through the verified model router with memory injection."""
+    # Inject memory context into the prompt (prevents forgetfulness)
+    if inject_memory:
+        memory_ctx = _build_memory_context()
+        if memory_ctx:
+            prompt = f"MEMORY CONTEXT:\n{memory_ctx}\n\nTASK:\n{prompt}"
+
     log.info(f"[LLM/{task_type}] Prompt: {prompt[:100]}...")
     try:
         from openclaw.model_router import ModelRouter
@@ -673,12 +732,59 @@ For each: name the project, the specific action, expected revenue, and time to e
             results["steps_completed"] = 18
 
             # Step 19: Update last_session.md
-            log.info("Step 19: Updating last_session.md...")
-            session_entry = f"\n## {datetime.now(timezone.utc).isoformat()}\n- Fitness: {fitness:.2f}\n- Health: {'OK' if not unhealthy else ', '.join(unhealthy)}\n- Thought: {thought[:200]}\n"
+            log.info("Step 19: Updating last_session.md (structured handoff)...")
+            now_ts = datetime.now(timezone.utc).isoformat()
+            # Build structured handoff (OVERWRITES — this is the "current state" doc)
+            pending_items = []
+            if stalled_projects:
+                pending_items.append(f"- Stalled projects: {', '.join(stalled_projects)}")
+            if open_incidents:
+                pending_items.append(f"- Open incidents: {len(open_incidents)}")
+            if active and active.get("shadow_mode"):
+                pending_items.append(f"- Shadow graduation pending for {active.get('variant_id')}")
+
+            corrections = []
             try:
-                with open(Config.LAST_SESSION_PATH, "a", encoding="utf-8") as f:
-                    f.write(session_entry)
+                from openclaw.shadow_replay import ShadowReplay
+                recent_corr = ShadowReplay().load_correction_log(limit=3)
+                for c in recent_corr:
+                    corrections.append(f"- [{c.get('severity',0)}] {c.get('correction','')}")
+            except Exception:
+                pass
+
+            session_handoff = f"""# Last Session: {now_ts}
+
+## What I Was Doing
+- Running 22-step proactive cycle (Gen {gen}, variant {variant_id})
+- Checked {healthy_count} projects, {stalled_count} stalled
+- Fitness score: {fitness:.2f}
+- Health: {'OK' if not unhealthy else ', '.join(unhealthy)}
+
+## What's Pending
+{chr(10).join(pending_items) if pending_items else '- Nothing critical pending'}
+
+## Key Facts Learned This Session
+- Thought: {thought[:300]}
+
+## Active Mission
+- {mm.get_active_mission().get('mission_id', 'none') if mm.get_active_mission() else 'none'}: {mm.get_active_mission().get('state', 'idle') if mm.get_active_mission() else 'idle'}
+
+## Recent Corrections
+{chr(10).join(corrections) if corrections else '- No recent corrections'}
+"""
+            try:
+                Config.LAST_SESSION_PATH.write_text(session_handoff, encoding="utf-8")
             except OSError:
+                pass
+
+            # Also update memory_core with current focus
+            try:
+                from openclaw.memory_manager import MemoryManager
+                mem_mgr = MemoryManager()
+                mem_mgr.update_core("current_focus", f"Gen {gen} cycle complete, fitness {fitness:.2f}")
+                mem_mgr.update_core("last_cycle_timestamp", now_ts)
+                mem_mgr.update_core("recent_revenue_state", core.get("recent_revenue_state"))
+            except Exception:
                 pass
             results["steps_completed"] = 19
 

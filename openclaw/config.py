@@ -93,6 +93,7 @@ class Config:
         "preferences.md",
         "memory_handoff.md",
         "memory_management.md",
+        "memory_playbook.md",
         "meta.md",
         "absorption_engine.md",
         "autonomy_directives.md",
