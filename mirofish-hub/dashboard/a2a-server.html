@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content=width=device-width, initial-scale=1.0>
+    <title>A2A Server (HAL) - Clawd Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 20px; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,0.2); }
+        .nav-brand h1 { font-size: 2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-link { color: rgba(255,255,255,0.8); text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+        .card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px; }
+        .card h2 { font-size: 1.5rem; margin-bottom: 20px; color: #fbbf24; }
+        .arch-diagram { background: rgba(0,0,0,0.3); padding: 30px; border-radius: 10px; text-align: center; font-family: monospace; line-height: 1.8; }
+        .component-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
+        .component { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; border-left: 4px solid #ef4444; }
+        .component h3 { color: #ef4444; margin-bottom: 8px; }
+        pre { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class=container>
+        <nav class=nav-bar>
+            <div class=nav-brand><h1>🤖🔗🧠 A2A Server (HAL)</h1></div>
+            <div class=nav-links>
+                <a href=index.html class=nav-link>Dashboard</a>
+                <a href=agents.html class=nav-link>Agents</a>
+                <a href=swarm.html class=nav-link>Swarm</a>
+            </div>
+        </nav>
+        
+        <div class=card>
+            <h2>🎯 Purpose</h2>
+            <p style=font-size:1.1rem;line-height:1.6;>Agent-to-Agent communication server enabling HAL (our AI executive) to autonomously delegate and execute tasks across the bot network. Think of it as the nervous system connecting all our AI agents.</p>
+        </div>
+
+        <div class=card>
+            <h2>🏗️ Architecture</h2>
+            <div class=arch-diagram>
+┌─────────────────────────────────────────────────────────────┐
+│                    🧠 HAL (Executive AI)                     │
+│                   I need this done...                      │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  🔗 A2A Server (Hub)                         │
+│              Routes tasks to best agent                      │
+└──────────┬─────────────────┬────────────────┬───────────────┘
+           │                 │                │
+           ▼                 ▼                ▼
+    ┌──────────┐      ┌──────────┐     ┌──────────┐
+    │ 💻 Coder │      │ 🔍 Research│    │ ✍️ Writer │
+    │  Agent   │      │   Agent   │    │  Agent   │
+    └──────────┘      └──────────┘     └──────────┘
+            </div>
+        </div>
+
+        <div class=card>
+            <h2>📦 Components</h2>
+            <div class=component-grid>
+                <div class=component>
+                    <h3>server.py</h3>
+                    <p>Main async server handling agent registration and task routing</p>
+                </div>
+                <div class=component>
+                    <h3>client.py</h3>
+                    <p>Client library for agents to connect and receive tasks</p>
+                </div>
+                <div class=component>
+                    <h3>agent_executor.py</h3>
+                    <p>Task execution engine with timeout and retry logic</p>
+                </div>
+            </div>
+        </div>
+
+        <div class=card>
+            <h2>📍 Location</h2>
+            <pre>Mac Mini: /Users/tommie/clawd/a2a-server/</pre>
+            <p style=margin-top:15px;>Tech: Python, asyncio</p>
+            <p>Status: ✅ Active Development</p>
+        </div>
+    </div>
+</body>
+</html>
+ENDFILE
+

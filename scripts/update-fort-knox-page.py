@@ -17,7 +17,7 @@ info_section = '''
                 <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 15px;">
                     <h3 style="color: #FFD700; margin-bottom: 1rem;">🏦 Primary Vault</h3>
                     <ul style="list-style: none; font-size: 0.9rem;">
-                        <li>📍 Location: Mac Pro (100.92.123.115)</li>
+                        <li>📍 Location: Mac Pro (100.89.75.126)</li>
                         <li>📦 Storage: ~/fort-knox-backups/</li>
                         <li>🔄 Retention: 30 versions</li>
                         <li>⏰ Schedule: Before each deploy</li>

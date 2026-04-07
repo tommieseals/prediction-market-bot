@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐋 Whale Tracker v2 - Clawd Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .container { max-width: 1800px; margin: 0 auto; padding: 20px; }
+        
+        /* Navigation */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+        .nav-brand h1 { font-size: 1.8rem; display: flex; align-items: center; gap: 10px; }
+        .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-link {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.15); color: #fff; }
+        
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-value { font-size: 1.8rem; font-weight: 700; }
+        .stat-label { font-size: 0.85rem; opacity: 0.7; margin-top: 5px; }
+        .stat-positive { color: #10b981; }
+        .stat-negative { color: #ef4444; }
+        
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 1200px) { .main-grid { grid-template-columns: 1fr; } }
+        
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .card-title { font-size: 1.2rem; font-weight: 600; }
+        
+        /* Leaderboard Table */
+        .leaderboard-table { width: 100%; border-collapse: collapse; }
+        .leaderboard-table th, .leaderboard-table td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .leaderboard-table th { 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            opacity: 0.6;
+            font-weight: 500;
+        }
+        .leaderboard-table tr { cursor: pointer; transition: background 0.2s; }
+        .leaderboard-table tr:hover { background: rgba(255,255,255,0.05); }
+        .leaderboard-table tr.expanded { background: rgba(99,102,241,0.15); }
+        
+        /* Rank Badge */
+        .rank-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        .rank-1 { background: linear-gradient(135deg, #ffd700, #ffb700); color: #000; }
+        .rank-2 { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: #000; }
+        .rank-3 { background: linear-gradient(135deg, #cd7f32, #b8860b); color: #000; }
+        .rank-default { background: rgba(255,255,255,0.15); }
+        
+        /* Elite Badge */
+        .elite-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .elite-high { background: linear-gradient(135deg, #10b981, #059669); }
+        .elite-mid { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .elite-low { background: rgba(255,255,255,0.2); }
+        
+        /* Win Rate Bar */
+        .winrate-bar {
+            width: 80px;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .winrate-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            border-radius: 4px;
+        }
+        
+        /* Sparkline */
+        .sparkline {
+            display: flex;
+            gap: 2px;
+            align-items: flex-end;
+            height: 20px;
+        }
+        .spark-bar {
+            width: 6px;
+            border-radius: 2px;
+            min-height: 3px;
+        }
+        .spark-win { background: #10b981; }
+        .spark-loss { background: #ef4444; }
+        
+        /* PnL Colors */
+        .pnl-positive { color: #10b981; }
+        .pnl-negative { color: #ef4444; }
+        
+        /* Expanded Detail Row */
+        .detail-row { display: none; }
+        .detail-row.show { display: table-row; }
+        .detail-cell {
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 900px) { .detail-grid { grid-template-columns: 1fr; } }
+        
+        .detail-section h4 {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        /* Mini Stats */
+        .mini-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .mini-stat {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .mini-stat-value { font-size: 1.2rem; font-weight: 700; }
+        .mini-stat-label { font-size: 0.7rem; opacity: 0.6; }
+        
+        /* Recent Bets List */
+        .recent-bets { max-height: 200px; overflow-y: auto; }
+        .bet-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.85rem;
+        }
+        .bet-outcome { padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+        .bet-won { background: rgba(16,185,129,0.2); color: #10b981; }
+        .bet-lost { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .bet-pending { background: rgba(255,255,255,0.1); color: #888; }
+        
+        /* Live Positions Panel */
+        .live-panel { max-height: 600px; overflow-y: auto; }
+        .live-item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid #6366f1;
+        }
+        .live-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .live-whale { font-weight: 600; }
+        .live-time { font-size: 0.8rem; opacity: 0.6; }
+        .live-market { font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px; }
+        .live-details { display: flex; gap: 15px; font-size: 0.8rem; opacity: 0.7; }
+        
+        /* Chart Container */
+        .chart-container { position: relative; height: 180px; margin-top: 15px; }
+        
+        /* Filters */
+        .filters { display: flex; gap: 10px; flex-wrap: wrap; }
+        .filter-btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover { background: rgba(255,255,255,0.2); }
+        .filter-btn.active { background: #6366f1; }
+        
+        /* Refresh Indicator */
+        .refresh-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        /* Loading */
+        .loading {
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+            opacity: 0.5;
+        }
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <div class="nav-brand">
+                <h1>🐋 Whale Tracker</h1>
+                <span class="status-badge pulse" style="background:#10b981;padding:4px 12px;border-radius:12px;font-size:0.75rem;">● LIVE</span>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link" style="background:rgba(245,158,11,0.3);color:#f59e0b;">← Back to Tracker</a>
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/terminator" class="nav-link">🤖 Terminator</a>
+                <a href="/vault" class="nav-link">💰 Vault</a>
+                <a href="/fort-knox" class="nav-link">🏦 Fort Knox</a>
+                <a href="/leaderboard" class="nav-link active">🏆 Leaderboard</a>
+                <a href="/consensus" class="nav-link">🎯 Consensus</a>
+                <a href="/pharma" class="nav-link">💊 Pharma</a>
+            </div>
+        </nav>
+        
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-value" id="stat-whales">--</div>
+                <div class="stat-label">Elite Whales</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value stat-positive" id="stat-wins">--</div>
+                <div class="stat-label">Total Wins</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value stat-negative" id="stat-losses">--</div>
+                <div class="stat-label">Total Losses</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="stat-winrate">--</div>
+                <div class="stat-label">Win Rate</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="stat-volume">--</div>
+                <div class="stat-label">Total Volume</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="stat-pending">--</div>
+                <div class="stat-label">Pending</div>
+            </div>
+        </div>
+        
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Leaderboard -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🏆 Whale Leaderboard <span id="leaderboard-count" style="opacity:0.6;font-size:0.85rem;margin-left:10px;"></span></span>
+                    <div class="filters">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="active">⚡ Active Positions</button>
+                        <button class="filter-btn" data-filter="inactive">💤 No Positions</button>
+                        <button class="filter-btn" data-filter="top20">🏆 Top 20</button>
+                    </div>
+                </div>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Whale</th>
+                            <th>Elite Score</th>
+                            <th>PnL</th>
+                            <th>Win Rate</th>
+                            <th>Trades</th>
+                            <th>Active</th>
+                            <th>Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <tr><td colspan="8" class="loading"><div class="spinner"></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Live Positions -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">⚡ Live Positions</span>
+                    <span id="live-count" style="opacity:0.6;font-size:0.85rem;">Loading...</span>
+                </div>
+                <div class="live-panel" id="live-panel">
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Resolved Positions -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header">
+                <span class="card-title">✅ Recent Results</span>
+                <div class="filters">
+                    <button class="filter-btn active" data-resolved="all">All</button>
+                    <button class="filter-btn" data-resolved="won">Wins</button>
+                    <button class="filter-btn" data-resolved="lost">Losses</button>
+                </div>
+            </div>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Whale</th>
+                        <th>Market</th>
+                        <th>Side</th>
+                        <th>Entry</th>
+                        <th>Final</th>
+                        <th>Outcome</th>
+                        <th>P&L</th>
+                    </tr>
+                </thead>
+                <tbody id="resolved-body">
+                    <tr><td colspan="8" class="loading"><div class="spinner"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Refresh Indicator -->
+    <div class="refresh-indicator">
+        <span class="pulse" style="color:#10b981;">●</span>
+        <span>Auto-refresh: <span id="countdown">60</span>s</span>
+        <span style="opacity:0.5;">|</span>
+        <span id="last-update">--</span>
+    </div>
+    
+    <script>
+        // API Base URL - Update this to match your setup
+        const API_BASE = 'http://100.115.12.91:8081';
+        
+        let whaleData = [];
+        let expandedWhale = null;
+        let whaleCharts = {};
+        let currentFilter = 'all';
+        let resolvedFilter = 'all';
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAllData();
+            setupEventListeners();
+            startAutoRefresh();
+        });
+        
+        async function loadAllData() {
+            try {
+                await Promise.all([
+                    loadStats(),
+                    loadLeaderboard(),
+                    loadLivePositions(),
+                    loadResolvedPositions()
+                ]);
+                document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+            } catch (error) {
+                console.error('Failed to load data:', error);
+            }
+        }
+        
+        async function loadStats() {
+            const res = await fetch(`${API_BASE}/api/stats`);
+            const data = await res.json();
+            
+            document.getElementById('stat-whales').textContent = data.elite_whales;
+            document.getElementById('stat-wins').textContent = data.wins;
+            document.getElementById('stat-losses').textContent = data.losses;
+            document.getElementById('stat-winrate').textContent = data.win_rate + '%';
+            document.getElementById('stat-volume').textContent = '$' + formatNumber(data.total_volume);
+            document.getElementById('stat-pending').textContent = data.pending;
+        }
+        
+        async function loadLeaderboard() {
+            // Fetch ALL whales with recent bets data
+            const res = await fetch(`${API_BASE}/api/whales?limit=200&min_elite=0`);
+            const data = await res.json();
+            
+            // Add rank based on elite_score (already sorted by API)
+            whaleData = data.whales.map((w, i) => ({
+                ...w,
+                rank: i + 1
+            }));
+            renderLeaderboard();
+        }
+        
+        function renderLeaderboard() {
+            const tbody = document.getElementById('leaderboard-body');
+            let filtered = whaleData;
+            
+            if (currentFilter === 'active') {
+                filtered = whaleData.filter(w => w.active_positions > 0);
+            } else if (currentFilter === 'inactive') {
+                filtered = whaleData.filter(w => w.active_positions === 0);
+            } else if (currentFilter === 'top20') {
+                filtered = whaleData.slice(0, 20);
+            }
+            
+            // Update count display
+            const countEl = document.getElementById('leaderboard-count');
+            if (countEl) {
+                const filterLabel = currentFilter === 'all' ? '' : `(${currentFilter})`;
+                countEl.textContent = `${filtered.length} of ${whaleData.length} whales ${filterLabel}`;
+            }
+            
+            tbody.innerHTML = filtered.map(whale => `
+                <tr onclick="toggleWhaleDetail('${whale.address}')" class="${expandedWhale === whale.address ? 'expanded' : ''}">
+                    <td><div class="rank-badge ${getRankClass(whale.rank)}">${whale.rank}</div></td>
+                    <td>
+                        <div style="font-weight:600;">
+                            <a href="https://polymarket.com/profile/${whale.address}" target="_blank" 
+                               style="color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:5px;" 
+                               onclick="event.stopPropagation();" title="View on Polymarket">
+                                ${whale.name} <span style="opacity:0.5;font-size:0.8rem;">↗</span>
+                            </a>
+                        </div>
+                        <div style="font-size:0.75rem;opacity:0.5;">${whale.address.slice(0,10)}...</div>
+                    </td>
+                    <td><span class="elite-badge ${getEliteClass(whale.elite_score)}">${whale.elite_score}</span></td>
+                    <td class="${whale.pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}">$${formatNumber(whale.pnl)}</td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span>${whale.win_rate}%</span>
+                            <div class="winrate-bar"><div class="winrate-fill" style="width:${whale.win_rate}%"></div></div>
+                        </div>
+                    </td>
+                    <td>${whale.num_trades}</td>
+                    <td>${whale.active_positions > 0 ? '<span style="color:#6366f1;font-weight:600;">' + whale.active_positions + '</span>' : '-'}</td>
+                    <td>${renderSparkline(whale.recent_bets)}</td>
+                </tr>
+                <tr class="detail-row ${expandedWhale === whale.address ? 'show' : ''}" id="detail-${whale.address}">
+                    <td colspan="8" class="detail-cell">
+                        <div class="detail-grid">
+                            <div class="detail-section">
+                                <h4>📊 Stats</h4>
+                                <div class="mini-stats">
+                                    <div class="mini-stat">
+                                        <div class="mini-stat-value">${whale.brier_score}</div>
+                                        <div class="mini-stat-label">Brier Score</div>
+                                    </div>
+                                    <div class="mini-stat">
+                                        <div class="mini-stat-value">${whale.num_trades}</div>
+                                        <div class="mini-stat-label">Total Bets</div>
+                                    </div>
+                                    <div class="mini-stat">
+                                        <div class="mini-stat-value">${whale.active_positions}</div>
+                                        <div class="mini-stat-label">Active</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-section">
+                                <h4>📈 Performance Chart</h4>
+                                <div class="chart-container">
+                                    <canvas id="chart-${whale.address}"></canvas>
+                                </div>
+                            </div>
+                            <div class="detail-section">
+                                <h4>🎯 Recent Bets</h4>
+                                <div class="recent-bets" id="bets-${whale.address}">
+                                    Loading...
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        async function toggleWhaleDetail(address) {
+            if (expandedWhale === address) {
+                expandedWhale = null;
+            } else {
+                expandedWhale = address;
+                await loadWhaleDetail(address);
+            }
+            renderLeaderboard();
+        }
+        
+        async function loadWhaleDetail(address) {
+            try {
+                // Load chart data
+                const chartRes = await fetch(`${API_BASE}/api/whales/${address}/chart`);
+                const chartData = await chartRes.json();
+                
+                // Load recent history
+                const histRes = await fetch(`${API_BASE}/api/whales/${address}/history?limit=10`);
+                const histData = await histRes.json();
+                
+                // Render chart after table update
+                setTimeout(() => {
+                    renderWhaleChart(address, chartData);
+                    renderRecentBets(address, histData.positions);
+                }, 100);
+            } catch (error) {
+                console.error('Failed to load whale detail:', error);
+            }
+        }
+        
+        function renderWhaleChart(address, chartData) {
+            const canvas = document.getElementById(`chart-${address}`);
+            if (!canvas) return;
+            
+            // Destroy existing chart
+            if (whaleCharts[address]) {
+                whaleCharts[address].destroy();
+            }
+            
+            const ctx = canvas.getContext('2d');
+            const cumData = chartData.cumulative_pnl || [];
+            
+            whaleCharts[address] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: cumData.map((_, i) => i + 1),
+                    datasets: [{
+                        label: 'Cumulative PnL',
+                        data: cumData.map(d => d.pnl),
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99,102,241,0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { 
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: 'rgba(255,255,255,0.5)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderRecentBets(address, positions) {
+            const container = document.getElementById(`bets-${address}`);
+            if (!container) return;
+            
+            container.innerHTML = positions.map(pos => `
+                <div class="bet-item">
+                    <div style="flex:1;">
+                        <div style="font-size:0.8rem;opacity:0.7;">${formatTime(pos.detected_at)}</div>
+                        <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">${pos.market_title}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="bet-outcome ${pos.outcome === 'won' ? 'bet-won' : pos.outcome === 'lost' ? 'bet-lost' : 'bet-pending'}">
+                            ${pos.outcome === 'won' ? '✅ WON' : pos.outcome === 'lost' ? '❌ LOST' : '⏳ PENDING'}
+                        </span>
+                        ${pos.actual_pnl ? `<div class="${pos.actual_pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}">$${pos.actual_pnl.toFixed(0)}</div>` : ''}
+                    </div>
+                </div>
+            `).join('') || '<div style="opacity:0.5;">No recent bets</div>';
+        }
+        
+        async function loadLivePositions() {
+            const res = await fetch(`${API_BASE}/api/positions/live?limit=30`);
+            const data = await res.json();
+            
+            document.getElementById('live-count').textContent = `${data.count} active`;
+            
+            const panel = document.getElementById('live-panel');
+            panel.innerHTML = data.positions.map(pos => `
+                <div class="live-item">
+                    <div class="live-header">
+                        <span class="live-whale">
+                            <a href="https://polymarket.com/profile/${pos.whale_address}" target="_blank" 
+                               style="color:#fff;text-decoration:none;" title="View on Polymarket">
+                                ${pos.whale} ↗
+                            </a>
+                            <span class="elite-badge elite-${pos.elite_score >= 30 ? 'high' : pos.elite_score >= 25 ? 'mid' : 'low'}">${pos.elite_score}</span>
+                        </span>
+                        <span class="live-time">${formatTime(pos.detected_at)}</span>
+                    </div>
+                    <div class="live-market">${pos.market}</div>
+                    <div class="live-details">
+                        <span>${pos.side}</span>
+                        <span>@ $${pos.entry_price.toFixed(2)}</span>
+                        <span>Size: $${formatNumber(pos.size_usd)}</span>
+                        ${pos.unrealized_pnl ? `<span class="${pos.unrealized_pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}">P&L: $${pos.unrealized_pnl.toFixed(0)}</span>` : ''}
+                    </div>
+                </div>
+            `).join('') || '<div style="opacity:0.5;text-align:center;padding:20px;">No live positions</div>';
+        }
+        
+        async function loadResolvedPositions() {
+            let url = `${API_BASE}/api/positions/resolved?limit=20`;
+            if (resolvedFilter !== 'all') url += `&outcome=${resolvedFilter}`;
+            
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            const tbody = document.getElementById('resolved-body');
+            tbody.innerHTML = data.positions.map(pos => `
+                <tr>
+                    <td style="font-size:0.85rem;">${formatTime(pos.resolved_at)}</td>
+                    <td>
+                        <a href="https://polymarket.com/profile/${pos.whale_address}" target="_blank" 
+                           style="color:#fff;text-decoration:none;" title="View on Polymarket">
+                            ${pos.whale} ↗
+                        </a>
+                    </td>
+                    <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;">${pos.market}</td>
+                    <td>${pos.side}</td>
+                    <td>$${pos.entry_price.toFixed(2)}</td>
+                    <td>$${pos.final_price.toFixed(2)}</td>
+                    <td><span class="bet-outcome ${pos.outcome === 'won' ? 'bet-won' : 'bet-lost'}">${pos.outcome === 'won' ? '✅ WON' : '❌ LOST'}</span></td>
+                    <td class="${pos.actual_pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}">$${formatNumber(pos.actual_pnl)}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="8" style="text-align:center;opacity:0.5;">No resolved positions</td></tr>';
+        }
+        
+        function setupEventListeners() {
+            // Leaderboard filters
+            document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    renderLeaderboard();
+                });
+            });
+            
+            // Resolved filters
+            document.querySelectorAll('.filter-btn[data-resolved]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn[data-resolved]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    resolvedFilter = btn.dataset.resolved;
+                    loadResolvedPositions();
+                });
+            });
+        }
+        
+        // Auto-refresh every 60 seconds
+        let countdown = 60;
+        function startAutoRefresh() {
+            setInterval(() => {
+                countdown--;
+                document.getElementById('countdown').textContent = countdown;
+                if (countdown <= 0) {
+                    countdown = 60;
+                    loadAllData();
+                }
+            }, 1000);
+        }
+        
+        // Helpers
+        function formatNumber(num) {
+            if (Math.abs(num) >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (Math.abs(num) >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toFixed(0);
+        }
+        
+        function formatTime(dateStr) {
+            if (!dateStr) return '--';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + 
+                   d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        function getRankClass(rank) {
+            if (rank === 1) return 'rank-1';
+            if (rank === 2) return 'rank-2';
+            if (rank === 3) return 'rank-3';
+            return 'rank-default';
+        }
+        
+        function getEliteClass(score) {
+            if (score >= 30) return 'elite-high';
+            if (score >= 25) return 'elite-mid';
+            return 'elite-low';
+        }
+        
+        function renderSparkline(bets) {
+            if (!bets || bets.length === 0) return '<span style="opacity:0.3;">No data</span>';
+            return `<div class="sparkline">${bets.map(b => 
+                `<div class="spark-bar ${b.outcome === 'won' ? 'spark-win' : 'spark-loss'}" style="height:${Math.min(20, Math.max(5, Math.abs(b.pnl) / 100))}px;"></div>`
+            ).join('')}</div>`;
+        }
+    </script>
+</body>
+</html>
+
+

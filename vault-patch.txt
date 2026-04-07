@@ -1,0 +1,16 @@
+    } else if (req.url === '/api/vault/portfolio') {
+        // Proxy to vault service (avoids mixed content issues)
+        const http = require('http');
+        const proxyReq = http.get('http://localhost:8081/api/vault/portfolio', (proxyRes) => {
+            let data = '';
+            proxyRes.on('data', chunk => data += chunk);
+            proxyRes.on('end', () => {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(data);
+            });
+        });
+        proxyReq.on('error', (error) => {
+            console.error('Vault proxy error:', error);
+            res.writeHead(502, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Vault service unavailable' }));
+        });

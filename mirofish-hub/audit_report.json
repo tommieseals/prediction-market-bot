@@ -1,0 +1,114 @@
+{
+  "timestamp": "2026-03-24T20:23:24.091413",
+  "total_issues": 17,
+  "by_severity": {
+    "critical": 0,
+    "high": 14,
+    "medium": 3,
+    "low": 0
+  },
+  "issues": [
+    {
+      "category": "DATABASE",
+      "severity": "HIGH",
+      "description": "Stale pending positions (end_date > 1 day ago)",
+      "details": "1461 records need resolution"
+    },
+    {
+      "category": "DATABASE",
+      "severity": "MEDIUM",
+      "description": "Epoch date errors (1970)",
+      "details": "96 records"
+    },
+    {
+      "category": "CONSENSUS",
+      "severity": "HIGH",
+      "description": "Missing side in pick",
+      "details": "Capitals vs. Blues"
+    },
+    {
+      "category": "CONSENSUS",
+      "severity": "HIGH",
+      "description": "Missing confidence in pick",
+      "details": "Capitals vs. Blues"
+    },
+    {
+      "category": "CONSENSUS",
+      "severity": "HIGH",
+      "description": "Missing side in pick",
+      "details": "Ducks vs. Canucks"
+    },
+    {
+      "category": "CONSENSUS",
+      "severity": "HIGH",
+      "description": "Missing confidence in pick",
+      "details": "Ducks vs. Canucks"
+    },
+    {
+      "category": "CONSENSUS",
+      "severity": "HIGH",
+      "description": "Missing side in pick",
+      "details": "US-Iran nuclear deal by June 30?"
+    },
+    {
+      "category": "CONSENSUS",
+      "severity": "HIGH",
+      "description": "Missing confidence in pick",
+      "details": "US-Iran nuclear deal by June 30?"
+    },
+    {
+      "category": "CONSENSUS",
+      "severity": "HIGH",
+      "description": "Missing side in pick",
+      "details": "US x Iran ceasefire by April 30?"
+    },
+    {
+      "category": "CONSENSUS",
+      "severity": "HIGH",
+      "description": "Missing confidence in pick",
+      "details": "US x Iran ceasefire by April 30?"
+    },
+    {
+      "category": "CONSENSUS",
+      "severity": "HIGH",
+      "description": "Missing side in pick",
+      "details": "Kharg Island no longer under Iranian control by April 30?"
+    },
+    {
+      "category": "CONSENSUS",
+      "severity": "HIGH",
+      "description": "Missing confidence in pick",
+      "details": "Kharg Island no longer under Iranian control by April 30?"
+    },
+    {
+      "category": "CONSENSUS",
+      "severity": "MEDIUM",
+      "description": "No picks have MiroFish validation",
+      "details": "MiroFish may not be running"
+    },
+    {
+      "category": "SCHEDULER",
+      "severity": "HIGH",
+      "description": "No scheduled task for 'whale_hunter'",
+      "details": "May not run automatically"
+    },
+    {
+      "category": "SCHEDULER",
+      "severity": "HIGH",
+      "description": "No scheduled task for 'orchestrator'",
+      "details": "May not run automatically"
+    },
+    {
+      "category": "NETWORK",
+      "severity": "HIGH",
+      "description": "MiroFish Backend returned 404",
+      "details": "http://localhost:5001/api/health"
+    },
+    {
+      "category": "TELEGRAM",
+      "severity": "MEDIUM",
+      "description": "No Telegram config in .env",
+      "details": null
+    }
+  ]
+}

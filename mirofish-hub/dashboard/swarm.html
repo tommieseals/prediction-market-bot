@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Swarm - Clawd Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        .nav-brand h1 { font-size: 2rem; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .nav-links { display: flex; gap: 20px; flex-wrap: wrap; }
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .nav-link:hover { background: rgba(255, 255, 255, 0.2); color: white; }
+        .nav-link.active { background: rgba(255, 255, 255, 0.3); color: white; }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+        .card h2 { font-size: 1.5rem; margin-bottom: 20px; color: #fbbf24; }
+        .card h3 { font-size: 1.2rem; margin: 15px 0 10px 0; color: #a78bfa; }
+        .diagram-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .agent-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+        .agent-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        .agent-card.orchestrator { border-left-color: #f59e0b; }
+        .agent-card.coder { border-left-color: #10b981; }
+        .agent-card.researcher { border-left-color: #3b82f6; }
+        .agent-card.analyst { border-left-color: #8b5cf6; }
+        .agent-card.specialist { border-left-color: #ec4899; }
+        .agent-name { font-size: 1.1rem; font-weight: 600; color: #fbbf24; margin-bottom: 8px; }
+        .agent-model { font-size: 0.85rem; opacity: 0.8; margin-bottom: 8px; }
+        .agent-desc { font-size: 0.95rem; opacity: 0.9; line-height: 1.5; }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .badge-active { background: rgba(16, 185, 129, 0.3); border: 1px solid rgba(16, 185, 129, 0.5); }
+        .badge-ready { background: rgba(245, 158, 11, 0.3); border: 1px solid rgba(245, 158, 11, 0.5); }
+        .pattern-box {
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .pattern-box h4 { color: #c4b5fd; margin-bottom: 10px; }
+        .pattern-box p { opacity: 0.9; line-height: 1.6; }
+        .pattern-box ul { margin: 10px 0 0 20px; }
+        .pattern-box li { margin: 5px 0; opacity: 0.9; }
+        #live-status {
+            background: rgba(0, 0, 0, 0.2);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        #live-status .placeholder {
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+        }
+        .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 5px; padding: 10px; }
+        .hamburger span { width: 25px; height: 3px; background: white; border-radius: 2px; }
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .nav-bar { flex-wrap: wrap; }
+            .nav-brand h1 { font-size: 1.5rem; }
+            .hamburger { display: flex; }
+            .nav-links { display: none; width: 100%; flex-direction: column; gap: 10px; margin-top: 15px; }
+            .nav-links.active { display: flex; }
+            .nav-link { width: 100%; text-align: center; padding: 12px; min-height: 44px; }
+            .card { padding: 20px; }
+            .agent-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav-bar">
+            <div class="nav-brand">
+                <h1>🐝 Agent Swarm</h1>
+            </div>
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span><span></span><span></span>
+            </div>
+                                                <div class="nav-links" id="navLinks">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/infrastructure" class="nav-link">Infrastructure</a>
+                <a href="/agents" class="nav-link">Agents</a>
+                <a href="/projects" class="nav-link">Projects</a>
+                <a href="/apis" class="nav-link">APIs</a>
+                <a href="/skills" class="nav-link">Skills</a>
+                <a href="/tools" class="nav-link">Tools</a>
+                <a href="/achievements" class="nav-link">Achievements</a>
+                <a href="/shared-brain" class="nav-link">🧠 Brain</a>
+                <a href="/swarm-monitor" class="nav-link">🐝 Swarm</a>
+                <a href="/pharma" class="nav-link">💊 Pharma</a>
+                <a href="/terminator" class="nav-link">🤖 Terminator</a>
+                <a href="/vault" class="nav-link">💰 Vault</a>
+                <a href="/fort-knox" class="nav-link">🏦 Fort Knox</a>
+                <a href="/whales" class="nav-link">🐋 Whales</a>
+                <a href="/legion-tracker" class="nav-link">🎖️ Legion</a>
+                <a href="/legion" class="nav-link">⚔️ Legion HQ</a>
+                <a href="/fraud-detection" class="nav-link">🛡️ Fraud</a>
+                <a href="n8n-hub.html" class="nav-link">⚡ n8n</a>
+                <a href="/fiverr" class="nav-link">🛒 Fiverr</a>
+                <a href="/kdp" class="nav-link">📚 KDP</a>
+                <a href="tascosaur.html" class="nav-link">🦖 Tascosaur</a>
+                <a href="taskbot.html" class="nav-link">📋 TaskBot</a>
+                <a href="teams-translator.html" class="nav-link">🌐 Translator</a>
+                <a href="sidekick-paas.html" class="nav-link">🦸 Sidekick</a>
+                <a href="memory.html" class="nav-link">🧬 Memory</a>
+                <a href="sessions.html" class="nav-link">💬 Sessions</a>
+                <a href="a2a-server.html" class="nav-link">🔗 A2A</a>
+                <a href="/docs" class="nav-link">Docs</a>
+            </div>
+        </nav>
+
+        <!-- Swarm Pattern Overview -->
+        <div class="card">
+            <h2>🧠 Swarm Architecture Pattern</h2>
+            <div class="pattern-box">
+                <h4>Orchestrator + Specialized Agents</h4>
+                <p>The swarm pattern uses a central <strong>orchestrator</strong> that coordinates multiple <strong>specialized agents</strong>, each optimized for specific tasks. This enables:</p>
+                <ul>
+                    <li><strong>Parallelization</strong> - Multiple agents work simultaneously on different aspects</li>
+                    <li><strong>Specialization</strong> - Each agent uses the best model for its task</li>
+                    <li><strong>Cost Efficiency</strong> - Cheap models for simple tasks, powerful models only when needed</li>
+                    <li><strong>Fault Tolerance</strong> - Agents can fail independently without crashing the swarm</li>
+                </ul>
+            </div>
+            <div class="diagram-container">
+                <pre class="mermaid">
+graph TB
+    subgraph Orchestrator["🎯 ORCHESTRATOR (Claude Opus)"]
+        O[Main Agent<br/>Task Planning & Coordination]
+    end
+    
+    subgraph Coders["💻 CODE SPECIALISTS"]
+        C1[code-bitch<br/>Codex gpt-5.2]
+        C2[claude-coder<br/>Claude Code]
+    end
+    
+    subgraph Researchers["🔍 RESEARCHERS"]
+        R1[kimi-researcher<br/>Kimi K2.5]
+        R2[gemini-scout<br/>Gemini 2.0 Flash]
+    end
+    
+    subgraph Analysts["📊 ANALYSTS"]
+        A1[gpt-analyst<br/>GPT-4o]
+        A2[llama-analyst<br/>Llama 90B]
+    end
+    
+    subgraph Specialists["⚡ SPECIALISTS"]
+        S1[vision-agent<br/>Gemini Vision]
+        S2[local-fast<br/>Ollama qwen2.5:3b]
+    end
+    
+    O --> C1 & C2
+    O --> R1 & R2
+    O --> A1 & A2
+    O --> S1 & S2
+    
+    style O fill:#f59e0b,stroke:#d97706,color:#000
+    style C1 fill:#10b981,stroke:#059669,color:#000
+    style C2 fill:#10b981,stroke:#059669,color:#000
+    style R1 fill:#3b82f6,stroke:#2563eb,color:#fff
+    style R2 fill:#3b82f6,stroke:#2563eb,color:#fff
+    style A1 fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style A2 fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style S1 fill:#ec4899,stroke:#db2777,color:#fff
+    style S2 fill:#ec4899,stroke:#db2777,color:#fff
+                </pre>
+            </div>
+        </div>
+
+        <!-- Current Deployment -->
+        <div class="card">
+            <h2>🚀 Current Swarm Deployment</h2>
+            <h3>Arbitrage Pharma Platform</h3>
+            <p style="margin-bottom: 15px; opacity: 0.9;">Multi-agent pharmaceutical asset discovery system running on Dell (100.119.87.108)</p>
+            <div style="margin-bottom: 20px;"><a href="https://arbitrage-pharma.pages.dev/" style="display: inline-block; background: linear-gradient(90deg, #10b981, #059669); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;" target="_blank">🌐 Live Website</a></div>
+            
+            <div class="agent-grid">
+                <div class="agent-card orchestrator">
+                    <div class="agent-name">🎯 Pipeline Orchestrator <span class="badge badge-active">ACTIVE</span></div>
+                    <div class="agent-model">Model: Claude Opus / Gemini Pro</div>
+                    <div class="agent-desc">Master coordinator. Dispatches tasks to specialized agents, aggregates results, manages workflow state.</div>
+                </div>
+                <div class="agent-card coder">
+                    <div class="agent-name">🔍 Harvesters (4 agents)</div>
+                    <div class="agent-model">Model: Gemini 2.0 Flash</div>
+                    <div class="agent-desc">PubMed scraper, FDA database miner, USPTO patent crawler, ClinicalTrials.gov monitor.</div>
+                </div>
+                <div class="agent-card analyst">
+                    <div class="agent-name">⚗️ Alchemists (2 agents)</div>
+                    <div class="agent-model">Model: GPT-4o / Gemini Pro</div>
+                    <div class="agent-desc">Market analysis engine, NPV calculator. Transforms raw data into investment insights.</div>
+                </div>
+                <div class="agent-card specialist">
+                    <div class="agent-name">🏰 Moat Builders (3 agents)</div>
+                    <div class="agent-model">Model: Claude Opus</div>
+                    <div class="agent-desc">FDA pathway analyzer, Orphan Drug Designation drafter, IP strategy formulator.</div>
+                </div>
+                <div class="agent-card researcher">
+                    <div class="agent-name">💼 Hustlers (3 agents)</div>
+                    <div class="agent-model">Model: GPT-4o</div>
+                    <div class="agent-desc">BD outreach generator, cold email composer, negotiation strategy advisor.</div>
+                </div>
+                <div class="agent-card researcher">
+                    <div class="agent-name">🗺️ Cartographers (2 agents)</div>
+                    <div class="agent-model">Model: Gemini Flash</div>
+                    <div class="agent-desc">Investor database builder, family office tracker. Maps the funding landscape.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Types Reference -->
+        <div class="card">
+            <h2>📋 Agent Type Reference</h2>
+            <div class="agent-grid">
+                <div class="agent-card coder">
+                    <div class="agent-name">💻 code-bitch</div>
+                    <div class="agent-model">OpenAI Codex (gpt-5.2-codex)</div>
+                    <div class="agent-desc">Heavy-duty code generation. Complex algorithms, full modules, refactoring. Part of FULL CODE pipeline.</div>
+                </div>
+                <div class="agent-card coder">
+                    <div class="agent-name">💻 claude-coder</div>
+                    <div class="agent-model">Claude Code (claude-opus-4)</div>
+                    <div class="agent-desc">Code review, security audit, bug hunting. Proof-checks Codex output before deployment.</div>
+                </div>
+                <div class="agent-card researcher">
+                    <div class="agent-name">🔍 kimi-researcher</div>
+                    <div class="agent-model">Kimi K2.5 (NVIDIA API)</div>
+                    <div class="agent-desc">Deep research with thinking mode. Screenshot analysis, complex reasoning, multi-step investigation.</div>
+                </div>
+                <div class="agent-card researcher">
+                    <div class="agent-name">🔍 gemini-scout</div>
+                    <div class="agent-model">Gemini 2.0 Flash</div>
+                    <div class="agent-desc">Fast research and data gathering. Web scraping coordination, document analysis, quick lookups.</div>
+                </div>
+                <div class="agent-card analyst">
+                    <div class="agent-name">📊 gpt-analyst</div>
+                    <div class="agent-model">GPT-4o</div>
+                    <div class="agent-desc">Data analysis, report generation, insight extraction. Excels at structured output and summaries.</div>
+                </div>
+                <div class="agent-card analyst">
+                    <div class="agent-name">📊 llama-analyst</div>
+                    <div class="agent-model">Llama 90B Vision (NVIDIA)</div>
+                    <div class="agent-desc">Long document analysis, complex forms, deep context understanding. 128K context window.</div>
+                </div>
+                <div class="agent-card specialist">
+                    <div class="agent-name">👁️ vision-agent</div>
+                    <div class="agent-model">Gemini Vision / Llama 11B</div>
+                    <div class="agent-desc">Image analysis, screenshot understanding, UI inspection, visual data extraction.</div>
+                </div>
+                <div class="agent-card specialist">
+                    <div class="agent-name">⚡ local-fast</div>
+                    <div class="agent-model">Ollama qwen2.5:3b</div>
+                    <div class="agent-desc">Lightning-fast local inference. Simple queries, quick checks, zero-cost operations. 0.47s response time.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Status Section (Placeholder for gemini-swarm-monitor) -->
+        <div class="card">
+            <h2>📡 Live Swarm Status</h2>
+            <div id="live-status">
+                <p class="placeholder">🔄 Real-time monitoring available</p>
+                <p style="margin-top: 15px;">
+                    <a href="/swarm-monitor.html" style="display: inline-block; background: linear-gradient(90deg, #00d4ff, #7c3aed); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                        🚀 Open Live Monitor
+                    </a>
+                </p>
+                <p class="placeholder" style="font-size: 0.85rem; margin-top: 15px;">Full real-time swarm status with agent heartbeats, task queues, and performance metrics</p>
+            </div>
+            <script>
+                // Placeholder for live status - gemini-swarm-monitor will inject real-time updates here
+                // Expected API endpoint: /data/swarm-status.json
+                async function loadSwarmStatus() {
+                    try {
+                        const response = await fetch('/data/swarm-status.json');
+                        if (response.ok) {
+                            const data = await response.json();
+                            document.getElementById('live-status').innerHTML = renderSwarmStatus(data);
+                        }
+                    } catch (e) {
+                        // API not yet available - show placeholder
+                        console.log('Swarm status API not yet available');
+                    }
+                }
+                
+                function renderSwarmStatus(data) {
+                    // Will be implemented by gemini-swarm-monitor
+                    return '<p>Status data received</p>';
+                }
+                
+                // Poll every 30 seconds
+                setInterval(loadSwarmStatus, 30000);
+                loadSwarmStatus();
+            </script>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+        function toggleMenu() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
+

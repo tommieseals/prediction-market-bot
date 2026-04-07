@@ -251,7 +251,7 @@ cat > "$CONFIG_DIR/service-registry.json" << 'REGISTRY'
   "node": {
     "name": "mac-pro",
     "role": "core-node",
-    "ip": "100.67.192.21",
+    "ip": "100.89.75.126",
     "capabilities": [
       "ollama-inference",
       "llm-gateway",
@@ -354,7 +354,7 @@ sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setstealthmode on
 
 log "macOS firewall enabled (stealth mode on)"
 warn "IMPORTANT: Ensure Tailscale is installed and connected!"
-warn "All external access should go through Tailscale (100.67.192.21)"
+warn "All external access should go through Tailscale (100.89.75.126)"
 
 # ============================================================================
 # Step 12: Create disaster recovery script
@@ -531,6 +531,6 @@ log "  1. Fill in secrets: $CONFIG_DIR/secrets.env"
 log "  2. Phase B: Install Ollama + models"
 log "  3. Phase C: Install LLM Gateway, n8n, Telegram bot"
 log ""
-warn "IMPORTANT: Ensure Tailscale is running! All access should be via 100.67.192.21"
+warn "IMPORTANT: Ensure Tailscale is running! All access should be via 100.89.75.126"
 log ""
 log "Run '$SCRIPTS_DIR/status.sh' to see current status"

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦖 Tascosaur NLP - Clawd Dashboard</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #2DD4BF 0%, #14B8A6 50%, #0D9488 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.2);
+        }
+        .nav-brand h1 { font-size: 1.8rem; }
+        .nav-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .nav-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .nav-links a:hover, .nav-links a.active { background: rgba(255,255,255,0.2); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 2rem; }
+        .diagram-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
+        }
+        .diagram-title { text-align: center; margin-bottom: 1.5rem; }
+        .diagram-title h2 { color: #0D9488; font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .diagram-title p { color: #718096; }
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        .stat-value { font-size: 1.8rem; font-weight: 700; }
+        .stat-label { font-size: 0.85rem; opacity: 0.8; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><h1>🦖 Tascosaur NLP</h1></div>
+        <div class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/projects">Projects</a>
+            <a href="/whales">🐋 Whales</a>
+            <a href="tascosaur.html" class="active">🦖 Tascosaur</a>
+        </div>
+    </nav>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function ProcessingNode({ x, y, w, h, title, icon, color, subtitle }) {
+            return (
+                <g>
+                    <rect x={x} y={y} width={w} height={h} rx={12} fill="white" stroke="#E2E8F0" strokeWidth="1" filter="url(#shadow)" />
+                    <rect x={x} y={y} width={w} height={6} rx={3} fill={color} />
+                    <circle cx={x + w/2} cy={y + 30} r={20} fill={color + "20"} />
+                    <text x={x + w/2} y={y + 35} textAnchor="middle" fontSize="22">{icon}</text>
+                    <text x={x + w/2} y={y + 60} textAnchor="middle" fill="#1A202C" fontSize="11" fontWeight="600">{title}</text>
+                    <text x={x + w/2} y={y + 74} textAnchor="middle" fill="#718096" fontSize="9">{subtitle}</text>
+                </g>
+            );
+        }
+
+        function AnimatedText({ text, x, y }) {
+            const [visible, setVisible] = useState(true);
+            
+            useEffect(() => {
+                const interval = setInterval(() => setVisible(v => !v), 500);
+                return () => clearInterval(interval);
+            }, []);
+
+            return (
+                <text x={x} y={y} textAnchor="middle" fill="#14B8A6" fontSize="12" fontFamily="monospace" opacity={visible ? 1 : 0.3}>
+                    {text}_
+                </text>
+            );
+        }
+
+        function NLPPipeline() {
+            return (
+                <svg viewBox="0 0 900 380" style={{width: "100%"}}>
+                    <defs>
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.15" />
+                        </filter>
+                        <linearGradient id="flowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#2DD4BF" />
+                            <stop offset="100%" stopColor="#14B8A6" />
+                        </linearGradient>
+                    </defs>
+
+                    {/* Input section */}
+                    <rect x="20" y="60" width="200" height="100" rx="15" fill="#F0FDFA" stroke="#14B8A6" strokeWidth="2" />
+                    <text x="120" y="90" textAnchor="middle" fill="#0D9488" fontSize="13" fontWeight="600">📝 Natural Language Input</text>
+                    <rect x="40" y="105" width="160" height="40" rx="8" fill="#CCFBF1" />
+                    <AnimatedText text="Create high priority bug for login" x={120} y={130} />
+
+                    {/* NLP Processing */}
+                    <ProcessingNode x={270} y={50} w={120} h={85} title="Tokenizer" icon="✂️" color="#F59E0B" subtitle="Split text" />
+                    <ProcessingNode x={270} y={155} w={120} h={85} title="Entity Extract" icon="🔍" color="#8B5CF6" subtitle="Find nouns" />
+                    <ProcessingNode x={270} y={260} w={120} h={85} title="Intent Detect" icon="🎯" color="#EC4899" subtitle="Classify" />
+
+                    {/* Central brain */}
+                    <circle cx="500" cy="180" r="60" fill="url(#flowGrad)" />
+                    <text x="500" y="170" textAnchor="middle" fill="#fff" fontSize="32">🧠</text>
+                    <text x="500" y="200" textAnchor="middle" fill="#fff" fontSize="11" fontWeight="600">Compromise.js</text>
+                    <circle cx="500" cy="180" r="65" fill="none" stroke="#14B8A6" strokeWidth="2" strokeDasharray="4,4">
+                        <animateTransform attributeName="transform" type="rotate" from="0 500 180" to="360 500 180" dur="20s" repeatCount="indefinite" />
+                    </circle>
+
+                    {/* Output processing */}
+                    <ProcessingNode x={630} y={50} w={120} h={85} title="Ollama LLM" icon="🤖" color="#3B82F6" subtitle="Fallback" />
+                    <ProcessingNode x={630} y={155} w={120} h={85} title="Task Builder" icon="📋" color="#10B981" subtitle="Structure" />
+                    <ProcessingNode x={630} y={260} w={120} h={85} title="WebSocket" icon="⚡" color="#F97316" subtitle="Real-time" />
+
+                    {/* Output */}
+                    <rect x="780" y="110" width="100" height="140" rx="15" fill="#1A202C" stroke="#14B8A6" strokeWidth="2" />
+                    <text x="830" y="140" textAnchor="middle" fill="#2DD4BF" fontSize="11" fontWeight="600">Kanban Board</text>
+                    <rect x="790" y="150" width="80" height="18" rx="4" fill="#F87171" opacity="0.8" />
+                    <rect x="790" y="172" width="80" height="18" rx="4" fill="#FBBF24" opacity="0.8" />
+                    <rect x="790" y="194" width="80" height="18" rx="4" fill="#34D399" opacity="0.8" />
+                    <rect x="790" y="216} width="80" height="18" rx="4" fill="#60A5FA" opacity="0.8" />
+                    <text x="830" y="162" textAnchor="middle" fill="#fff" fontSize="8">Bug: Login</text>
+                    <text x="830" y="184" textAnchor="middle" fill="#fff" fontSize="8">High Priority</text>
+                    <text x="830" y="206" textAnchor="middle" fill="#fff" fontSize="8">Assigned</text>
+
+                    {/* Flow arrows */}
+                    <path d="M 220 110 L 270 92" fill="none" stroke="#14B8A6" strokeWidth="2" markerEnd="url(#arrow)" />
+                    <path d="M 220 110 L 270 197" fill="none" stroke="#14B8A6" strokeWidth="2" />
+                    <path d="M 220 110 L 270 302" fill="none" stroke="#14B8A6" strokeWidth="2" />
+                    
+                    <path d="M 390 92 L 440 160" fill="none" stroke="#F59E0B" strokeWidth="2" />
+                    <path d="M 390 197 L 440 180" fill="none" stroke="#8B5CF6" strokeWidth="2" />
+                    <path d="M 390 302 L 440 200" fill="none" stroke="#EC4899" strokeWidth="2" />
+                    
+                    <path d="M 560 160 L 630 92" fill="none" stroke="#14B8A6" strokeWidth="2" />
+                    <path d="M 560 180 L 630 197" fill="none" stroke="#14B8A6" strokeWidth="2" />
+                    <path d="M 560 200 L 630 302" fill="none" stroke="#14B8A6" strokeWidth="2" />
+                    
+                    <path d="M 750 197 L 780 180" fill="none" stroke="#10B981" strokeWidth="2" />
+
+                    {/* Animated data particles */}
+                    <circle r="4" fill="#14B8A6">
+                        <animateMotion dur="3s" repeatCount="indefinite" path="M 220 110 L 270 92 L 390 92 L 440 160 L 560 160 L 630 92 L 750 92" />
+                    </circle>
+                    <circle r="4" fill="#8B5CF6">
+                        <animateMotion dur="3s" repeatCount="indefinite" begin="1s" path="M 220 110 L 270 197 L 390 197 L 440 180 L 560 180 L 630 197 L 750 197 L 780 180" />
+                    </circle>
+                </svg>
+            );
+        }
+
+        function TascosaurDashboard() {
+            return (
+                <div className="container">
+                    <div className="stats-row">
+                        <div className="stat-card">
+                            <div className="stat-value">&lt;100ms</div>
+                            <div className="stat-label">NLP Parse</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value">~500ms</div>
+                            <div className="stat-label">LLM Fallback</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value">&lt;50ms</div>
+                            <div className="stat-label">WebSocket</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value">5</div>
+                            <div className="stat-label">Intents</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value" style={{color: "#2DD4BF"}}>DEV</div>
+                            <div className="stat-label">Status</div>
+                        </div>
+                    </div>
+
+                    <div className="diagram-card">
+                        <div className="diagram-title">
+                            <h2>🦖 Tascosaur NLP Processing Pipeline</h2>
+                            <p>Natural Language Task Management with Compromise.js + Ollama LLM fallback</p>
+                        </div>
+                        <NLPPipeline />
+                    </div>
+
+                    <div className="diagram-card">
+                        <div className="diagram-title">
+                            <h2>📋 Supported Commands</h2>
+                        </div>
+                        <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1rem"}}>
+                            <div style={{background: "#F0FDFA", padding: "1.5rem", borderRadius: "12px", borderLeft: "4px solid #14B8A6"}}>
+                                <h3 style={{color: "#0D9488"}}>CREATE</h3>
+                                <code style={{display: "block", background: "#1A202C", color: "#2DD4BF", padding: "0.75rem", borderRadius: "8px", marginTop: "0.5rem", fontSize: "0.85rem"}}>
+                                    Create a high-priority bug for the login page
+                                </code>
+                            </div>
+                            <div style={{background: "#EDE9FE", padding: "1.5rem", borderRadius: "12px", borderLeft: "4px solid #8B5CF6"}}>
+                                <h3 style={{color: "#5B21B6"}}>UPDATE</h3>
+                                <code style={{display: "block", background: "#1A202C", color: "#A78BFA", padding: "0.75rem", borderRadius: "8px", marginTop: "0.5rem", fontSize: "0.85rem"}}>
+                                    Assign the login bug to @sarah
+                                </code>
+                            </div>
+                            <div style={{background: "#FEF3C7", padding: "1.5rem", borderRadius: "12px", borderLeft: "4px solid #F59E0B"}}>
+                                <h3 style={{color: "#B45309"}}>MOVE</h3>
+                                <code style={{display: "block", background: "#1A202C", color: "#FCD34D", padding: "0.75rem", borderRadius: "8px", marginTop: "0.5rem", fontSize: "0.85rem"}}>
+                                    Move the login bug to in-progress
+                                </code>
+                            </div>
+                            <div style={{background: "#DBEAFE", padding: "1.5rem", borderRadius: "12px", borderLeft: "4px solid #3B82F6"}}>
+                                <h3 style={{color: "#1E40AF"}}>QUERY</h3>
+                                <code style={{display: "block", background: "#1A202C", color: "#60A5FA", padding: "0.75rem", borderRadius: "8px", marginTop: "0.5rem", fontSize: "0.85rem"}}>
+                                    Show all high priority bugs
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="diagram-card">
+                        <div className="diagram-title">
+                            <h2>🛠️ Tech Stack</h2>
+                        </div>
+                        <div style={{display: "flex", flexWrap: "wrap", gap: "0.75rem", justifyContent: "center"}}>
+                            {["React", "Node.js", "Express", "Socket.io", "SQLite", "Compromise.js", "Ollama", "Docker", "Vite"].map(tech => (
+                                <span key={tech} style={{background: "linear-gradient(135deg, #14B8A6, #0D9488)", padding: "0.5rem 1rem", borderRadius: "20px", color: "#fff", fontWeight: "500"}}>{tech}</span>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<TascosaurDashboard />, document.getElementById("root"));
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,35 @@
+{
+  "capability": "claude_extension_control",
+  "status": "FULLY_OPERATIONAL",
+  "date": "2026-03-16T23:01:00-05:00",
+  "description": "Control Claude Chrome extension from Telegram - AI-to-AI desktop integration",
+  "pipeline": "Telegram -> Clawdbot -> run_claude.py -> Chrome Claude Extension -> Response",
+  "key_breakthrough": "Single Python process prevents focus stealing. All steps must run in ONE script.",
+  "coordinates": {
+    "sidebar_input_x": 1725,
+    "sidebar_input_y": 912,
+    "screen_resolution": "1920x1080"
+  },
+  "scripts": {
+    "main": "claude_sidebar_send.py",
+    "wrapper": "run_claude.py"
+  },
+  "script_pattern": [
+    "1. Activate Chrome using ctypes SetForegroundWindow",
+    "2. Click sidebar input at coordinates",
+    "3. Clear existing text with Ctrl+A",
+    "4. Type message with pyautogui typewrite",
+    "5. Press Enter to send",
+    "6. Wait 6 seconds for response",
+    "7. Screenshot and crop sidebar area"
+  ],
+  "what_this_unlocks": [
+    "Summarize any webpage",
+    "Extract data from pages",
+    "Fill forms with AI assistance",
+    "Navigate and click buttons",
+    "Chain commands",
+    "Any AI task on any webpage"
+  ],
+  "rusty_quote": "Give the bot the ability to see and use every tool like a regular user would be able to do."
+}

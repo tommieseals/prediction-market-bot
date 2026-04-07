@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tools - Clawd Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-brand h1 {
+            font-size: 2rem;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .diagram-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tool-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tool-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #fbbf24;
+        }
+
+        .tool-card p {
+            opacity: 0.9;
+            line-height: 1.6;
+            margin: 8px 0;
+        }
+
+        .tool-card ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .tool-card li {
+            padding: 5px 0;
+            opacity: 0.9;
+        }
+
+        .tool-card li::before {
+            content: "→ ";
+            color: #fbbf24;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 8px;
+            margin-right: 5px;
+        }
+
+        .badge-free {
+            background: rgba(16, 185, 129, 0.3);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .badge-paid {
+            background: rgba(245, 158, 11, 0.3);
+            border: 1px solid rgba(245, 158, 11, 0.5);
+        }
+
+        .badge-fast {
+            background: rgba(59, 130, 246, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+        }
+
+        .badge-premium {
+            background: rgba(139, 92, 246, 0.3);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+            padding: 10px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        /* MOBILE RESPONSIVE - Tablet (768px) */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container { max-width: 100%; }
+            .nav-bar { flex-wrap: wrap; }
+            .nav-brand h1 { font-size: 1.5rem; }
+            
+            .hamburger { display: flex; }
+            .nav-links {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                gap: 10px;
+                margin-top: 15px;
+            }
+            .nav-links.active { display: flex; }
+            .nav-link {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+                min-height: 44px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .card {
+                padding: 20px;
+            }
+            .card h2 { font-size: 1.3rem; }
+        }
+
+        /* MOBILE RESPONSIVE - Phone (480px) */
+        @media (max-width: 480px) {
+            body { padding: 5px; }
+            .nav-brand h1 { font-size: 1.2rem; }
+            .card {
+                padding: 15px;
+                border-radius: 10px;
+            }
+            .card h2 { font-size: 1.1rem; }
+            .diagram-container {
+                padding: 10px;
+                overflow-x: auto;
+            }
+            button, a {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+
+        /* MOBILE RESPONSIVE - Small Phone (320px) */
+        @media (max-width: 320px) {
+            .nav-brand h1 { font-size: 1rem; }
+            .card h2 { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav-bar">
+            <div class="nav-brand">
+                <h1>🤖 Clawd Dashboard</h1>
+            <a href="/docs.html" class="nav-link">Docs</a>
+            </div>
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+                        <div class="nav-links" id="navLinks">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/infrastructure" class="nav-link">Infrastructure</a>
+                <a href="/agents" class="nav-link">Agents</a>
+                <a href="/projects" class="nav-link">Projects</a>
+                <a href="/apis" class="nav-link">APIs</a>
+                <a href="/skills" class="nav-link">Skills</a>
+                <a href="/tools" class="nav-link active">Tools</a>
+                <a href="/achievements" class="nav-link">Achievements</a>
+                <a href="/shared-brain" class="nav-link">🧠 Brain</a>
+                <a href="/swarm-monitor" class="nav-link">🐝 Swarm</a>
+                <a href="/pharma" class="nav-link">💊 Pharma</a>
+                <a href="/terminator" class="nav-link">🤖 Terminator</a>
+                <a href="/vault" class="nav-link">💰 Vault</a>
+                <a href="/fort-knox" class="nav-link">🏦 Fort Knox</a>
+                <a href="/whales" class="nav-link">🐋 Whales</a>
+                <a href="/legion-tracker" class="nav-link">🎖️ Legion</a>
+                <a href="/legion" class="nav-link">⚔️ Legion HQ</a>
+                <a href="/fraud-detection" class="nav-link">🛡️ Fraud</a>
+                <a href="n8n-hub.html" class="nav-link">⚡ n8n</a>
+                <a href="/fiverr" class="nav-link">🛒 Fiverr</a>
+                <a href="/kdp" class="nav-link">📚 KDP</a>
+                <a href="tascosaur.html" class="nav-link">🦖 Tascosaur</a>
+                <a href="taskbot.html" class="nav-link">📋 TaskBot</a>
+                <a href="teams-translator.html" class="nav-link">🌐 Translator</a>
+                <a href="sidekick-paas.html" class="nav-link">🦸 Sidekick</a>
+                <a href="memory.html" class="nav-link">🧬 Memory</a>
+                <a href="sessions.html" class="nav-link">💬 Sessions</a>
+                <a href="a2a-server.html" class="nav-link">🔗 A2A</a>
+                <a href="/docs" class="nav-link">Docs</a>
+            </div>
+        </nav>
+
+        <!-- LLM Gateway -->
+        <div class="card">
+            <h2>🤖 LLM Gateway v2.0</h2>
+            <p style="opacity: 0.9; margin-bottom: 15px;">Smart model routing with 5 available models</p>
+            
+            <div class="diagram-container">
+                <div class="mermaid">
+graph TB
+    User[User Query] -->|smart routing| Gateway[LLM Gateway]
+    
+    Gateway -->|code keywords| Qwen[Qwen Coder 32B<br/>Code Specialist]
+    Gateway -->|complex/long| Llama90[Llama 90B Vision<br/>Deep Analysis]
+    Gateway -->|screenshot + errors| Kimi[Kimi K2.5<br/>Multimodal + Thinking]
+    Gateway -->|fast vision| Llama11[Llama 11B Vision<br/>Quick Image]
+    Gateway -->|simple queries| Ollama[Ollama Local<br/>qwen2.5:3b<br/>FREE]
+    
+    subgraph "NVIDIA API (50 calls/day)"
+        Qwen
+        Llama90
+        Llama11
+        Kimi
+    end
+    
+    subgraph "Local (Unlimited)"
+        Ollama
+    end
+    
+    style Gateway fill:#667eea
+    style Ollama fill:#10b981
+    style Qwen fill:#f59e0b
+    style Llama90 fill:#ef4444
+    style Llama11 fill:#3b82f6
+    style Kimi fill:#8b5cf6
+                </div>
+            </div>
+            </div>
+
+            <div class="tool-grid">
+                <div class="tool-card">
+                    <h3>🏠 Ollama Local (qwen2.5:3b)</h3>
+                    <span class="badge badge-free">FREE</span>
+                    <span class="badge badge-fast">FAST</span>
+                    <p><strong>Best for:</strong> Fast simple queries</p>
+                    <p><strong>Speed:</strong> ⚡⚡⚡ 0.47s (warm)</p>
+                    <p><strong>Memory:</strong> 2.2GB GPU (persistent)</p>
+                    <p><strong>Cost:</strong> $0</p>
+                    <ul>
+                        <li>Runs on Mac Mini</li>
+                        <li>Model stays in memory (KEEP_ALIVE=-1)</li>
+                        <li>Unlimited usage</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>🧠 Kimi K2.5</h3>
+                    <span class="badge badge-paid">NVIDIA</span>
+                    <span class="badge badge-premium">MULTIMODAL</span>
+                    <p><strong>Best for:</strong> Screenshot debugging, reasoning</p>
+                    <p><strong>Speed:</strong> ⚡⚡ Fast</p>
+                    <p><strong>Features:</strong> Vision + text + thinking mode</p>
+                    <ul>
+                        <li>Part of 50 daily NVIDIA calls</li>
+                        <li>Excellent for error analysis</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>🦙💪 Llama 90B Vision</h3>
+                    <span class="badge badge-paid">NVIDIA</span>
+                    <span class="badge badge-premium">HUGE</span>
+                    <p><strong>Best for:</strong> Long documents, complex forms, deep analysis</p>
+                    <p><strong>Speed:</strong> ⚡ Medium</p>
+                    <p><strong>Size:</strong> 90 billion parameters!</p>
+                    <ul>
+                        <li>Part of 50 daily NVIDIA calls</li>
+                        <li>Maximum reasoning capability</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>🦙⚡ Llama 11B Vision</h3>
+                    <span class="badge badge-paid">NVIDIA</span>
+                    <span class="badge badge-fast">FAST</span>
+                    <p><strong>Best for:</strong> Quick image analysis</p>
+                    <p><strong>Speed:</strong> ⚡⚡ Fast</p>
+                    <p><strong>Multimodal:</strong> Images + text</p>
+                    <ul>
+                        <li>Part of 50 daily NVIDIA calls</li>
+                        <li>Balanced speed/quality</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>💻 Qwen Coder 32B</h3>
+                    <span class="badge badge-paid">NVIDIA</span>
+                    <span class="badge badge-premium">CODE SPECIALIST</span>
+                    <p><strong>Best for:</strong> Python, JavaScript, bash, debugging</p>
+                    <p><strong>Speed:</strong> ⚡⚡ Fast</p>
+                    <p><strong>Specialization:</strong> Code generation & review</p>
+                    <ul>
+                        <li>Part of 50 daily NVIDIA calls</li>
+                        <li>Auto-selected for code tasks</li>
+                    </ul>
+            </div>
+            </div>
+            </div>
+
+        <!-- CLI Tools -->
+        <div class="card">
+            <h2>🛠️ Essential CLI Tools</h2>
+            <div class="tool-grid">
+                <div class="tool-card">
+                    <h3>📧 Email - Himalaya</h3>
+                    <p>CLI email client via IMAP/SMTP</p>
+                    <ul>
+                        <li>Account: gmail (configured)</li>
+                        <li>List, read, send, search</li>
+                        <li>No web browser needed</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>🎮 Google Workspace - gog</h3>
+                    <p>Gmail, Calendar, Drive, Sheets, Docs</p>
+                    <ul>
+                        <li>OAuth browser flow</li>
+                        <li>Currently needs auth setup</li>
+                        <li>Full API access</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>📝 Notes - memo (Apple Notes)</h3>
+                    <p>Manage Apple Notes from CLI</p>
+                    <ul>
+                        <li>Create, search, list</li>
+                        <li>Native Mac integration</li>
+                        <li>Instant access</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>✅ Tasks - Things 3</h3>
+                    <p>Manage Things 3 via CLI</p>
+                    <ul>
+                        <li>Add tasks via URL scheme</li>
+                        <li>Query local database</li>
+                        <li>Search & list</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>🐙 GitHub - gh CLI</h3>
+                    <p>Official GitHub CLI</p>
+                    <ul>
+                        <li>Issues, PRs, workflows</li>
+                        <li>Authenticated</li>
+                        <li>GraphQL API access</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>🧾 Summarize</h3>
+                    <p>Extract/summarize content</p>
+                    <ul>
+                        <li>YouTube transcripts</li>
+                        <li>PDFs, web pages</li>
+                        <li>Multiple LLM backends</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>🔌 mcporter (MCP)</h3>
+                    <p>Model Context Protocol client</p>
+                    <ul>
+                        <li>Call MCP servers/tools</li>
+                        <li>HTTP + stdio transports</li>
+                        <li>Extensible architecture</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>💎 Gemini CLI</h3>
+                    <p>Google Gemini from terminal</p>
+                    <ul>
+                        <li>One-shot Q&A</li>
+                        <li>Summaries & generation</li>
+                        <li>Used by research skill</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>💬 Messaging CLIs</h3>
+                    <p>iMessage, WhatsApp, Slack</p>
+                    <ul>
+                        <li>imsg - iMessage/SMS</li>
+                        <li>wacli - WhatsApp</li>
+                        <li>slack - Slack API</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>🌤️ Weather</h3>
+                    <p>Current weather & forecasts</p>
+                    <ul>
+                        <li>No API key required</li>
+                        <li>wttr.in backend</li>
+                        <li>Location-aware</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>🎨 OpenAI Image Gen</h3>
+                    <p>DALL-E image generation</p>
+                    <ul>
+                        <li>Batch generation</li>
+                        <li>Gallery HTML output</li>
+                        <li>Random prompt sampling</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>🎤 Whisper (STT)</h3>
+                    <p>Speech-to-text</p>
+                    <ul>
+                        <li>Local CLI (free)</li>
+                        <li>API version also available</li>
+                        <li>High accuracy</li>
+                    </ul>
+            </div>
+            </div>
+            </div>
+
+        <!-- LLM Gateway Commands -->
+        <div class="card">
+            <h2>📟 LLM Gateway Commands</h2>
+            <div class="tool-grid">
+                <div class="tool-card">
+                    <h3>Telegram Bot Commands</h3>
+                    <ul>
+                        <li>/ask &lt;question&gt; - Smart routing</li>
+                        <li>/code &lt;task&gt; - Force Qwen Coder</li>
+                        <li>/vision &lt;url&gt; - Force Llama 11B</li>
+                        <li>/analyze &lt;url&gt; - Force Llama 90B</li>
+                        <li>/screenshot &lt;url&gt; - Force Kimi</li>
+                        <li>/think &lt;question&gt; - Deep reasoning</li>
+                        <li>/usage - Check daily stats</li>
+                    </ul>
+            </div>
+
+                <div class="tool-card">
+                    <h3>Direct CLI Usage</h3>
+                    <ul>
+                        <li>~/dta/gateway/ask "query"</li>
+                        <li>~/dta/gateway/think-deep "problem"</li>
+                        <li>~/dta/gateway/analyze-screenshot "url"</li>
+                        <li>~/dta/gateway/llm-usage</li>
+                    </ul>
+            </div>
+            </div>
+            </div>
+            </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#667eea',
+                primaryTextColor: '#000',
+                primaryBorderColor: '#667eea',
+                lineColor: '#667eea',
+                secondaryColor: '#764ba2',
+                tertiaryColor: '#f59e0b'
+            }
+        });
+
+        // Mobile hamburger menu toggle
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        // Close menu when clicking a link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>
+

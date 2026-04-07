@@ -66,8 +66,8 @@ Automated remediation scripts for Mac Mini/Pro infrastructure monitoring.
 
 | Alias | IP Address |
 |-------|------------|
-| `mac-mini` / `mini` | 100.82.234.66 |
-| `mac-pro` / `pro` | 100.67.192.21 |
+| `mac-mini` / `mini` | 100.88.105.106 |
+| `mac-pro` / `pro` | 100.89.75.126 |
 
 ## Integration with Monitoring
 

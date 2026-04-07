@@ -6,8 +6,8 @@ echo "=== Infrastructure Health Check $(date) ==="
 echo ""
 
 # Mac Mini - batch all checks in one SSH call
-echo "📍 MAC MINI (100.82.234.66)"
-ssh -o ConnectTimeout=10 tommie@100.82.234.66 '
+echo "📍 MAC MINI (100.88.105.106)"
+ssh -o ConnectTimeout=10 tommie@100.88.105.106 '
   # RAM
   FREE_PCT=$(memory_pressure 2>/dev/null | grep "System-wide memory free percentage" | awk "{print \$NF}" | tr -d "%")
   if [ -z "$FREE_PCT" ]; then FREE_PCT="??"; fi
@@ -30,8 +30,8 @@ ssh -o ConnectTimeout=10 tommie@100.82.234.66 '
 echo ""
 
 # Mac Pro - batch all checks in one SSH call
-echo "📍 MAC PRO (100.67.192.21)"
-ssh -o ConnectTimeout=10 administrator@100.67.192.21 '
+echo "📍 MAC PRO (100.89.75.126)"
+ssh -o ConnectTimeout=10 administrator@100.89.75.126 '
   # RAM (Mac Pro has different memory_pressure output sometimes)
   FREE_PCT=$(memory_pressure 2>/dev/null | grep "System-wide memory free percentage" | awk "{print \$NF}" | tr -d "%")
   if [ -z "$FREE_PCT" ]; then FREE_PCT="??"; fi

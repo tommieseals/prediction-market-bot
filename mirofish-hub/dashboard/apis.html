@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APIs - Clawd Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-brand h1 {
+            font-size: 2rem;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #fbbf24;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+            margin-top: 8px;
+        }
+
+        .api-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 15px;
+        }
+
+        .api-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .api-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .api-card.active {
+            border-left-color: #10b981;
+        }
+
+        .api-card.ready {
+            border-left-color: #f59e0b;
+        }
+
+        .api-card.planned {
+            border-left-color: #6366f1;
+        }
+
+        .api-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .api-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fbbf24;
+        }
+
+        .api-desc {
+            opacity: 0.9;
+            line-height: 1.6;
+            margin: 10px 0;
+            font-size: 0.95rem;
+        }
+
+        .api-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-active {
+            background: rgba(16, 185, 129, 0.3);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .badge-ready {
+            background: rgba(245, 158, 11, 0.3);
+            border: 1px solid rgba(245, 158, 11, 0.5);
+        }
+
+        .badge-planned {
+            background: rgba(99, 102, 241, 0.3);
+            border: 1px solid rgba(99, 102, 241, 0.5);
+        }
+
+        .badge-free {
+            background: rgba(16, 185, 129, 0.3);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .badge-paid {
+            background: rgba(239, 68, 68, 0.3);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .badge-limited {
+            background: rgba(245, 158, 11, 0.3);
+            border: 1px solid rgba(245, 158, 11, 0.5);
+        }
+
+        .api-details {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .api-details ul {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0;
+        }
+
+        .api-details li {
+            padding: 4px 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .api-details li::before {
+            content: "→ ";
+            color: #fbbf24;
+        }
+
+        .api-limit {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-top: 8px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .filter-btn.active {
+            background: rgba(251, 191, 36, 0.3);
+            border-color: #fbbf24;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+            padding: 10px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        /* MOBILE RESPONSIVE - Tablet (768px) */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container { max-width: 100%; }
+            .nav-bar { flex-wrap: wrap; }
+            .nav-brand h1 { font-size: 1.5rem; }
+            
+            .hamburger { display: flex; }
+            .nav-links {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                gap: 10px;
+                margin-top: 15px;
+            }
+            .nav-links.active { display: flex; }
+            .nav-link {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+                min-height: 44px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .card {
+                padding: 20px;
+            }
+            .card h2 { font-size: 1.3rem; }
+        }
+
+        /* MOBILE RESPONSIVE - Phone (480px) */
+        @media (max-width: 480px) {
+            body { padding: 5px; }
+            .nav-brand h1 { font-size: 1.2rem; }
+            .card {
+                padding: 15px;
+                border-radius: 10px;
+            }
+            .card h2 { font-size: 1.1rem; }
+            .diagram-container {
+                padding: 10px;
+                overflow-x: auto;
+            }
+            button, a {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+
+        /* MOBILE RESPONSIVE - Small Phone (320px) */
+        @media (max-width: 320px) {
+            .nav-brand h1 { font-size: 1rem; }
+            .card h2 { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav-bar">
+            <div class="nav-brand">
+                <h1>🤖 Clawd Dashboard</h1>
+            </div>
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+                        <div class="nav-links" id="navLinks">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/infrastructure" class="nav-link">Infrastructure</a>
+                <a href="/agents" class="nav-link">Agents</a>
+                <a href="/projects" class="nav-link">Projects</a>
+                <a href="/apis" class="nav-link active">APIs</a>
+                <a href="/skills" class="nav-link">Skills</a>
+                <a href="/tools" class="nav-link">Tools</a>
+                <a href="/achievements" class="nav-link">Achievements</a>
+                <a href="/shared-brain" class="nav-link">🧠 Brain</a>
+                <a href="/swarm-monitor" class="nav-link">🐝 Swarm</a>
+                <a href="/pharma" class="nav-link">💊 Pharma</a>
+                <a href="/terminator" class="nav-link">🤖 Terminator</a>
+                <a href="/vault" class="nav-link">💰 Vault</a>
+                <a href="/fort-knox" class="nav-link">🏦 Fort Knox</a>
+                <a href="/whales" class="nav-link">🐋 Whales</a>
+                <a href="/legion-tracker" class="nav-link">🎖️ Legion</a>
+                <a href="/legion" class="nav-link">⚔️ Legion HQ</a>
+                <a href="/fraud-detection" class="nav-link">🛡️ Fraud</a>
+                <a href="n8n-hub.html" class="nav-link">⚡ n8n</a>
+                <a href="/fiverr" class="nav-link">🛒 Fiverr</a>
+                <a href="/kdp" class="nav-link">📚 KDP</a>
+                <a href="tascosaur.html" class="nav-link">🦖 Tascosaur</a>
+                <a href="taskbot.html" class="nav-link">📋 TaskBot</a>
+                <a href="teams-translator.html" class="nav-link">🌐 Translator</a>
+                <a href="sidekick-paas.html" class="nav-link">🦸 Sidekick</a>
+                <a href="memory.html" class="nav-link">🧬 Memory</a>
+                <a href="sessions.html" class="nav-link">💬 Sessions</a>
+                <a href="a2a-server.html" class="nav-link">🔗 A2A</a>
+                <a href="/docs" class="nav-link">Docs</a>
+            </div>
+        </nav>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value">8</div>
+                <div class="stat-label">Active APIs</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">9</div>
+                <div class="stat-label">Ready to Integrate</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">$50-100</div>
+                <div class="stat-label">Monthly Free Value</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">17</div>
+                <div class="stat-label">Total APIs</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-buttons">
+            <button class="filter-btn active" onclick="filterAPIs('all')">All</button>
+            <button class="filter-btn" onclick="filterAPIs('active')">✅ Active</button>
+            <button class="filter-btn" onclick="filterAPIs('ready')">📋 Ready to Integrate</button>
+            <button class="filter-btn" onclick="filterAPIs('ai')">🤖 AI/LLM</button>
+            <button class="filter-btn" onclick="filterAPIs('communication')">📧 Communication</button>
+            <button class="filter-btn" onclick="filterAPIs('jobsearch')">💼 Job Search</button>
+            <button class="filter-btn" onclick="filterAPIs('data')">📊 Data & Tools</button>
+        </div>
+
+        <!-- Active APIs -->
+        <div class="card">
+            <h2>✅ Active APIs (Currently Integrated)</h2>
+            <div class="api-grid" id="active-apis"></div>
+        </div>
+
+        <!-- Ready to Integrate -->
+        <div class="card">
+            <h2>📋 Ready to Integrate (Documented & Tested)</h2>
+            <div class="api-grid" id="ready-apis"></div>
+        </div>
+
+        <!-- Planned/Research -->
+        <div class="card">
+            <h2>🔮 Planned (Future Integration)</h2>
+            <div class="api-grid" id="planned-apis"></div>
+        </div>
+    </div>
+
+    <script>
+        const activeAPIs = [
+            {
+                name: "OpenAI API",
+                category: "ai",
+                desc: "GPT-4o, GPT-4o-mini for high-quality AI responses",
+                tier: "paid",
+                limit: "Pay-per-use (~$20-40/month estimated)",
+                usage: "Main agent (Claude) + fallback for complex tasks",
+                integration: "Via openai-* skills, direct API calls",
+                docs: "Built-in, widely used"
+            },
+            {
+                name: "NVIDIA API",
+                category: "ai",
+                desc: "Kimi K2.5, Llama 90B/11B, Qwen Coder 32B",
+                tier: "limited",
+                limit: "50 calls/day (shared pool)",
+                usage: "LLM Gateway smart routing for specialized tasks",
+                integration: "~/dta/gateway/ scripts, Telegram bot commands",
+                docs: "TOOLS.md, dashboard/tools.html"
+            },
+            {
+                name: "Ollama (Local)",
+                category: "ai",
+                desc: "qwen2.5:3b running on Mac Mini",
+                tier: "free",
+                limit: "Unlimited (local inference)",
+                usage: "Fast, free queries via LLM Gateway",
+                integration: "ollama CLI, KEEP_ALIVE=-1 for instant responses",
+                docs: "ollama-optimization-report.md"
+            },
+            {
+                name: "Telegram Bot API",
+                category: "communication",
+                desc: "Primary communication channel",
+                tier: "free",
+                limit: "Unlimited (rate-limited per bot)",
+                usage: "All user interactions, notifications, commands",
+                integration: "Clawdbot gateway, message tool",
+                docs: "Native integration"
+            },
+            {
+                name: "GitHub API",
+                category: "data",
+                desc: "Repositories, issues, PRs, workflows",
+                tier: "free",
+                limit: "5,000 requests/hour (authenticated)",
+                usage: "Via gh CLI for project management",
+                integration: "github skill, gh CLI wrapper",
+                docs: "skills/github/SKILL.md"
+            },
+            {
+                name: "Brave Search API",
+                category: "data",
+                desc: "Web search without Google",
+                tier: "free",
+                limit: "2,000 queries/month free tier",
+                usage: "web_search tool for research",
+                integration: "Built into Clawdbot web_search",
+                docs: "Native tool"
+            },
+            {
+                name: "Tailscale",
+                category: "data",
+                desc: "Mesh VPN for secure device connections",
+                tier: "free",
+                limit: "Up to 100 devices on free tier",
+                usage: "Connect Mac Mini, Cloud VM, Dell, iPhone",
+                integration: "Network layer (100.x.x.x IPs)",
+                docs: "MASTER_KNOWLEDGE.md"
+            },
+            {
+                name: "Weather API (wttr.in)",
+                category: "data",
+                desc: "Current weather and forecasts",
+                tier: "free",
+                limit: "Unlimited (no key required)",
+                usage: "weather skill for quick forecasts",
+                integration: "skills/weather/SKILL.md",
+                docs: "CLI wrapper"
+            }
+        ];
+
+        const readyAPIs = [
+            {
+                name: "Hunter.io",
+                category: "jobsearch",
+                desc: "Find professional email addresses by name and company domain",
+                tier: "free",
+                limit: "25 searches/month",
+                usage: "Find recruiter emails for job search outreach",
+                integration: "CLI wrapper planned: ~/dta/hunter",
+                docs: "api-keys/HUNTER_IO.md",
+                value: "⭐⭐⭐⭐⭐ Job search critical!"
+            },
+            {
+                name: "Emailable",
+                category: "jobsearch",
+                desc: "Email validation and verification",
+                tier: "free",
+                limit: "250 credits (never expire!)",
+                usage: "Verify recruiter emails before outreach",
+                integration: "CLI wrapper planned: ~/dta/emailable",
+                docs: "api-keys/EMAILABLE.md",
+                value: "⭐⭐⭐⭐⭐"
+            },
+            {
+                name: "OpenWeatherMap",
+                category: "data",
+                desc: "Professional weather API with alerts, forecasts, air quality",
+                tier: "free",
+                limit: "1,000 calls/day (30,000/month!)",
+                usage: "Upgrade from wttr.in for better data",
+                integration: "Replace weather skill",
+                docs: "api-keys/OPENWEATHERMAP.md",
+                value: "⭐⭐⭐⭐⭐ Incredibly generous!"
+            },
+            {
+                name: "Resend",
+                category: "communication",
+                desc: "Transactional email API for developers",
+                tier: "free",
+                limit: "100 emails/day (3,000/month)",
+                usage: "Job application confirmations, automated emails",
+                integration: "CLI wrapper: ~/dta/send-email",
+                docs: "api-keys/RESEND.md",
+                value: "⭐⭐⭐⭐⭐"
+            },
+            {
+                name: "Browserless",
+                category: "data",
+                desc: "Headless browser automation (Chrome/Playwright)",
+                tier: "free",
+                limit: "1,000 units/month (1 unit = 30 seconds)",
+                usage: "LinkedIn job scraping, automated applications",
+                integration: "CLI wrapper: ~/dta/browserless",
+                docs: "api-keys/BROWSERLESS.md",
+                value: "⭐⭐⭐⭐"
+            },
+            {
+                name: "Hugging Face",
+                category: "ai",
+                desc: "1000s of open-source NLP/ML models",
+                tier: "free",
+                limit: "Unlimited (rate-limited)",
+                usage: "Job description parsing, sentiment analysis, NER",
+                integration: "CLI wrapper: ~/dta/hf",
+                docs: "api-keys/HUGGINGFACE.md",
+                value: "⭐⭐⭐⭐"
+            },
+            {
+                name: "Textbelt",
+                category: "communication",
+                desc: "SMS API for text notifications",
+                tier: "limited",
+                limit: "1 free SMS/day per phone",
+                usage: "Emergency alerts when Telegram down",
+                integration: "curl one-liner (simple)",
+                docs: "api-keys/TEXTBELT.md",
+                value: "⭐⭐ Test only, Telegram is better"
+            },
+            {
+                name: "Replicate",
+                category: "ai",
+                desc: "Open-source models (Stable Diffusion, audio, etc.)",
+                tier: "limited",
+                limit: "Free credits amount unclear",
+                usage: "Image generation, audio transcription",
+                integration: "Needs research",
+                docs: "api-keys/REPLICATE.md",
+                value: "⭐⭐⭐"
+            },
+            {
+                name: "AIMLAPI",
+                category: "ai",
+                desc: "Multi-model gateway (GPT-5, Claude 4, OpenClaw)",
+                tier: "limited",
+                limit: "Only 10 calls/hour (too limited)",
+                usage: "Skip - NVIDIA's 50/day is better",
+                integration: "Not recommended",
+                docs: "api-keys/AIMLAPI.md",
+                value: "⭐ Skip for now"
+            }
+        ];
+
+        const plannedAPIs = [];
+
+        function renderAPI(api, status) {
+            return `
+                <div class="api-card ${status}" data-category="${api.category}">
+                    <div class="api-header">
+                        <div class="api-name">${api.name}</div>
+                    </div>
+                    <div class="api-meta">
+                        <span class="badge badge-${status}">${status.toUpperCase()}</span>
+                        <span class="badge badge-${api.tier}">${api.tier.toUpperCase()}</span>
+                    </div>
+                    <div class="api-desc">${api.desc}</div>
+                    <div class="api-limit"><strong>Limit:</strong> ${api.limit}</div>
+                    <div class="api-details">
+                        <ul>
+                            <li><strong>Usage:</strong> ${api.usage}</li>
+                            <li><strong>Integration:</strong> ${api.integration}</li>
+                            <li><strong>Docs:</strong> ${api.docs}</li>
+                            ${api.value ? `<li><strong>Value:</strong> ${api.value}</li>` : ''}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAllAPIs() {
+            document.getElementById('active-apis').innerHTML = activeAPIs.map(api => renderAPI(api, 'active')).join('');
+            document.getElementById('ready-apis').innerHTML = readyAPIs.map(api => renderAPI(api, 'ready')).join('');
+            if (plannedAPIs.length > 0) {
+                document.getElementById('planned-apis').innerHTML = plannedAPIs.map(api => renderAPI(api, 'planned')).join('');
+            } else {
+                document.getElementById('planned-apis').innerHTML = '<p style="opacity: 0.7; text-align: center;">No planned APIs at this time</p>';
+            }
+        }
+
+        function filterAPIs(filter) {
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Filter cards
+            document.querySelectorAll('.api-card').forEach(card => {
+                if (filter === 'all') {
+                    card.style.display = 'block';
+                } else if (filter === 'active' || filter === 'ready') {
+                    card.style.display = card.classList.contains(filter) ? 'block' : 'none';
+                } else {
+                    card.style.display = card.dataset.category === filter ? 'block' : 'none';
+                }
+            });
+        }
+
+        // Initialize
+        renderAllAPIs();
+
+        // Mobile hamburger menu toggle
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        // Close menu when clicking a link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>
+

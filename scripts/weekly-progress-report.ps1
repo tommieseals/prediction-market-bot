@@ -19,7 +19,7 @@ param(
 )
 
 $ErrorActionPreference = "SilentlyContinue"
-$ClaWdRoot = "C:\Users\tommi\clawd"
+$ClaWdRoot = "C:\Users\User\clawd"
 $StartDate = (Get-Date).AddDays(-$Days)
 
 # Colors

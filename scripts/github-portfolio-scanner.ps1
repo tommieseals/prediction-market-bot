@@ -26,7 +26,7 @@
 #>
 
 param(
-    [string]$Path = "C:\Users\tommi\clawd",
+    [string]$Path = "C:\Users\User\clawd",
     [switch]$Detailed,
     [string]$PrepareFor
 )

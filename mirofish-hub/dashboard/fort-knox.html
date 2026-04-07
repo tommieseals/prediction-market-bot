@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fort Knox - Backup System</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a365d 0%, #2d3748 50%, #1a202c 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.2);
+        }
+        .nav-brand h1 { font-size: 1.8rem; }
+        .nav-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .nav-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .header-banner {
+            text-align: center;
+            padding: 2rem 0;
+            margin-bottom: 1rem;
+        }
+        .header-banner h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .header-banner p {
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+        }
+        .section-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        .tab-btn:hover { background: rgba(255,255,255,0.2); }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #c6a700, #ffd700);
+            color: #1a202c;
+            box-shadow: 0 4px 15px rgba(255,215,0,0.3);
+        }
+        .diagram-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .diagram-title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .diagram-title h2 {
+            color: #1a365d;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .diagram-title p {
+            color: #718096;
+            font-size: 1rem;
+        }
+        .diagram-svg {
+            width: 100%;
+            overflow-x: auto;
+        }
+        .status-badges {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .badge-gold { background: linear-gradient(135deg, #c6a700, #ffd700); color: #1a202c; }
+        .badge-green { background: #48BB78; color: white; }
+        .badge-blue { background: #3182CE; color: white; }
+        @media (max-width: 768px) {
+            .nav-bar { flex-wrap: wrap; gap: 1rem; }
+            .nav-links { width: 100%; justify-content: center; }
+            .container { padding: 1rem; }
+            .diagram-card { padding: 1rem; }
+            .tab-btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
+            .header-banner h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><h1>🏰 Fort Knox</h1></div>
+        <div class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/infrastructure.html">Infrastructure</a>
+            <a href="/agents.html">Agents</a>
+            <a href="/projects.html">Projects</a>
+            <a href="/swarm-monitor.html">🐝 Swarm</a>
+            <a href="/fort-knox.html" class="active">🏰 Fort Knox</a>
+                <a href="/whales" class="nav-link">🐋 Whales</a>
+            <a href="/shared-brain.html">🧠 Brain</a>
+        </div>
+    </nav>
+    
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function FlowingLine({ x1, y1, x2, y2, color = "#ffd700", delay = 0, curved = false, reverse = false }) {
+            const midX = (x1 + x2) / 2;
+            const midY = curved ? Math.min(y1, y2) - 40 : (y1 + y2) / 2;
+            const pathD = curved 
+                ? `M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}`
+                : `M ${x1} ${y1} L ${x2} ${y2}`;
+            const reversePath = curved 
+                ? `M ${x2} ${y2} Q ${midX} ${midY} ${x1} ${y1}`
+                : `M ${x2} ${y2} L ${x1} ${y1}`;
+
+            return (
+                <g>
+                    <path d={pathD} fill="none" stroke={color + "40"} strokeWidth="3" strokeDasharray="8,4" />
+                    <circle r="6" fill={color}>
+                        <animateMotion dur="2s" repeatCount="indefinite" begin={delay + "s"} path={reverse ? reversePath : pathD} />
+                    </circle>
+                    <circle r="4" fill={color} opacity="0.5">
+                        <animateMotion dur="2s" repeatCount="indefinite" begin={(delay + 0.5) + "s"} path={reverse ? reversePath : pathD} />
+                    </circle>
+                </g>
+            );
+        }
+
+        function ArchNode({ x, y, w, h, title, subtitle, icon, color, status, small = false }) {
+            const titleY = small ? 48 : 58;
+            const subtitleY = small ? 62 : 76;
+            const iconSize = small ? 20 : 28;
+            const statusY = small ? 76 : 92;
+            
+            return (
+                <g>
+                    <rect x={x} y={y} width={w} height={h} rx={12} fill="white" stroke="#E2E8F0" strokeWidth="1" filter="url(#shadow)" />
+                    <rect x={x} y={y} width={w} height={6} rx={3} fill={color} />
+                    <circle cx={x + w/2} cy={y + 28} r={small ? 18 : 24} fill={color + "20"} />
+                    <text x={x + w/2} y={y + 33} textAnchor="middle" fontSize={iconSize} dominantBaseline="middle">{icon}</text>
+                    <text x={x + w/2} y={y + titleY} textAnchor="middle" fill="#1A202C" fontSize={small ? 11 : 13} fontWeight="600">{title}</text>
+                    {subtitle && <text x={x + w/2} y={y + subtitleY} textAnchor="middle" fill="#718096" fontSize={small ? 9 : 10}>{subtitle}</text>}
+                    {status && <text x={x + w/2} y={y + statusY} textAnchor="middle" fill="#48BB78" fontSize={small ? 8 : 9}>{status}</text>}
+                </g>
+            );
+        }
+
+        function BackupLifecycle() {
+            return (
+                <svg viewBox="0 0 950 550" style={{width: "100%", minWidth: 700, height: "auto"}}>
+                    <defs>
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.1" />
+                        </filter>
+                        <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#ffd700" />
+                            <stop offset="100%" stopColor="#c6a700" />
+                        </linearGradient>
+                    </defs>
+                    
+                    {/* Section Label */}
+                    <text x={475} y={30} textAnchor="middle" fill="#1A365D" fontSize="16" fontWeight="700">📤 BACKUP SOURCES</text>
+                    
+                    {/* Source Nodes */}
+                    <ArchNode x={80} y={50} w={160} h={100} title="Mac Mini" subtitle="100.88.105.106" icon="🖥️" color="#667EEA" status="✓ Primary Host" />
+                    <ArchNode x={300} y={50} w={160} h={100} title="Dell" subtitle="100.119.87.108" icon="💻" color="#ED8936" status="✓ Windows 11" />
+                    <ArchNode x={520} y={50} w={160} h={100} title="Google Cloud" subtitle="100.107.231.87" icon="☁️" color="#3182CE" status="✓ VM Instance" />
+                    <ArchNode x={740} y={50} w={160} h={100} title="Phone" subtitle="iOS Device" icon="📱" color="#9F7AEA" status="✓ Photos/Notes" />
+                    
+                    {/* Flowing lines to central hub */}
+                    <FlowingLine x1={160} y1={150} x2={400} y2={220} color="#667EEA" delay={0} curved={true} />
+                    <FlowingLine x1={380} y1={150} x2={430} y2={220} color="#ED8936" delay={0.5} curved={true} />
+                    <FlowingLine x1={600} y1={150} x2={500} y2={220} color="#3182CE" delay={1} curved={true} />
+                    <FlowingLine x1={820} y1={150} x2={550} y2={220} color="#9F7AEA" delay={1.5} curved={true} />
+                    
+                    {/* Central Fort Knox */}
+                    <rect x={350} y={200} width={250} height={140} rx={16} fill="url(#goldGrad)" filter="url(#shadow)" />
+                    <rect x={355} y={205} width={240} height={130} rx={14} fill="white" />
+                    <text x={475} y={240} textAnchor="middle" fontSize="40">🏰</text>
+                    <text x={475} y={275} textAnchor="middle" fill="#1A202C" fontSize="16" fontWeight="700">FORT KNOX</text>
+                    <text x={475} y={295} textAnchor="middle" fill="#718096" fontSize="11">Mac Pro • 100.101.89.80</text>
+                    <text x={475} y={315} textAnchor="middle" fill="#48BB78" fontSize="10" fontWeight="600">✓ 7-Day Rolling Backups</text>
+                    
+                    {/* 7-Day Retention Cycle */}
+                    <text x={475} y={380} textAnchor="middle" fill="#1A365D" fontSize="14" fontWeight="700">📅 7-DAY RETENTION CYCLE</text>
+                    
+                    {/* Day circles */}
+                    {[1,2,3,4,5,6,7].map((day, i) => {
+                        const cx = 175 + i * 100;
+                        const isToday = day === 1;
+                        return (
+                            <g key={day}>
+                                <circle cx={cx} cy={430} r={30} fill={isToday ? "#48BB78" : "#E2E8F0"} />
+                                <text x={cx} y={425} textAnchor="middle" fill={isToday ? "white" : "#4A5568"} fontSize="10">Day</text>
+                                <text x={cx} y={442} textAnchor="middle" fill={isToday ? "white" : "#1A202C"} fontSize="14" fontWeight="700">{day}</text>
+                                {isToday && <text x={cx} y={475} textAnchor="middle" fill="#48BB78" fontSize="9" fontWeight="600">TODAY</text>}
+                                {day === 7 && <text x={cx} y={475} textAnchor="middle" fill="#E53E3E" fontSize="9">Expires</text>}
+                            </g>
+                        );
+                    })}
+                    
+                    {/* Rotation arrows */}
+                    <path d="M 215 430 A 220 30 0 0 1 735 430" fill="none" stroke="#CBD5E0" strokeWidth="2" strokeDasharray="5,3" />
+                    <polygon points="740,425 750,430 740,435" fill="#CBD5E0" />
+                    
+                    {/* Stats */}
+                    <rect x={100} y={500} width={180} height={40} rx={8} fill="#F7FAFC" stroke="#E2E8F0" />
+                    <text x={190} y={525} textAnchor="middle" fill="#1A202C" fontSize="11" fontWeight="600">💾 Storage: 6% used</text>
+                    
+                    <rect x={310} y={500} width={180} height={40} rx={8} fill="#F7FAFC" stroke="#E2E8F0" />
+                    <text x={400} y={525} textAnchor="middle" fill="#1A202C" fontSize="11" fontWeight="600">📊 RAM: 88% available</text>
+                    
+                    <rect x={520} y={500} width={180} height={40} rx={8} fill="#F7FAFC" stroke="#E2E8F0" />
+                    <text x={610} y={525} textAnchor="middle" fill="#1A202C" fontSize="11" fontWeight="600">🔄 Last: Today 03:00</text>
+                </svg>
+            );
+        }
+
+        function NodeCoverage() {
+            return (
+                <svg viewBox="0 0 950 500" style={{width: "100%", minWidth: 700, height: "auto"}}>
+                    <defs>
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.1" />
+                        </filter>
+                    </defs>
+                    
+                    {/* VPN Mesh Background */}
+                    <rect x={50} y={40} width={850} height={400} rx={20} fill="#F7FAFC" stroke="#38B2AC" strokeWidth="2" strokeDasharray="8,4" />
+                    <text x={475} y={70} textAnchor="middle" fill="#234E52" fontSize="14" fontWeight="600">🔐 Tailscale VPN Mesh • Fort Knox Backup Coverage</text>
+                    
+                    {/* Mac Mini - Orchestrator */}
+                    <ArchNode x={100} y={100} w={180} h={130} title="Mac Mini" subtitle="ORCHESTRATOR" icon="🖥️" color="#667EEA" status="✓ Clawd Primary" />
+                    <text x={190} y={250} textAnchor="middle" fill="#667EEA" fontSize="10" fontWeight="500">100.88.105.106</text>
+                    <rect x={110} y={260} width={160} height={50} rx={6} fill="#667EEA20" stroke="#667EEA" strokeWidth="1" />
+                    <text x={190} y={280} textAnchor="middle" fill="#667EEA" fontSize="9" fontWeight="600">BACKED UP:</text>
+                    <text x={190} y={295} textAnchor="middle" fill="#4A5568" fontSize="8">~/clawd • ~/dta • configs</text>
+                    
+                    {/* Fort Knox - Central */}
+                    <ArchNode x={385} y={100} w={180} h={130} title="Mac Pro" subtitle="FORT KNOX" icon="🏰" color="#C6A700" status="✓ Backup Server" />
+                    <text x={475} y={250} textAnchor="middle" fill="#C6A700" fontSize="10" fontWeight="500">100.101.89.80</text>
+                    <rect x={395} y={260} width={160} height={50} rx={6} fill="#C6A70020" stroke="#C6A700" strokeWidth="1" />
+                    <text x={475} y={280} textAnchor="middle" fill="#C6A700" fontSize="9" fontWeight="600">STORES:</text>
+                    <text x={475} y={295} textAnchor="middle" fill="#4A5568" fontSize="8">7-day backups • shared-brain</text>
+                    
+                    {/* Dell - Workstation */}
+                    <ArchNode x={670} y={100} w={180} h={130} title="Dell" subtitle="WORKSTATION" icon="💻" color="#ED8936" status="✓ Windows 11" />
+                    <text x={760} y={250} textAnchor="middle" fill="#ED8936" fontSize="10" fontWeight="500">100.119.87.108</text>
+                    <rect x={680} y={260} width={160} height={50} rx={6} fill="#ED893620" stroke="#ED8936" strokeWidth="1" />
+                    <text x={760} y={280} textAnchor="middle" fill="#ED8936" fontSize="9" fontWeight="600">BACKED UP:</text>
+                    <text x={760} y={295} textAnchor="middle" fill="#4A5568" fontSize="8">Project Vault • Documents</text>
+                    
+                    {/* Google Cloud */}
+                    <ArchNode x={200} y={340} w={160} h={100} title="Google Cloud" subtitle="VM Instance" icon="☁️" color="#3182CE" small={true} status="✓ 7B Models" />
+                    <text x={280} y={455} textAnchor="middle" fill="#3182CE" fontSize="9">100.107.231.87</text>
+                    
+                    {/* Phone */}
+                    <ArchNode x={590} y={340} w={160} h={100} title="Phone" subtitle="iOS Device" icon="📱" color="#9F7AEA" small={true} status="✓ iCloud Sync" />
+                    <text x={670} y={455} textAnchor="middle" fill="#9F7AEA" fontSize="9">Mobile Node</text>
+                    
+                    {/* Flowing connections to Fort Knox */}
+                    <FlowingLine x1={280} y1={165} x2={385} y2={165} color="#667EEA" delay={0} />
+                    <FlowingLine x1={670} y1={165} x2={565} y2={165} color="#ED8936" delay={0.7} />
+                    <FlowingLine x1={280} y1={340} x2={385} y2={230} color="#3182CE" delay={1.4} curved={true} />
+                    <FlowingLine x1={590} y1={390} x2={565} y2={230} color="#9F7AEA" delay={2.1} curved={true} />
+                    
+                    {/* Bidirectional sync indicators */}
+                    <FlowingLine x1={385} y1={175} x2={280} y2={175} color="#48BB78" delay={0.3} reverse={true} />
+                    <FlowingLine x1={565} y1={175} x2={670} y2={175} color="#48BB78" delay={1} reverse={true} />
+                </svg>
+            );
+        }
+
+        function RecoveryProcedures() {
+            return (
+                <svg viewBox="0 0 950 520" style={{width: "100%", minWidth: 700, height: "auto"}}>
+                    <defs>
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.1" />
+                        </filter>
+                    </defs>
+                    
+                    <text x={475} y={35} textAnchor="middle" fill="#1A365D" fontSize="18" fontWeight="700">🔄 DISASTER RECOVERY WORKFLOW</text>
+                    
+                    {/* Step 1: Disaster */}
+                    <ArchNode x={80} y={60} w={150} h={100} title="1. DISASTER" subtitle="Node Failure" icon="💥" color="#E53E3E" small={true} />
+                    
+                    {/* Step 2: Detect */}
+                    <ArchNode x={260} y={60} w={150} h={100} title="2. DETECT" subtitle="Health Check" icon="🔍" color="#ED8936" small={true} />
+                    
+                    {/* Step 3: Alert */}
+                    <ArchNode x={440} y={60} w={150} h={100} title="3. ALERT" subtitle="Notify Admin" icon="🚨" color="#ECC94B" small={true} />
+                    
+                    {/* Step 4: Recover */}
+                    <ArchNode x={620} y={60} w={150} h={100} title="4. RECOVER" subtitle="From Fort Knox" icon="🏰" color="#48BB78" small={true} />
+                    
+                    {/* Step 5: Verify */}
+                    <ArchNode x={800} y={60} w={120} h={100} title="5. VERIFY" subtitle="Test & Confirm" icon="✅" color="#3182CE" small={true} />
+                    
+                    {/* Flow arrows */}
+                    <FlowingLine x1={230} y1={110} x2={260} y2={110} color="#E53E3E" delay={0} />
+                    <FlowingLine x1={410} y1={110} x2={440} y2={110} color="#ED8936" delay={0.5} />
+                    <FlowingLine x1={590} y1={110} x2={620} y2={110} color="#ECC94B" delay={1} />
+                    <FlowingLine x1={770} y1={110} x2={800} y2={110} color="#48BB78" delay={1.5} />
+                    
+                    {/* Recovery Scenarios */}
+                    <text x={475} y={200} textAnchor="middle" fill="#1A365D" fontSize="14" fontWeight="700">📋 RECOVERY SCENARIOS</text>
+                    
+                    {/* Scenario 1: Full Node Recovery */}
+                    <rect x={60} y={220} width={260} height={140} rx={12} fill="white" stroke="#E2E8F0" filter="url(#shadow)" />
+                    <rect x={60} y={220} width={260} height={6} rx={3} fill="#E53E3E" />
+                    <text x={190} y={250} textAnchor="middle" fill="#E53E3E" fontSize="12" fontWeight="700">🔥 Full Node Loss</text>
+                    <text x={190} y={275} textAnchor="middle" fill="#4A5568" fontSize="10">Mac Mini completely fails</text>
+                    <text x={80} y={300} fill="#48BB78" fontSize="9">✓ SSH to Fort Knox</text>
+                    <text x={80} y={315} fill="#48BB78" fontSize="9">✓ Restore from latest backup</text>
+                    <text x={80} y={330} fill="#48BB78" fontSize="9">✓ Reconfigure services</text>
+                    <text x={80} y={345} fill="#718096" fontSize="9">⏱️ Recovery: ~30 min</text>
+                    
+                    {/* Scenario 2: Partial Corruption */}
+                    <rect x={345} y={220} width={260} height={140} rx={12} fill="white" stroke="#E2E8F0" filter="url(#shadow)" />
+                    <rect x={345} y={220} width={260} height={6} rx={3} fill="#ED8936" />
+                    <text x={475} y={250} textAnchor="middle" fill="#ED8936" fontSize="12" fontWeight="700">⚠️ File Corruption</text>
+                    <text x={475} y={275} textAnchor="middle" fill="#4A5568" fontSize="10">MEMORY.md or config damaged</text>
+                    <text x={365} y={300} fill="#48BB78" fontSize="9">✓ Identify corrupted files</text>
+                    <text x={365} y={315} fill="#48BB78" fontSize="9">✓ Pull specific files from backup</text>
+                    <text x={365} y={330} fill="#48BB78" fontSize="9">✓ Verify integrity</text>
+                    <text x={365} y={345} fill="#718096" fontSize="9">⏱️ Recovery: ~5 min</text>
+                    
+                    {/* Scenario 3: Accidental Deletion */}
+                    <rect x={630} y={220} width={260} height={140} rx={12} fill="white" stroke="#E2E8F0" filter="url(#shadow)" />
+                    <rect x={630} y={220} width={260} height={6} rx={3} fill="#48BB78" />
+                    <text x={760} y={250} textAnchor="middle" fill="#48BB78" fontSize="12" fontWeight="700">🗑️ Accidental Delete</text>
+                    <text x={760} y={275} textAnchor="middle" fill="#4A5568" fontSize="10">Oops! rm -rf wrong folder</text>
+                    <text x={650} y={300} fill="#48BB78" fontSize="9">✓ Check day-N backup</text>
+                    <text x={650} y={315} fill="#48BB78" fontSize="9">✓ Restore deleted content</text>
+                    <text x={650} y={330} fill="#48BB78" fontSize="9">✓ Resume operations</text>
+                    <text x={650} y={345} fill="#718096" fontSize="9">⏱️ Recovery: ~2 min</text>
+                    
+                    {/* Recovery Commands */}
+                    <text x={475} y={400} textAnchor="middle" fill="#1A365D" fontSize="14" fontWeight="700">💻 QUICK RECOVERY COMMANDS</text>
+                    
+                    <rect x={100} y={420} width={750} height={80} rx={8} fill="#1A202C" />
+                    <text x={120} y={445} fill="#48BB78" fontSize="11" fontFamily="monospace"># List available backups</text>
+                    <text x={120} y={462} fill="#E2E8F0" fontSize="11" fontFamily="monospace">ssh tommie@100.101.89.80 "ls -la ~/backups/"</text>
+                    <text x={120} y={485} fill="#48BB78" fontSize="11" fontFamily="monospace"># Restore Mac Mini clawd folder</text>
+                    <text x={500} y={485} fill="#E2E8F0" fontSize="11" fontFamily="monospace">rsync -avz fort-knox:~/backups/mac-mini/latest/ ~/clawd/</text>
+                </svg>
+            );
+        }
+
+        function App() {
+            const [activeTab, setActiveTab] = useState("lifecycle");
+            
+            const tabs = [
+                { id: "lifecycle", label: "🔄 Backup Lifecycle", component: BackupLifecycle },
+                { id: "coverage", label: "🌐 Node Coverage", component: NodeCoverage },
+                { id: "recovery", label: "🛡️ Recovery", component: RecoveryProcedures }
+            ];
+            
+            const ActiveDiagram = tabs.find(t => t.id === activeTab)?.component || BackupLifecycle;
+            
+            return (
+                <div className="container">
+                    <div className="header-banner">
+                        <h1>🏰 Fort Knox Backup System</h1>
+                        <p>Automated 7-day rolling backups for the entire Clawd infrastructure</p>
+                    </div>
+                    
+                    <div className="status-badges">
+                        <span className="badge badge-gold">🔐 Mac Pro Vault</span>
+                        <span className="badge badge-green">✓ All Nodes Protected</span>
+                        <span className="badge badge-blue">📅 7-Day Retention</span>
+                    </div>
+                    
+                    <div className="section-tabs">
+                        {tabs.map(tab => (
+                            <button 
+                                key={tab.id}
+                                className={"tab-btn " + (activeTab === tab.id ? "active" : "")}
+                                onClick={() => setActiveTab(tab.id)}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                    
+                    <div className="diagram-card">
+                        <div className="diagram-title">
+                            <h2>{tabs.find(t => t.id === activeTab)?.label}</h2>
+                            <p>Interactive backup system visualization</p>
+                        </div>
+                        <div className="diagram-svg">
+                            <ActiveDiagram />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+
+    <!-- FORT KNOX INFO SECTION -->
+    <div style="max-width: 1400px; margin: 2rem auto; padding: 0 2rem;">
+        <div style="background: rgba(0,0,0,0.2); border-radius: 20px; padding: 2rem;">
+            <h2 style="text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem;">📋 Backup Policy Details</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+    <!-- REAL-TIME BACKUP STATS -->
+    <div id="backup-stats-root" style="max-width: 1400px; margin: 0 auto 2rem; padding: 0 2rem;"></div>
+    <script type="text/babel">
+        function BackupStats() {
+            const [stats, setStats] = React.useState(null);
+            const [loading, setLoading] = React.useState(true);
+            const [error, setError] = React.useState(null);
+            
+            React.useEffect(() => {
+                async function fetchStats() {
+                    try {
+                        const response = await fetch('/api/backups/status');
+                        const data = await response.json();
+                        setStats(data);
+                        setLoading(false);
+                    } catch (err) {
+                        setError(err.message);
+                        setLoading(false);
+                    }
+                }
+                
+                fetchStats();
+                const interval = setInterval(fetchStats, 30000); // Refresh every 30s
+                return () => clearInterval(interval);
+            }, []);
+            
+            if (loading) return <div style={{textAlign:'center',padding:'2rem',color:'#fff'}}>Loading stats...</div>;
+            if (error) return <div style={{textAlign:'center',padding:'2rem',color:'#E53E3E'}}>Error: {error}</div>;
+            if (!stats) return null;
+            
+            const statusColor = stats.status === 'healthy' ? '#48BB78' : stats.status === 'warning' ? '#F59E0B' : '#E53E3E';
+            const hoursAgo = stats.backups.hours_since_last || 0;
+            const backupStatus = hoursAgo < 24 ? '✅ Recent' : hoursAgo < 48 ? '⚠️ Aging' : '❌ Stale';
+            
+            return (
+                <div style={{background:'rgba(0,0,0,0.3)',borderRadius:'20px',padding:'2rem'}}>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))',gap:'1.5rem'}}>
+                        <div style={{background:'rgba(255,255,255,0.1)',padding:'1.5rem',borderRadius:'15px',textAlign:'center'}}>
+                            <div style={{fontSize:'2.5rem',fontWeight:'bold',color:statusColor',marginBottom:'0.5rem'}}>
+                                {stats.backups.count}
+                            </div>
+                            <div style={{color:'rgba(255,255,255,0.7)',fontSize:'0.9rem'}}>Total Backups</div>
+                        </div>
+                        
+                        <div style={{background:'rgba(255,255,255,0.1)',padding:'1.5rem',borderRadius:'15px',textAlign:'center'}}>
+                            <div style={{fontSize:'2.5rem',fontWeight:'bold',color:'#FFD700',marginBottom:'0.5rem'}}>
+                                {stats.backups.total_size_gb} GB
+                            </div>
+                            <div style={{color:'rgba(255,255,255,0.7)',fontSize:'0.9rem'}}>Backup Size</div>
+                        </div>
+                        
+                        <div style={{background:'rgba(255,255,255,0.1)',padding:'1.5rem',borderRadius:'15px',textAlign:'center'}}>
+                            <div style={{fontSize:'1.8rem',fontWeight:'bold',color:'#3B82F6',marginBottom:'0.5rem'}}>
+                                {hoursAgo.toFixed(1)}h ago
+                            </div>
+                            <div style={{color:'rgba(255,255,255,0.7)',fontSize:'0.9rem'}}>Last Backup {backupStatus}</div>
+                        </div>
+                        
+                        <div style={{background:'rgba(255,255,255,0.1)',padding:'1.5rem',borderRadius:'15px',textAlign:'center'}}>
+                            <div style={{fontSize:'2.5rem',fontWeight:'bold',color:parseInt(stats.disk_used_percent) > 90 ? '#E53E3E' : '#48BB78',marginBottom:'0.5rem'}}>
+                                {stats.disk_used_percent}%
+                            </div>
+                            <div style={{color:'rgba(255,255,255,0.7)',fontSize:'0.9rem'}}>Disk Used</div>
+                        </div>
+                    </div>
+                    <div style={{textAlign:'center',marginTop:'1rem',fontSize:'0.85rem',color:'rgba(255,255,255,0.5)'}}>
+                        Updated: {new Date(stats.timestamp).toLocaleTimeString()} • Auto-refresh: 30s
+                    </div>
+                </div>
+            );
+        }
+        
+        ReactDOM.createRoot(document.getElementById("backup-stats-root")).render(<BackupStats />);
+    </script>
+                <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 15px;">
+                    <h3 style="color: #FFD700; margin-bottom: 1rem;">🏦 Primary Vault</h3>
+                    <ul style="list-style: none; font-size: 0.9rem;">
+                        <li>📍 Location: Mac Pro (100.92.123.115)</li>
+                        <li>📦 Storage: ~/fort-knox-backups/</li>
+                        <li>🔄 Retention: 30 versions</li>
+                        <li>⏰ Schedule: Before each deploy</li>
+                    </ul>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 15px;">
+                    <h3 style="color: #48BB78; margin-bottom: 1rem;">✅ Protected Items</h3>
+                    <ul style="list-style: none; font-size: 0.9rem;">
+                        <li>✓ ~/clawd/ (configs, scripts, memory)</li>
+                        <li>✓ ~/.clawdbot/ (agent configs)</li>
+                        <li>✓ ~/shared-memory/ (cross-agent data)</li>
+                        <li>✓ Dashboard pages</li>
+                    </ul>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 15px;">
+                    <h3 style="color: #E53E3E; margin-bottom: 1rem;">⚠️ Critical Rules</h3>
+                    <ul style="list-style: none; font-size: 0.9rem;">
+                        <li>❌ NEVER reduce MAX_VERSIONS below 30</li>
+                        <li>❌ NEVER auto-delete without validation</li>
+                        <li>✓ Run backup-before-truncate.sh first</li>
+                        <li>✓ Check backups exist before deletions</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="margin-top: 2rem; padding: 1.5rem; background: #1A202C; border-radius: 10px;">
+                <h3 style="color: #48BB78; margin-bottom: 1rem;">💻 Quick Commands</h3>
+                <code style="display: block; color: #E2E8F0; font-size: 0.85rem; line-height: 1.8;">
+                    # Check backup count<br>
+                    ls -la ~/clawd-versions/ | wc -l<br><br>
+                    # Backup before truncate<br>
+                    ~/clawd/scripts/backup-before-truncate.sh<br><br>
+                    # Restore from version<br>
+                    rsync -av ~/clawd-versions/vYYYYMMDD-HHMMSS/ ~/clawd/
+                </code>
+            </div>
+            
+            <div style="text-align: center; margin-top: 1.5rem; opacity: 0.7;">
+                <p>📚 Full documentation: ~/shared-memory/FORT_KNOX_BACKUP_POLICY.md</p>
+                <p>Last updated: March 7, 2026 | MAX_VERSIONS: 30</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+

@@ -10,8 +10,8 @@ Write-Host "======== TOMMIE'S AI EMPIRE - STATUS ========" -ForegroundColor Cyan
 Write-Host ""
 
 $nodes = @(
-    @{ name = "Mac Mini"; ip = "100.82.234.66"; ollama = $true },
-    @{ name = "Mac Pro"; ip = "100.67.192.21"; ollama = $true },
+    @{ name = "Mac Mini"; ip = "100.88.105.106"; ollama = $true },
+    @{ name = "Mac Pro"; ip = "100.89.75.126"; ollama = $true },
     @{ name = "Google Cloud"; ip = "100.107.231.87"; ollama = $true },
     @{ name = "iPhone"; ip = "100.114.130.38"; ollama = $false }
 )

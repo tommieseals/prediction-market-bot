@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agents - Clawd Dashboard</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+        }
+        .nav-brand h1 { font-size: 1.8rem; }
+        .nav-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .nav-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .section-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        .tab-btn:hover { background: rgba(255,255,255,0.2); }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #1a365d, #2c5282);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .diagram-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        .diagram-title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .diagram-title h2 {
+            color: #1a365d;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .diagram-title p {
+            color: #718096;
+            font-size: 1rem;
+        }
+        .diagram-svg {
+            width: 100%;
+            overflow-x: auto;
+        }
+        @media (max-width: 768px) {
+            .nav-bar { flex-wrap: wrap; gap: 1rem; }
+            .nav-links { width: 100%; justify-content: center; }
+            .container { padding: 1rem; }
+            .diagram-card { padding: 1rem; }
+            .tab-btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
+        }
+        @media (max-width: 768px) {
+            .nav-links.active {
+                max-height: 70vh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><h1>🤖 Clawd Dashboard</h1></div>
+        <div class="nav-links" id="navLinks">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/infrastructure" class="nav-link">Infrastructure</a>
+                <a href="/agents" class="nav-link active">Agents</a>
+                <a href="/projects" class="nav-link">Projects</a>
+                <a href="/apis" class="nav-link">APIs</a>
+                <a href="/skills" class="nav-link">Skills</a>
+                <a href="/tools" class="nav-link">Tools</a>
+                <a href="/achievements" class="nav-link">Achievements</a>
+                <a href="/shared-brain" class="nav-link">🧠 Brain</a>
+                <a href="/swarm-monitor" class="nav-link">🐝 Swarm</a>
+                <a href="/pharma" class="nav-link">💊 Pharma</a>
+                <a href="/terminator" class="nav-link">🤖 Terminator</a>
+                <a href="/vault" class="nav-link">💰 Vault</a>
+                <a href="/fort-knox" class="nav-link">🏦 Fort Knox</a>
+                <a href="/whales" class="nav-link">🐋 Whales</a>
+                <a href="/legion-tracker" class="nav-link">🎖️ Legion</a>
+                <a href="/legion" class="nav-link">⚔️ Legion HQ</a>
+                <a href="/fraud-detection" class="nav-link">🛡️ Fraud</a>
+                <a href="n8n-hub.html" class="nav-link">⚡ n8n</a>
+                <a href="/fiverr" class="nav-link">🛒 Fiverr</a>
+                <a href="/kdp" class="nav-link">📚 KDP</a>
+                <a href="tascosaur.html" class="nav-link">🦖 Tascosaur</a>
+                <a href="taskbot.html" class="nav-link">📋 TaskBot</a>
+                <a href="teams-translator.html" class="nav-link">🌐 Translator</a>
+                <a href="sidekick-paas.html" class="nav-link">🦸 Sidekick</a>
+                <a href="memory.html" class="nav-link">🧬 Memory</a>
+                <a href="sessions.html" class="nav-link">💬 Sessions</a>
+                <a href="a2a-server.html" class="nav-link">🔗 A2A</a>
+                <a href="/docs" class="nav-link">Docs</a>
+            </div>
+        </nav>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function FlowingLine({ x1, y1, x2, y2, color = "#3182CE", delay = 0, curved = false, bidirectional = false }) {
+            const midX = (x1 + x2) / 2;
+            const midY = curved ? Math.min(y1, y2) - 40 : (y1 + y2) / 2;
+            const pathD = curved 
+                ? "M " + x1 + " " + y1 + " Q " + midX + " " + midY + " " + x2 + " " + y2
+                : "M " + x1 + " " + y1 + " L " + x2 + " " + y2;
+            const reversePath = curved
+                ? "M " + x2 + " " + y2 + " Q " + midX + " " + midY + " " + x1 + " " + y1
+                : "M " + x2 + " " + y2 + " L " + x1 + " " + y1;
+
+            return (
+                <g>
+                    <path d={pathD} fill="none" stroke={color + "40"} strokeWidth="2" strokeDasharray="6,4" />
+                    <circle r="5" fill={color}>
+                        <animateMotion dur="2.5s" repeatCount="indefinite" begin={delay + "s"} path={pathD} />
+                    </circle>
+                    {bidirectional && (
+                        <circle r="4" fill={color} opacity="0.7">
+                            <animateMotion dur="2.5s" repeatCount="indefinite" begin={(delay + 1.25) + "s"} path={reversePath} />
+                        </circle>
+                    )}
+                    <circle cx={x1} cy={y1} r="4" fill={color} opacity="0.6" />
+                    <circle cx={x2} cy={y2} r="4" fill={color} opacity="0.6" />
+                </g>
+            );
+        }
+
+        function ArchNode({ x, y, w, h, title, subtitle, icon, color, small = false, status = null }) {
+            const titleY = small ? 48 : 58;
+            const subtitleY = small ? 62 : 76;
+            const iconSize = small ? 20 : 28;
+            
+            return (
+                <g>
+                    <rect x={x} y={y} width={w} height={h} rx={12} fill="white" stroke="#E2E8F0" strokeWidth="1" filter="url(#shadow)" />
+                    <rect x={x} y={y} width={w} height={6} rx={3} fill={color} />
+                    <circle cx={x + w/2} cy={y + 28} r={small ? 18 : 24} fill={color + "20"} />
+                    <text x={x + w/2} y={y + 33} textAnchor="middle" fontSize={iconSize} dominantBaseline="middle">{icon}</text>
+                    <text x={x + w/2} y={y + titleY} textAnchor="middle" fill="#1A202C" fontSize={small ? 11 : 13} fontWeight="600">{title}</text>
+                    {subtitle && <text x={x + w/2} y={y + subtitleY} textAnchor="middle" fill="#718096" fontSize={small ? 9 : 10}>{subtitle}</text>}
+                    {status && (
+                        <g>
+                            <circle cx={x + w - 12} cy={y + 12} r="6" fill={status === "active" ? "#48BB78" : status === "idle" ? "#ECC94B" : "#E53E3E"} />
+                            <circle cx={x + w - 12} cy={y + 12} r="6" fill={status === "active" ? "#48BB78" : "transparent"}>
+                                <animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite" />
+                                <animate attributeName="opacity" values="0.8;0;0.8" dur="2s" repeatCount="indefinite" />
+                            </circle>
+                        </g>
+                    )}
+                </g>
+            );
+        }
+
+        function AgentTypes() {
+            return (
+                <svg viewBox="0 0 950 580" style={{width: "100%", minWidth: 700, height: "auto"}}>
+                    <defs>
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.1" />
+                        </filter>
+                        <linearGradient id="mainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#667EEA" stopOpacity="0.1" />
+                            <stop offset="100%" stopColor="#764ba2" stopOpacity="0.1" />
+                        </linearGradient>
+                    </defs>
+                    
+                    {/* Main Agent - Center Top */}
+                    <rect x={300} y={20} width={350} height={140} rx={16} fill="url(#mainGrad)" stroke="#667EEA" strokeWidth="2" strokeDasharray="8,4" />
+                    <text x={475} y={45} textAnchor="middle" fill="#667EEA" fontSize="12" fontWeight="600">MAIN SESSION</text>
+                    <ArchNode x={340} y={55} w={270} h={95} title="Main Agent" subtitle="Claude Opus 4.5 • Primary Conversation" icon="🧠" color="#3182CE" status="active" />
+                    
+                    {/* Connection lines from Main to Sub-agents */}
+                    <FlowingLine x1={475} y1={150} x2={150} y2={240} color="#9F7AEA" delay={0} curved={true} />
+                    <FlowingLine x1={475} y1={150} x2={475} y2={240} color="#9F7AEA" delay={0.3} curved={false} />
+                    <FlowingLine x1={475} y1={150} x2={800} y2={240} color="#9F7AEA" delay={0.6} curved={true} />
+                    
+                    {/* Sub-agents Row */}
+                    <rect x={40} y={200} width={880} height={140} rx={16} fill="#F0FFF4" stroke="#48BB78" strokeWidth="2" strokeDasharray="8,4" />
+                    <text x={480} y={225} textAnchor="middle" fill="#276749" fontSize="12" fontWeight="600">🐝 SUB-AGENTS (Spawned Workers)</text>
+                    
+                    <ArchNode x={60} y={240} w={150} h={85} title="Research Agent" subtitle="Web search • Analysis" icon="🔍" color="#48BB78" small={true} status="idle" />
+                    <ArchNode x={240} y={240} w={150} h={85} title="Code Agent" subtitle="Dev • Debug • Review" icon="💻" color="#48BB78" small={true} status="active" />
+                    <ArchNode x={420} y={240} w={150} h={85} title="Writer Agent" subtitle="Docs • Content" icon="✍️" color="#48BB78" small={true} status="idle" />
+                    <ArchNode x={600} y={240} w={150} h={85} title="Data Agent" subtitle="Parse • Transform" icon="📊" color="#48BB78" small={true} status="idle" />
+                    <ArchNode x={780} y={240} w={140} h={85} title="+ More" subtitle="On-demand spawn" icon="➕" color="#A0AEC0" small={true} />
+                    
+                    {/* Admin Agent - Bottom Left */}
+                    <rect x={40} y={380} width={280} height={180} rx={16} fill="#FFF5F5" stroke="#E53E3E" strokeWidth="2" strokeDasharray="8,4" />
+                    <text x={180} y={405} textAnchor="middle" fill="#C53030" fontSize="12" fontWeight="600">🛡️ ADMIN SYSTEM</text>
+                    
+                    <ArchNode x={60} y={420} w={240} h={90} title="Admin Agent" subtitle="Health • Security • Monitoring" icon="🛡️" color="#E53E3E" status="active" />
+                    <text x={180} y={530} textAnchor="middle" fill="#718096" fontSize="10">Runs every 5 minutes</text>
+                    <text x={180} y={545} textAnchor="middle" fill="#718096" fontSize="9">Checks: Sessions • Memory • Errors</text>
+                    
+                    {/* Cron Agents - Bottom Center */}
+                    <rect x={340} y={380} width={280} height={180} rx={16} fill="#FFFAF0" stroke="#ED8936" strokeWidth="2" strokeDasharray="8,4" />
+                    <text x={480} y={405} textAnchor="middle" fill="#C05621" fontSize="12" fontWeight="600">⏰ SCHEDULED JOBS</text>
+                    
+                    <ArchNode x={360} y={420} w={110} h={75} title="Heartbeat" subtitle="30 min poll" icon="💓" color="#ED8936" small={true} />
+                    <ArchNode x={490} y={420} w={110} h={75} title="Reminders" subtitle="Exact times" icon="🔔" color="#ED8936" small={true} />
+                    <text x={480} y={520} textAnchor="middle" fill="#718096" fontSize="10">Cron manager schedules jobs</text>
+                    <text x={480} y={535} textAnchor="middle" fill="#718096" fontSize="9">Output → Channel delivery</text>
+                    
+                    {/* Gateway - Bottom Right */}
+                    <rect x={640} y={380} width={270} height={180} rx={16} fill="#EBF8FF" stroke="#3182CE" strokeWidth="2" strokeDasharray="8,4" />
+                    <text x={775} y={405} textAnchor="middle" fill="#2B6CB0" fontSize="12" fontWeight="600">🔮 GATEWAY</text>
+                    
+                    <ArchNode x={660} y={420} w={230} h={90} title="Clawdbot Gateway" subtitle="Auth • Route • Queue • Deliver" icon="🔮" color="#667EEA" status="active" />
+                    <text x={775} y={530} textAnchor="middle" fill="#718096" fontSize="10">Entry point for all messages</text>
+                    <text x={775} y={545} textAnchor="middle" fill="#718096" fontSize="9">Telegram • Web • Cron • Admin</text>
+                    
+                    {/* Connections between bottom sections */}
+                    <FlowingLine x1={320} y1={465} x2={360} y2={465} color="#ED8936" delay={1.2} />
+                    <FlowingLine x1={600} y1={465} x2={660} y2={465} color="#667EEA" delay={1.5} />
+                    <FlowingLine x1={180} y1={420} x2={475} y2={325} color="#E53E3E" delay={1.8} curved={true} />
+                </svg>
+            );
+        }
+
+        function AgentLifecycle() {
+            return (
+                <svg viewBox="0 0 950 520" style={{width: "100%", minWidth: 700, height: "auto"}}>
+                    <defs>
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.1" />
+                        </filter>
+                    </defs>
+                    
+                    {/* Timeline */}
+                    <line x1={80} y1={80} x2={870} y2={80} stroke="#CBD5E0" strokeWidth="3" />
+                    
+                    {/* Phase 1: Spawn */}
+                    <circle cx={120} cy={80} r={20} fill="#3182CE" />
+                    <text x={120} y={85} textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">1</text>
+                    <text x={120} y={115} textAnchor="middle" fill="#1A202C" fontSize="12" fontWeight="600">Spawn</text>
+                    
+                    <ArchNode x={50} y={140} w={140} h={85} title="Message In" subtitle="Telegram/Web/Cron" icon="📨" color="#3182CE" small={true} />
+                    
+                    {/* Phase 2: Initialize */}
+                    <circle cx={280} cy={80} r={20} fill="#48BB78" />
+                    <text x={280} y={85} textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">2</text>
+                    <text x={280} y={115} textAnchor="middle" fill="#1A202C" fontSize="12" fontWeight="600">Initialize</text>
+                    
+                    <ArchNode x={210} y={140} w={140} h={85} title="Load Context" subtitle="SOUL • MEMORY" icon="📁" color="#48BB78" small={true} />
+                    
+                    {/* Phase 3: Process */}
+                    <circle cx={440} cy={80} r={20} fill="#9F7AEA" />
+                    <text x={440} y={85} textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">3</text>
+                    <text x={440} y={115} textAnchor="middle" fill="#1A202C" fontSize="12" fontWeight="600">Process</text>
+                    
+                    <ArchNode x={370} y={140} w={140} h={85} title="LLM Query" subtitle="Claude Opus" icon="🧠" color="#9F7AEA" small={true} />
+                    
+                    {/* Phase 4: Execute */}
+                    <circle cx={600} cy={80} r={20} fill="#ED8936" />
+                    <text x={600} y={85} textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">4</text>
+                    <text x={600} y={115} textAnchor="middle" fill="#1A202C" fontSize="12" fontWeight="600">Execute</text>
+                    
+                    <ArchNode x={530} y={140} w={140} h={85} title="Tool Calls" subtitle="Read/Write/Exec" icon="🔧" color="#ED8936" small={true} />
+                    
+                    {/* Phase 5: Respond */}
+                    <circle cx={760} cy={80} r={20} fill="#38B2AC" />
+                    <text x={760} y={85} textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">5</text>
+                    <text x={760} y={115} textAnchor="middle" fill="#1A202C" fontSize="12" fontWeight="600">Respond</text>
+                    
+                    <ArchNode x={690} y={140} w={140} h={85} title="Deliver" subtitle="Reply to user" icon="✅" color="#38B2AC" small={true} />
+                    
+                    {/* Arrows between phases */}
+                    <FlowingLine x1={190} y1={185} x2={210} y2={185} color="#3182CE" delay={0} />
+                    <FlowingLine x1={350} y1={185} x2={370} y2={185} color="#48BB78" delay={0.5} />
+                    <FlowingLine x1={510} y1={185} x2={530} y2={185} color="#9F7AEA" delay={1.0} />
+                    <FlowingLine x1={670} y1={185} x2={690} y2={185} color="#ED8936" delay={1.5} />
+                    
+                    {/* Sub-agent spawn flow */}
+                    <rect x={300} y={280} width={350} height={220} rx={16} fill="#F0FFF4" stroke="#48BB78" strokeWidth="2" strokeDasharray="8,4" />
+                    <text x={475} y={305} textAnchor="middle" fill="#276749" fontSize="12" fontWeight="600">🐝 SUB-AGENT LIFECYCLE</text>
+                    
+                    <ArchNode x={320} y={320} w={130} h={75} title="Main Spawns" subtitle="Task delegation" icon="🚀" color="#3182CE" small={true} />
+                    <ArchNode x={480} y={320} w={130} h={75} title="Worker Runs" subtitle="Independent" icon="⚡" color="#9F7AEA" small={true} />
+                    
+                    <FlowingLine x1={450} y1={358} x2={480} y2={358} color="#48BB78" delay={2.0} />
+                    
+                    <ArchNode x={320} y={410} w={130} h={75} title="Result Ready" subtitle="Task complete" icon="📋" color="#48BB78" small={true} />
+                    <ArchNode x={480} y={410} w={130} h={75} title="Report Back" subtitle="Notify main" icon="📣" color="#ED8936" small={true} />
+                    
+                    <FlowingLine x1={545} y1={395} x2={545} y2={410} color="#9F7AEA" delay={2.5} />
+                    <FlowingLine x1={450} y1={448} x2={385} y2={448} color="#48BB78" delay={3.0} />
+                    
+                    {/* Session persistence */}
+                    <rect x={700} y={280} width={220} height={220} rx={16} fill="#EBF8FF" stroke="#3182CE" strokeWidth="2" strokeDasharray="8,4" />
+                    <text x={810} y={305} textAnchor="middle" fill="#2B6CB0" fontSize="12" fontWeight="600">💾 PERSISTENCE</text>
+                    
+                    <ArchNode x={720} y={325} w={180} h={70} title="Memory Write" subtitle="Daily logs • MEMORY.md" icon="📝" color="#3182CE" small={true} />
+                    <ArchNode x={720} y={410} w={180} h={70} title="Session Store" subtitle="Context for resume" icon="🗄️" color="#667EEA" small={true} />
+                    
+                    <FlowingLine x1={810} y1={395} x2={810} y2={410} color="#3182CE" delay={2.8} />
+                </svg>
+            );
+        }
+
+        function SessionManagement() {
+            return (
+                <svg viewBox="0 0 950 560" style={{width: "100%", minWidth: 700, height: "auto"}}>
+                    <defs>
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.1" />
+                        </filter>
+                    </defs>
+                    
+                    {/* Session Types Header */}
+                    <text x={475} y={35} textAnchor="middle" fill="#1A202C" fontSize="16" fontWeight="700">Session Types & Routing</text>
+                    
+                    {/* Input Sources */}
+                    <ArchNode x={40} y={60} w={120} h={80} title="Telegram" subtitle="@Dlowbands" icon="📱" color="#3182CE" small={true} status="active" />
+                    <ArchNode x={180} y={60} w={120} h={80} title="Web Chat" subtitle="Dashboard" icon="🌐" color="#38B2AC" small={true} />
+                    <ArchNode x={320} y={60} w={120} h={80} title="Cron Job" subtitle="Scheduled" icon="⏰" color="#9F7AEA" small={true} />
+                    <ArchNode x={460} y={60} w={120} h={80} title="Admin" subtitle="System" icon="🛡️" color="#E53E3E" small={true} status="active" />
+                    <ArchNode x={600} y={60} w={120} h={80} title="Heartbeat" subtitle="30 min poll" icon="💓" color="#ED8936" small={true} />
+                    
+                    {/* Gateway */}
+                    <FlowingLine x1={100} y1={140} x2={400} y2={190} color="#3182CE" delay={0} curved={true} />
+                    <FlowingLine x1={240} y1={140} x2={420} y2={190} color="#38B2AC" delay={0.2} curved={true} />
+                    <FlowingLine x1={380} y1={140} x2={450} y2={190} color="#9F7AEA" delay={0.4} curved={true} />
+                    <FlowingLine x1={520} y1={140} x2={480} y2={190} color="#E53E3E" delay={0.6} curved={true} />
+                    <FlowingLine x1={660} y1={140} x2={520} y2={190} color="#ED8936" delay={0.8} curved={true} />
+                    
+                    <ArchNode x={350} y={190} w={220} h={90} title="Clawdbot Gateway" subtitle="Session Router • Auth • Queue" icon="🔮" color="#667EEA" status="active" />
+                    
+                    {/* Session ID Generation */}
+                    <FlowingLine x1={460} y1={280} x2={460} y2={320} color="#667EEA" delay={1.0} />
+                    
+                    <rect x={280} y={320} width={360} height={80} rx={12} fill="#F7FAFC" stroke="#E2E8F0" />
+                    <text x={460} y={350} textAnchor="middle" fill="#1A202C" fontSize="12" fontWeight="600">Session ID Assignment</text>
+                    <text x={460} y={375} textAnchor="middle" fill="#667EEA" fontSize="10" fontFamily="monospace">agent:main:main • agent:main:subagent:uuid</text>
+                    <text x={460} y={390} textAnchor="middle" fill="#718096" fontSize="9">Unique per conversation thread</text>
+                    
+                    {/* Session Types */}
+                    <FlowingLine x1={370} y1={400} x2={180} y2={450} color="#3182CE" delay={1.3} curved={true} />
+                    <FlowingLine x1={460} y1={400} x2={460} y2={450} color="#48BB78" delay={1.5} />
+                    <FlowingLine x1={550} y1={400} x2={740} y2={450} color="#9F7AEA" delay={1.7} curved={true} />
+                    
+                    {/* Main Session */}
+                    <rect x={60} y={450} width={240} height={100} rx={12} fill="#EBF8FF" stroke="#3182CE" strokeWidth="2" />
+                    <text x={180} y={475} textAnchor="middle" fill="#2B6CB0" fontSize="11" fontWeight="600">🏠 MAIN SESSION</text>
+                    <text x={180} y={495} textAnchor="middle" fill="#4A5568" fontSize="10">Direct human conversation</text>
+                    <text x={180} y={510} textAnchor="middle" fill="#718096" fontSize="9">Full context • MEMORY access</text>
+                    <text x={180} y={525} textAnchor="middle" fill="#718096" fontSize="9">Can spawn sub-agents</text>
+                    
+                    {/* Shared Session */}
+                    <rect x={340} y={450} width={240} height={100} rx={12} fill="#F0FFF4" stroke="#48BB78" strokeWidth="2" />
+                    <text x={460} y={475} textAnchor="middle" fill="#276749" fontSize="11" fontWeight="600">👥 SHARED SESSION</text>
+                    <text x={460} y={495} textAnchor="middle" fill="#4A5568" fontSize="10">Group chats • Discord</text>
+                    <text x={460} y={510} textAnchor="middle" fill="#718096" fontSize="9">Limited context • No MEMORY</text>
+                    <text x={460} y={525} textAnchor="middle" fill="#718096" fontSize="9">Privacy-aware responses</text>
+                    
+                    {/* Sub-agent Session */}
+                    <rect x={620} y={450} width={240} height={100} rx={12} fill="#FAF5FF" stroke="#9F7AEA" strokeWidth="2" />
+                    <text x={740} y={475} textAnchor="middle" fill="#553C9A" fontSize="11" fontWeight="600">🐝 SUB-AGENT SESSION</text>
+                    <text x={740} y={495} textAnchor="middle" fill="#4A5568" fontSize="10">Spawned by main agent</text>
+                    <text x={740} y={510} textAnchor="middle" fill="#718096" fontSize="9">Task-focused • Ephemeral</text>
+                    <text x={740} y={525} textAnchor="middle" fill="#718096" fontSize="9">Reports back when done</text>
+                    
+                    {/* Legend */}
+                    <rect x={750} y={60} width={170} height={120} rx={10} fill="#F7FAFC" stroke="#E2E8F0" />
+                    <text x={835} y={85} textAnchor="middle" fill="#1A202C" fontSize="11" fontWeight="600">Status Legend</text>
+                    <circle cx={775} cy={105} r={6} fill="#48BB78" />
+                    <text x={790} y={109} fill="#718096" fontSize="10">Active</text>
+                    <circle cx={775} cy={125} r={6} fill="#ECC94B" />
+                    <text x={790} y={129} fill="#718096" fontSize="10">Idle</text>
+                    <circle cx={775} cy={145} r={6} fill="#E53E3E" />
+                    <text x={790} y={149} fill="#718096" fontSize="10">Error</text>
+                    <circle cx={775} cy={165} r={6} fill="#A0AEC0" />
+                    <text x={790} y={169} fill="#718096" fontSize="10">Inactive</text>
+                </svg>
+            );
+        }
+
+        function App() {
+            const [activeTab, setActiveTab] = useState("types");
+            
+            const tabs = [
+                { id: "types", label: "🤖 Agent Types", component: AgentTypes, desc: "Main agents, sub-agents, admin, and cron systems" },
+                { id: "lifecycle", label: "🔄 Lifecycle", component: AgentLifecycle, desc: "How agents spawn, process, and respond" },
+                { id: "sessions", label: "📋 Session Management", component: SessionManagement, desc: "Session routing and types" }
+            ];
+            
+            const activeTabData = tabs.find(t => t.id === activeTab);
+            const ActiveDiagram = activeTabData?.component || AgentTypes;
+            
+            return (
+                <div className="container">
+                    <div className="section-tabs">
+                        {tabs.map(tab => (
+                            <button 
+                                key={tab.id}
+                                className={"tab-btn " + (activeTab === tab.id ? "active" : "")}
+                                onClick={() => setActiveTab(tab.id)}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                    
+                    <div className="diagram-card">
+                        <div className="diagram-title">
+                            <h2>{activeTabData?.label}</h2>
+                            <p>{activeTabData?.desc}</p>
+                        </div>
+                        <div className="diagram-svg">
+                            <ActiveDiagram />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+</body>
+</html>
+

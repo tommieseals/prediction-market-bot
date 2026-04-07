@@ -21,9 +21,9 @@ param(
 )
 
 $ErrorActionPreference = "Continue"
-$MemoryDir = "C:\Users\tommi\clawd\memory"
-$ArchiveDir = "C:\Users\tommi\clawd\memory\archive"
-$MemoryFile = "C:\Users\tommi\clawd\MEMORY.md"
+$MemoryDir = "C:\Users\User\clawd\memory"
+$ArchiveDir = "C:\Users\User\clawd\memory\archive"
+$MemoryFile = "C:\Users\User\clawd\MEMORY.md"
 $Cutoff = (Get-Date).AddDays(-$Days)
 
 Write-Host ""

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Legion Stats Debug</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #000; color: #0f0; }
+        pre { background: #111; padding: 10px; border: 1px solid #0f0; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Legion Stats API Response</h1>
+    <pre id="output">Loading...</pre>
+    
+    <script>
+        async function test() {
+            const API_BASE = `http://${window.location.hostname}:8081/api`;
+            try {
+                const response = await fetch(`${API_BASE}/legion-stats`);
+                const data = await response.json();
+                
+                document.getElementById('output').textContent = 
+                    'Full API Response:\n' + 
+                    JSON.stringify(data, null, 2) + 
+                    '\n\n' +
+                    'Fields the tracker looks for:\n' +
+                    'total_scanned: ' + data.total_scanned + '\n' +
+                    'total_qualified: ' + data.total_qualified + '\n' +
+                    'total_resumes: ' + data.total_resumes + '\n' +
+                    'total_submitted: ' + data.total_submitted + '\n' +
+                    'pipeline: ' + JSON.stringify(data.pipeline) + '\n' +
+                    'scores: ' + JSON.stringify(data.scores);
+            } catch (err) {
+                document.getElementById('output').textContent = 'ERROR: ' + err.message + '\n\n' + err.stack;
+            }
+        }
+        test();
+    </script>
+</body>
+</html>
+

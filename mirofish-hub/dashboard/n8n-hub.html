@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content=width=device-width, initial-scale=1.0>
+    <title>n8n Automation Hub - Clawd Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 20px; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,0.2); }
+        .nav-brand h1 { font-size: 2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .nav-links { display: flex; gap: 20px; flex-wrap: wrap; }
+        .nav-link { color: rgba(255,255,255,0.8); text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; font-weight: 500; }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+        .card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px; }
+        .card h2 { font-size: 1.5rem; margin-bottom: 20px; color: #fbbf24; }
+        .stats-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
+        .stat-box { background: rgba(0,0,0,0.2); padding: 20px 30px; border-radius: 10px; text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: bold; color: #10b981; }
+        .stat-label { font-size: 0.9rem; opacity: 0.8; }
+        .workflow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .workflow-card { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; border-left: 4px solid #ff6d5a; }
+        .workflow-card h3 { color: #fbbf24; margin-bottom: 8px; }
+        .workflow-card p { opacity: 0.9; line-height: 1.5; }
+        .workflow-meta { margin-top: 10px; font-size: 0.85rem; opacity: 0.7; }
+    </style>
+</head>
+<body>
+    <div class=container>
+        <nav class=nav-bar>
+            <div class=nav-brand><h1>⚡ n8n Automation Hub</h1></div>
+            <div class=nav-links>
+                <a href=index.html class=nav-link>Dashboard</a>
+                <a href=projects.html class=nav-link>Projects</a>
+            <a href="/whales">🐋 Whales</a>
+            </div>
+        </nav>
+        
+        <div class=card>
+            <h2>📊 Impact Metrics</h2>
+            <div class=stats-row>
+                <div class=stat-box>
+                    <div class=stat-value>49.5</div>
+                    <div class=stat-label>Hours/Week Automated</div>
+                </div>
+                <div class=stat-box>
+                    <div class=stat-value>6</div>
+                    <div class=stat-label>Active Workflows</div>
+                </div>
+                <div class=stat-box>
+                    <div class=stat-value>$10K-50K</div>
+                    <div class=stat-label>Monthly Potential</div>
+                </div>
+            </div>
+        </div>
+
+        <div class=card>
+            <h2>🔄 Active Workflows</h2>
+            <div class=workflow-grid>
+                <div class=workflow-card>
+                    <h3>📣 TaskBot Marketing</h3>
+                    <p>Automated social media posting, content scheduling, and engagement tracking</p>
+                    <div class=workflow-meta>Trigger: Scheduled • Saves: 10h/week</div>
+                </div>
+                <div class=workflow-card>
+                    <h3>💰 Vault Monitor</h3>
+                    <p>Real-time trading alerts, position tracking, and risk notifications</p>
+                    <div class=workflow-meta>Trigger: Webhook • Saves: 5h/week</div>
+                </div>
+                <div class=workflow-card>
+                    <h3>☕ CEO Briefing</h3>
+                    <p>Daily digest of metrics, news, and action items delivered at 7am</p>
+                    <div class=workflow-meta>Trigger: Cron • Saves: 7h/week</div>
+                </div>
+                <div class=workflow-card>
+                    <h3>💼 LinkedIn Poster</h3>
+                    <p>Professional content scheduling and engagement automation</p>
+                    <div class=workflow-meta>Trigger: Scheduled • Saves: 8h/week</div>
+                </div>
+                <div class=workflow-card>
+                    <h3>🎯 Lead Scoring</h3>
+                    <p>Automated lead qualification and CRM updates</p>
+                    <div class=workflow-meta>Trigger: Webhook • Saves: 12h/week</div>
+                </div>
+                <div class=workflow-card>
+                    <h3>🛡️ API Guardian</h3>
+                    <p>API health monitoring, rate limit tracking, cost alerts</p>
+                    <div class=workflow-meta>Trigger: Interval • Saves: 7.5h/week</div>
+                </div>
+            </div>
+        </div>
+
+        <div class=card>
+            <h2>🖥️ Access</h2>
+            <p><strong>Location:</strong> Mac Mini /Users/tommie/n8n-setup/</p>
+            <p><strong>Server:</strong> Docker container n8n-legion at port 5678</p>
+            <p style=margin-top:15px;><a href=http://100.88.105.106:5678 style=color:#fbbf24;>Open n8n Dashboard →</a></p>
+        </div>
+    </div>
+</body>
+</html>
+ENDFILE
+

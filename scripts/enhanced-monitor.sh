@@ -10,15 +10,15 @@
 set -o pipefail
 
 # Configuration
-THRESHOLD_RAM=80
+THRESHOLD_RAM=85
 THRESHOLD_DISK=80
 THRESHOLD_LOAD=4
 
 # Node definitions
 declare -A NODES=(
     ["Dell"]="local"
-    ["Mac-Mini"]="100.82.234.66"
-    ["Mac-Pro"]="100.67.192.21"
+    ["Mac-Mini"]="100.88.105.106"
+    ["Mac-Pro"]="100.89.75.126"
 )
 
 # Colors for output
@@ -475,8 +475,8 @@ main() {
     [[ "$quiet_mode" == "false" ]] && echo -e "${BOLD}Running health checks...${NC}\n"
     
     check_dell_local
-    check_mac_remote "Mac-Mini" "100.82.234.66"
-    check_mac_remote "Mac-Pro" "100.67.192.21"
+    check_mac_remote "Mac-Mini" "tommie@100.88.105.106"
+    check_mac_remote "Mac-Pro" "administrator@100.89.75.126"
     check_nvidia_usage
     
     # Output results

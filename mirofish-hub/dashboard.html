@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MiroFish Intelligence Platform — Ops Dashboard</title>
+    <meta http-equiv="refresh" content="30">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            padding: 20px;
+        }
+        h1 { font-size: 1.4em; margin-bottom: 5px; }
+        h2 { font-size: 1.1em; margin: 20px 0 10px; color: #00cc00; }
+        .subtitle { color: #666; font-size: 0.85em; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .metric {
+            border: 1px solid #222;
+            padding: 15px;
+            border-radius: 4px;
+            background: #111;
+        }
+        .metric .label { color: #888; font-size: 0.8em; text-transform: uppercase; }
+        .metric .value { font-size: 1.5em; margin-top: 5px; }
+        .healthy { color: #00ff00; }
+        .warning { color: #ffaa00; }
+        .critical { color: #ff4444; }
+        .neutral { color: #aaa; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #222;
+        }
+        th { color: #888; font-size: 0.85em; text-transform: uppercase; }
+        td { font-size: 0.9em; }
+        .status-success { color: #00ff00; }
+        .status-failure { color: #ff4444; }
+        .brief-section {
+            background: #111;
+            border: 1px solid #222;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-size: 0.85em;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .footer {
+            margin-top: 30px;
+            color: #444;
+            font-size: 0.8em;
+            text-align: center;
+        }
+        #loading { color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>MIROFISH INTELLIGENCE PLATFORM</h1>
+    <div class="subtitle">Ops Dashboard — Auto-refreshes every 30 seconds</div>
+
+    <h2>SYSTEM HEALTH</h2>
+    <div class="grid" id="health-grid">
+        <div class="metric">
+            <div class="label">MiroFish Backend</div>
+            <div class="value neutral" id="health-mirofish">--</div>
+        </div>
+        <div class="metric">
+            <div class="label">Ollama GPU</div>
+            <div class="value neutral" id="health-ollama">--</div>
+        </div>
+        <div class="metric">
+            <div class="label">Database</div>
+            <div class="value neutral" id="health-database">--</div>
+        </div>
+        <div class="metric">
+            <div class="label">Disk Space</div>
+            <div class="value neutral" id="health-disk">--</div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="metric">
+            <div class="label">Total Jobs Run</div>
+            <div class="value" id="total-jobs">--</div>
+        </div>
+        <div class="metric">
+            <div class="label">Success Rate</div>
+            <div class="value" id="success-rate">--</div>
+        </div>
+        <div class="metric">
+            <div class="label">Last Cycle</div>
+            <div class="value" id="last-cycle" style="font-size:0.9em">--</div>
+        </div>
+        <div class="metric">
+            <div class="label">Latest Brief</div>
+            <div class="value" id="latest-brief" style="font-size:0.9em">--</div>
+        </div>
+    </div>
+
+    <h2>RECENT JOB EXECUTIONS</h2>
+    <table id="job-table">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Connector</th>
+                <th>Status</th>
+                <th>Duration</th>
+                <th>Job ID</th>
+            </tr>
+        </thead>
+        <tbody id="job-tbody">
+            <tr><td colspan="5" id="loading">Dashboard requires the orchestrator API endpoint.
+Run `python orchestrator.py --dashboard` for CLI view.
+
+To use this dashboard, open it in a browser after adding a /api/metrics
+endpoint to the orchestrator (future enhancement).</td></tr>
+        </tbody>
+    </table>
+
+    <h2>LATEST INTELLIGENCE BRIEF</h2>
+    <div class="brief-section" id="brief-content">
+        Run `python orchestrator.py --once` to generate your first intelligence brief.
+        Briefs are saved to output/daily_briefs/ as JSON + TXT files.
+
+        The orchestrator will automatically generate briefs every 6 hours
+        when running in continuous mode: `python orchestrator.py`
+    </div>
+
+    <h2>CONNECTOR STATUS</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Connector</th>
+                <th>Project</th>
+                <th>Data Source</th>
+                <th>Predictions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>terminator</td>
+                <td>TerminatorBot</td>
+                <td>market_cache.db</td>
+                <td><span id="pred-terminator">--</span></td>
+            </tr>
+            <tr>
+                <td>pharma</td>
+                <td>Arbitrage Pharma</td>
+                <td>opportunities.json</td>
+                <td><span id="pred-pharma">--</span></td>
+            </tr>
+            <tr>
+                <td>legion</td>
+                <td>Project Legion</td>
+                <td>SSH Mac Mini</td>
+                <td><span id="pred-legion">--</span></td>
+            </tr>
+            <tr>
+                <td>vault</td>
+                <td>Project Vault</td>
+                <td>dashboard_backup.json</td>
+                <td><span id="pred-vault">--</span></td>
+            </tr>
+            <tr>
+                <td>money_machine</td>
+                <td>Money Machine</td>
+                <td>money-machine-tracker.md</td>
+                <td><span id="pred-money_machine">--</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        MiroFish Intelligence Platform v1.0 | Orchestrator: orchestrator.py |
+        Cycle: 6h | Health: 15m | GPU: RTX 3060 / qwen2.5:14b
+    </div>
+</body>
+</html>

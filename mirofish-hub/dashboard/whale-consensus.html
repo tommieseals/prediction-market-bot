@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consensus Picks - Whale Tracker</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+/* Header */
+.header { background: #1e293b; border-bottom: 1px solid #334155; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 20px; font-weight: 700; }
+.header h1 span { color: #818cf8; }
+.nav-links { display: flex; gap: 16px; }
+.nav-links a { color: #94a3b8; text-decoration: none; font-size: 14px; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; }
+.nav-links a:hover, .nav-links a.active { color: #e2e8f0; background: #334155; }
+.header-right { display: flex; align-items: center; gap: 16px; }
+.refresh-indicator { font-size: 12px; color: #64748b; }
+.live-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* Summary bar */
+.summary-bar { background: #1e293b; padding: 12px 24px; display: flex; gap: 24px; align-items: center; border-bottom: 1px solid #334155; flex-wrap: wrap; }
+.tier-badge { padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; }
+.tier-GREEN { background: rgba(34,197,94,0.15); color: #22c55e; }
+.tier-YELLOW { background: rgba(234,179,8,0.15); color: #eab308; }
+.tier-RED { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+/* Portfolio heat */
+.heat-bar { display: flex; gap: 12px; margin-left: auto; font-size: 13px; }
+.heat-item { display: flex; align-items: center; gap: 4px; }
+.heat-item.warning { color: #f59e0b; }
+.heat-item .bar { width: 60px; height: 6px; background: #334155; border-radius: 3px; overflow: hidden; }
+.heat-item .bar-fill { height: 100%; border-radius: 3px; }
+.heat-item .bar-fill.ok { background: #22c55e; }
+.heat-item .bar-fill.warning { background: #f59e0b; }
+
+/* Filters */
+.filter-bar { padding: 12px 24px; display: flex; gap: 8px; border-bottom: 1px solid #1e293b; }
+.filter-btn { padding: 6px 14px; border-radius: 6px; border: 1px solid #334155; background: transparent; color: #94a3b8; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+.filter-btn:hover { border-color: #818cf8; color: #c7d2fe; }
+.filter-btn.active { background: #818cf8; color: #fff; border-color: #818cf8; }
+
+/* Main content */
+.main { padding: 16px 24px; }
+.tier-section { margin-bottom: 24px; }
+.tier-header { font-size: 15px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+
+/* Pick card */
+.pick-card { background: #1e293b; border-radius: 10px; padding: 16px; margin-bottom: 10px; border-left: 4px solid transparent; cursor: pointer; transition: all 0.2s; }
+.pick-card:hover { background: #263348; }
+.pick-card.GREEN { border-left-color: #22c55e; }
+.pick-card.YELLOW { border-left-color: #eab308; }
+.pick-card.RED { border-left-color: #ef4444; }
+
+.pick-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.pick-title { font-size: 16px; font-weight: 600; color: #f1f5f9; }
+.pick-confidence { font-size: 22px; font-weight: 700; }
+.pick-confidence.GREEN { color: #22c55e; }
+.pick-confidence.YELLOW { color: #eab308; }
+.pick-confidence.RED { color: #ef4444; }
+
+.pick-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: #94a3b8; }
+.pick-meta .label { color: #64748b; }
+
+.confidence-bar { width: 100%; height: 4px; background: #334155; border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.confidence-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+.confidence-fill.GREEN { background: #22c55e; }
+.confidence-fill.YELLOW { background: #eab308; }
+.confidence-fill.RED { background: #ef4444; }
+
+.pick-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.tag { padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+.tag-cat { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+.tag-miro { background: rgba(34,197,94,0.15); color: #22c55e; }
+.tag-miro.disagrees { background: rgba(239,68,68,0.15); color: #ef4444; }
+.tag-miro.pending { background: rgba(100,116,139,0.15); color: #94a3b8; }
+.tag-related { background: rgba(234,179,8,0.15); color: #eab308; }
+
+/* Whale detail (expanded) */
+.whale-detail { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid #334155; }
+.whale-detail.open { display: block; }
+.whale-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; font-size: 13px; }
+.whale-name { min-width: 140px; font-weight: 500; }
+.whale-side { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.whale-side.YES { background: rgba(34,197,94,0.15); color: #22c55e; }
+.whale-side.NO { background: rgba(239,68,68,0.15); color: #ef4444; }
+.whale-fade { color: #f59e0b; font-size: 11px; }
+.whale-tracked { color: #64748b; font-size: 11px; }
+
+/* Buttons */
+.btn { padding: 6px 14px; border-radius: 6px; border: 1px solid #334155; background: transparent; color: #94a3b8; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+.btn:hover { border-color: #818cf8; color: #c7d2fe; }
+.btn-sim { border-color: #6366f1; color: #a5b4fc; }
+.btn-sim:hover { background: #6366f1; color: #fff; }
+
+/* Loading */
+.loading { text-align: center; padding: 60px; color: #64748b; }
+.no-data { text-align: center; padding: 40px; color: #64748b; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <h1><span>CONSENSUS</span> PICKS</h1>
+    <div class="nav-links">
+      <a href="whale-tracker-original.html">🐋 Tracker</a>
+      <a href="whale-tracker-v2.html">Leaderboard</a>
+      <a href="whale-consensus.html" class="active">Consensus</a>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="refresh-indicator"><span class="live-dot"></span> Auto-refresh 60s</span>
+  </div>
+</div>
+
+<div class="summary-bar" id="summaryBar">
+  <span class="tier-badge tier-GREEN" id="greenCount">GREEN: --</span>
+  <span class="tier-badge tier-YELLOW" id="yellowCount">YELLOW: --</span>
+  <span class="tier-badge tier-RED" id="redCount">RED: --</span>
+  <div class="heat-bar" id="heatBar"></div>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" data-filter="all">All Picks</button>
+  <button class="filter-btn" data-filter="GREEN">GREEN Only</button>
+  <button class="filter-btn" data-filter="YELLOW">YELLOW</button>
+  <button class="filter-btn" data-filter="sports">Sports</button>
+  <button class="filter-btn" data-filter="crypto">Crypto</button>
+  <button class="filter-btn" data-filter="esports">Esports</button>
+  <button class="filter-btn" data-filter="soccer">Soccer</button>
+</div>
+
+<div class="main" id="mainContent">
+  <div class="loading">Loading consensus data...</div>
+</div>
+
+<script>
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? ''
+  : '';
+
+let allPicks = [];
+let activeFilter = 'all';
+
+// Filters
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    renderPicks();
+  });
+});
+
+function filterPicks(picks) {
+  if (activeFilter === 'all') return picks;
+  if (['GREEN', 'YELLOW', 'RED'].includes(activeFilter))
+    return picks.filter(p => p.confidence_tier === activeFilter);
+  return picks.filter(p => p.category === activeFilter);
+}
+
+async function fetchData() {
+  try {
+    const [consRes, heatRes] = await Promise.all([
+      fetch(`${API_BASE}/api/consensus?min_whales=3&limit=100`),
+      fetch(`${API_BASE}/api/portfolio/heat`)
+    ]);
+    const consData = await consRes.json();
+    const heatData = await heatRes.json();
+
+    allPicks = consData.picks || [];
+
+    // Update summary
+    document.getElementById('greenCount').textContent = `GREEN: ${consData.summary?.green || 0}`;
+    document.getElementById('yellowCount').textContent = `YELLOW: ${consData.summary?.yellow || 0}`;
+    document.getElementById('redCount').textContent = `RED: ${consData.summary?.red || 0}`;
+
+    // Portfolio heat
+    renderHeat(heatData);
+    renderPicks();
+  } catch (e) {
+    document.getElementById('mainContent').innerHTML =
+      `<div class="no-data">Failed to load data. Is the API running?<br><small>${e.message}</small></div>`;
+  }
+}
+
+function renderHeat(data) {
+  const bar = document.getElementById('heatBar');
+  const cats = data.by_category || {};
+  bar.innerHTML = Object.entries(cats).map(([cat, info]) => {
+    const cls = info.status === 'WARNING' ? 'warning' : '';
+    const fillCls = info.status === 'WARNING' ? 'warning' : 'ok';
+    return `<div class="heat-item ${cls}">
+      <span>${cat}</span>
+      <div class="bar"><div class="bar-fill ${fillCls}" style="width:${Math.min(info.exposure_pct, 100)}%"></div></div>
+      <span>${info.exposure_pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+function renderPicks() {
+  const container = document.getElementById('mainContent');
+  const filtered = filterPicks(allPicks);
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="no-data">No consensus picks match your filters.</div>';
+    return;
+  }
+
+  // Group by tier
+  const green = filtered.filter(p => p.confidence_tier === 'GREEN');
+  const yellow = filtered.filter(p => p.confidence_tier === 'YELLOW');
+  const red = filtered.filter(p => p.confidence_tier === 'RED');
+
+  let html = '';
+  if (green.length > 0) html += renderTier('HIGH CONFIDENCE', 'GREEN', green);
+  if (yellow.length > 0) html += renderTier('MEDIUM CONFIDENCE', 'YELLOW', yellow);
+  if (red.length > 0) html += renderTier('LOWER CONFIDENCE', 'RED', red);
+
+  container.innerHTML = html;
+
+  // Attach expand handlers
+  container.querySelectorAll('.pick-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.btn')) return;
+      const detail = card.querySelector('.whale-detail');
+      if (detail) detail.classList.toggle('open');
+    });
+  });
+}
+
+function renderTier(label, tier, picks) {
+  return `
+    <div class="tier-section">
+      <div class="tier-header">
+        <span class="tier-badge tier-${tier}">${tier}</span>
+        ${label} (${picks.length})
+      </div>
+      ${picks.map(renderCard).join('')}
+    </div>`;
+}
+
+function renderCard(pick) {
+  const miroClass = pick.mirofish_status === 'confirmed' ? '' :
+                    pick.mirofish_status === 'disagrees' ? 'disagrees' : 'pending';
+  const miroLabel = pick.mirofish_status === 'confirmed' ? `MiroFish: ${pick.mirofish_prob}% [Confirmed]` :
+                    pick.mirofish_status === 'disagrees' ? `MiroFish: ${pick.mirofish_prob}% [Disagrees]` :
+                    'MiroFish: Not validated';
+
+  const relatedTag = pick.related_markets?.length > 0
+    ? `<span class="tag tag-related">Related: ${pick.related_markets.length}</span>` : '';
+
+  return `
+    <div class="pick-card ${pick.confidence_tier}">
+      <div class="pick-top">
+        <div>
+          <div class="pick-title">${pick.market_title || 'Unknown Market'}</div>
+          <div class="pick-meta">
+            <span>${pick.whale_count} whales: ${pick.yes_count}Y / ${pick.no_count}N (${pick.agreement_pct}% ${pick.consensus_side})</span>
+            <span><span class="label">Elite:</span> ${pick.avg_elite_score}</span>
+            <span><span class="label">Size:</span> $${Number(pick.total_size_usd).toLocaleString()}</span>
+            <span><span class="label">Avg Entry:</span> $${pick.avg_entry_price}</span>
+            <span><span class="label">Kelly:</span> ${(pick.kelly_fraction * 100).toFixed(1)}%</span>
+            <span><span class="label">First whale:</span> ${pick.hours_since_first_whale}h ago</span>
+          </div>
+        </div>
+        <div class="pick-confidence ${pick.confidence_tier}">${pick.confidence_pct}%</div>
+      </div>
+      <div class="confidence-bar">
+        <div class="confidence-fill ${pick.confidence_tier}" style="width:${pick.confidence_pct}%"></div>
+      </div>
+      <div class="pick-tags">
+        <span class="tag tag-cat">${pick.category}</span>
+        <span class="tag tag-miro ${miroClass}">${miroLabel}</span>
+        ${relatedTag}
+      </div>
+      <div class="whale-detail">
+        ${(pick.whales || []).map(w => {
+          const fadeWarn = w.signal_direction === 'FADE'
+            ? '<span class="whale-fade">FADE</span>' : '';
+          const tracked = w.tracked_acc !== 'new'
+            ? `<span class="whale-tracked">(${w.tracked_bets} bets, ${w.tracked_acc})</span>`
+            : '<span class="whale-tracked">(new)</span>';
+          return `<div class="whale-row">
+            <span class="whale-name">${w.name}</span>
+            <span class="whale-side ${w.side}">${w.side}</span>
+            <span>@ $${w.entry}</span>
+            <span>$${Number(w.size).toLocaleString()}</span>
+            <span>Elite ${w.elite}</span>
+            ${tracked}
+            ${fadeWarn}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+// Initial load + auto-refresh
+fetchData();
+setInterval(fetchData, 60000);
+</script>
+</body>
+</html>
+

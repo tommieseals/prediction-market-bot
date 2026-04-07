@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test Page</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #000; color: #0f0; }
+        .result { margin: 10px 0; padding: 10px; background: #111; border: 1px solid #0f0; }
+        .error { color: #f00; }
+        .success { color: #0f0; }
+    </style>
+</head>
+<body>
+    <h1>PROJECT LEGION API Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function log(message, isError = false) {
+            const div = document.createElement('div');
+            div.className = 'result ' + (isError ? 'error' : 'success');
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        async function runTests() {
+            // Test 1: Check hostname
+            log(`window.location.hostname = ${window.location.hostname}`);
+            log(`window.location.href = ${window.location.href}`);
+            
+            // Test 2: Build API URL
+            const API_BASE = `http://${window.location.hostname}:8081/api`;
+            log(`API_BASE = ${API_BASE}`);
+            
+            // Test 3: Try health check
+            log('Testing /api/health...');
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                log(`Health check status: ${response.status}`);
+                const data = await response.json();
+                log(`Health check data: ${JSON.stringify(data)}`);
+            } catch (err) {
+                log(`Health check FAILED: ${err.message}`, true);
+                log(`Error details: ${err.stack}`, true);
+            }
+            
+            // Test 4: Try legion-stats
+            log('Testing /api/legion-stats...');
+            try {
+                const response = await fetch(`${API_BASE}/legion-stats`);
+                log(`Legion stats status: ${response.status}`);
+                const data = await response.json();
+                log(`Legion stats data: ${JSON.stringify(data).substring(0, 200)}...`);
+                log(`active_queue = ${data.active_queue}`);
+                log(`needs_review = ${data.needs_review}`);
+            } catch (err) {
+                log(`Legion stats FAILED: ${err.message}`, true);
+                log(`Error details: ${err.stack}`, true);
+            }
+            
+            // Test 5: Try direct IP
+            log('Testing direct IP (100.88.105.106:8081)...');
+            try {
+                const response = await fetch('http://100.88.105.106:8081/api/health');
+                log(`Direct IP health check status: ${response.status}`);
+                const data = await response.json();
+                log(`Direct IP data: ${JSON.stringify(data)}`);
+            } catch (err) {
+                log(`Direct IP FAILED: ${err.message}`, true);
+            }
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>
+

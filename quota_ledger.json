@@ -1,0 +1,121 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-04-06T17:38:00Z",
+  "strategy": "free-tier-first-max-burn",
+  "monthly_budget": {
+    "hard_limit_usd": 100,
+    "current_spend": 0,
+    "period_start": "2026-04-01",
+    "period_end": "2026-04-30"
+  },
+  "free_tiers": {
+    "google_gemini": {
+      "service": "Google Gemini",
+      "models": ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"],
+      "api_key_env": "GOOGLE_API_KEY",
+      "limits": {
+        "requests_per_minute": 15,
+        "requests_per_day": 1500,
+        "tokens_per_minute": 1000000
+      },
+      "current_usage": {
+        "requests_today": 1,
+        "tokens_today": 519,
+        "last_reset": "2026-04-06T00:00:00Z"
+      },
+      "status": "active",
+      "priority": 1,
+      "tested": "2026-04-06T17:45:00Z"
+    },
+    "groq": {
+      "service": "Groq",
+      "models": ["llama-3.3-70b-versatile", "mixtral-8x7b-32768"],
+      "limits": {
+        "requests_per_minute": 30,
+        "requests_per_day": 14400,
+        "tokens_per_day": 14400
+      },
+      "current_usage": {
+        "requests_today": 0,
+        "tokens_today": 0,
+        "last_reset": "2026-04-06T00:00:00Z"
+      },
+      "status": "needs_key",
+      "priority": 2
+    },
+    "huggingface": {
+      "service": "Hugging Face Inference API",
+      "models": ["meta-llama/Meta-Llama-3-8B-Instruct"],
+      "limits": {
+        "rate_limited": true,
+        "note": "Free tier with rate limits, no hard quota"
+      },
+      "current_usage": {
+        "requests_today": 0,
+        "last_reset": "2026-04-06T00:00:00Z"
+      },
+      "status": "needs_key",
+      "priority": 3
+    },
+    "brave_search": {
+      "service": "Brave Search API",
+      "limits": {
+        "requests_per_month": 2000
+      },
+      "current_usage": {
+        "requests_this_month": 0,
+        "last_reset": "2026-04-01T00:00:00Z"
+      },
+      "status": "active",
+      "priority": 4
+    }
+  },
+  "paid_tiers": {
+    "openai": {
+      "service": "OpenAI",
+      "models": ["gpt-5.2-codex", "gpt-4o-mini"],
+      "fallback_priority": 1,
+      "current_usage": {
+        "cost_today": 0,
+        "cost_this_month": 0
+      }
+    },
+    "anthropic": {
+      "service": "Anthropic",
+      "models": ["claude-sonnet-4-5", "claude-opus-4-5"],
+      "fallback_priority": 2,
+      "current_usage": {
+        "cost_today": 0,
+        "cost_this_month": 0
+      }
+    }
+  },
+  "routing_rules": {
+    "monitoring": {
+      "tier": "free-tier-only",
+      "preferred": ["google_gemini", "groq"],
+      "fallback": "gpt-4o-mini"
+    },
+    "parsing": {
+      "tier": "free-tier-first",
+      "preferred": ["google_gemini", "groq"],
+      "fallback": "gpt-4o-mini"
+    },
+    "planning": {
+      "tier": "free-tier-first",
+      "preferred": ["groq", "google_gemini"],
+      "fallback": "gpt-5.2-codex"
+    },
+    "code_review": {
+      "tier": "paid-allowed",
+      "preferred": ["gpt-5.2-codex"],
+      "fallback": "groq"
+    },
+    "high_stakes": {
+      "tier": "paid-only",
+      "preferred": ["claude-sonnet-4-5", "gpt-5.2-codex"],
+      "no_fallback": true
+    }
+  },
+  "audit_log": []
+}

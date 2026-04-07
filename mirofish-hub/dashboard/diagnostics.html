@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Network Diagnostics</title>
+<style>
+body{margin:0;padding:20px;background:#000;color:#0f0;font-family:monospace;font-size:14px}
+.box{background:#111;border:2px solid #0f0;padding:20px;margin:10px 0}
+h1{color:#0f0;font-size:1.5rem}
+.success{color:#0f0}
+.error{color:#f00}
+.info{color:#ff0}
+pre{background:#000;padding:10px;overflow-x:auto}
+button{background:#0f0;color:#000;border:none;padding:15px 30px;font-size:16px;font-weight:bold;cursor:pointer;margin:10px 5px}
+button:active{background:#090}
+</style>
+</head>
+<body>
+<h1>🔬 NETWORK DIAGNOSTICS</h1>
+
+<div class="box">
+<h2>✅ PAGE LOADED SUCCESSFULLY</h2>
+<p>If you can see this, HTTP connection works!</p>
+<p class="info">Time: <span id="time"></span></p>
+<p class="info">User Agent: <span id="ua"></span></p>
+</div>
+
+<div class="box">
+<h2>CONNECTION INFO</h2>
+<pre id="info">Loading...</pre>
+</div>
+
+<div class="box">
+<h2>TEST AJAX REQUEST</h2>
+<button onclick="testFetch()">TEST FETCH API</button>
+<button onclick="testXHR()">TEST XMLHttpRequest</button>
+<pre id="ajax">Click button to test...</pre>
+</div>
+
+<div class="box">
+<h2>INSTRUCTIONS</h2>
+<p>If you can read this text, the page loaded successfully!</p>
+<p>Take a screenshot and send it to confirm what you see.</p>
+</div>
+
+<script>
+document.getElementById('time').textContent = new Date().toLocaleString();
+document.getElementById('ua').textContent = navigator.userAgent;
+
+const info = {
+    'URL': window.location.href,
+    'Protocol': window.location.protocol,
+    'Host': window.location.host,
+    'Pathname': window.location.pathname,
+    'Online': navigator.onLine,
+    'Language': navigator.language,
+    'Platform': navigator.platform,
+    'Screen': screen.width + 'x' + screen.height,
+    'Viewport': window.innerWidth + 'x' + window.innerHeight
+};
+
+document.getElementById('info').textContent = JSON.stringify(info, null, 2);
+
+function testFetch() {
+    document.getElementById('ajax').textContent = 'Testing fetch()...';
+    fetch('/test.html')
+        .then(r => {
+            document.getElementById('ajax').innerHTML = 
+                '<span class="success">✅ FETCH WORKS!</span>\n' +
+                'Status: ' + r.status + '\n' +
+                'Content-Type: ' + r.headers.get('content-type');
+        })
+        .catch(e => {
+            document.getElementById('ajax').innerHTML = 
+                '<span class="error">❌ FETCH FAILED!</span>\n' + e.message;
+        });
+}
+
+function testXHR() {
+    document.getElementById('ajax').textContent = 'Testing XMLHttpRequest...';
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/test.html');
+    xhr.onload = function() {
+        document.getElementById('ajax').innerHTML = 
+            '<span class="success">✅ XHR WORKS!</span>\n' +
+            'Status: ' + xhr.status + '\n' +
+            'Response length: ' + xhr.responseText.length;
+    };
+    xhr.onerror = function() {
+        document.getElementById('ajax').innerHTML = 
+            '<span class="error">❌ XHR FAILED!</span>';
+    };
+    xhr.send();
+}
+</script>
+</body>
+</html>
+

@@ -1,0 +1,44 @@
+Tommie Seals
+618-203-0978  •  tommieseals7700@gmail.com  •  linkedin.com/in/tommieseals
+
+SUMMARY
+IT Systems Administrator specializing in Microsoft Intune/Autopilot, Microsoft Entra ID (Azure AD), and Microsoft 365 (Exchange Online, Teams, SharePoint Online) with strong infrastructure experience across VMware vSphere and Cohesity data protection. Skilled in endpoint security and governance including Microsoft Defender for Endpoint/XDR, Conditional Access, BitLocker compliance reporting, and phishing simulations (KnowBe4). Proven at enterprise scale (7,565 devices) delivering modern provisioning (70–100 Autopilot deployments/month), ITSM execution in ServiceNow, and operational excellence through 100+ SOPs, training materials, and weekly IT communications. Trusted partner supporting global sites across the U.S., Japan, Germany, and Mexico.
+CORE SKILLS
+Microsoft Intune / Endpoint Manager • Windows Autopilot • Windows Autopatch • Update Rings
+Win32 app packaging • PowerShell detection/remediation scripts • Compliance policies • BitLocker enforcement
+Microsoft Entra ID (Azure AD) • RBAC • Conditional Access • MFA (Duo) • Dynamic Groups
+Microsoft 365 • Exchange Online • Teams • SharePoint Online • Power BI workspace governance • OneDrive KFM/Silent Sign-in • Universal Print
+VMware vSphere 8.x (ESXi, vCenter) • Windows Server (2016–2022) • Cisco UCS • Dell iDRAC • Server migrations (on-prem to cloud)
+Cohesity DataProtect • Replication • Cloud Archive/FortKnox • Restore/DR validation • ServiceNow ITSM • Defender for Endpoint/XDR • KnowBe4
+PROFESSIONAL EXPERIENCE
+Kuraray America, Inc. — Remote / Houston, TX
+IT Systems Administrator | 12/2023 – Present
+Administer Microsoft Intune supporting 7,565 Windows and iOS devices, including configuration profiles, security baselines, compliance policies aligned with Conditional Access, BitLocker enforcement/reporting, and standardized Win32 app deployments.
+Execute 70–100 Windows Autopilot deployments per month using standardized enrollment profiles, group tagging, and dynamic group targeting; enabled ODJ-based domain join and optimized Enrollment Status Page (ESP) for reliable provisioning.
+Manage Apple Business Manager (ABM) enrollment and iOS configuration policies for corporate and shared-use devices, enforcing security controls, app access, and lifecycle management.
+Maintain VMware vSphere environment (8 ESXi hosts, ~1,500 VMs across ~2 clusters), including patching, capacity monitoring, performance tuning, and lifecycle upgrades (vCenter 6.2 → 7.x → 8.x) to improve stability and security posture.
+Lead server lifecycle initiatives including migrations and virtualization projects (on-prem to cloud), Windows Server builds, patching, and troubleshooting across Cisco UCS and Dell iDRAC infrastructure; enforce standardized build practices for rapid incident response.
+Support Cohesity data protection (~68 TB protected) across U.S., Japan, Germany, and Mexico, managing ~350 backup jobs, retention policies, replication, and Cloud Archive/FortKnox; perform restore testing to validate DR readiness.
+Drive ITSM workflows in ServiceNow (Incidents, Requests, and Changes), resolving 50+ tickets weekly, authoring knowledge base articles, supporting CAB/change approvals, and maintaining audit-ready documentation and stakeholder communications.
+Administer SharePoint Online permissions/governance and support Power BI workspace access controls to enable secure collaboration and reporting for business teams.
+Maintain enterprise asset visibility and proactive monitoring using Lansweeper and monitoring/alerting tools; drive remediation through ServiceNow workflows and standardized documentation.
+Create and maintain 100+ IT SOPs, job aids, and training materials to improve operational consistency, accelerate onboarding, and reduce repeat support issues.
+Publish weekly corporate IT communications via SnapComms and targeted email, including onboarding announcements, maintenance notices, outage updates, and security awareness campaigns.
+Administer endpoint security operations including Microsoft Defender for Endpoint/XDR, Conditional Access enforcement, BitLocker compliance reporting, and phishing simulations (KnowBe4); partner with stakeholders to improve detection, response, and secure access controls.
+The Aerospace Corporation — Remote
+Senior IT Support Supervisor / Desktop Engineer | 10/2021 – 12/2023
+Promoted to supervisor role; led a team supporting enterprise end-user computing across projects and escalations.
+Standardized deployment processes and improved response workflows, contributing to faster resolution times and improved service quality.
+Supported patching and system reconfigurations in a regulated environment; partnered with cross-functional teams as primary technical point of contact.
+Centers for Disease Control and Prevention (CDC) — Remote
+Senior Engineer / Jr. Network Engineer | 09/2018 – 10/2021
+Optimized network configurations to improve reliability and reduce latency; served as SME for troubleshooting and performance tuning.
+Delivered cloud network implementations and documentation (AWS/GCP context), enabling secure connectivity and knowledge sharing.
+Mentored junior engineers and reinforced operational standards through documentation and best practices.
+Department of Veterans Affairs — Remote
+Security Engineer / Helpdesk Technician | 05/2014 – 09/2018
+Executed security hardening strategies supporting federal compliance requirements; assisted with incident response and vulnerability management.
+Delivered Tier 1–2 technical support, OS deployments, and asset management with accurate ticket documentation.
+EDUCATION & CERTIFICATIONS
+John A. Logan College, Carterville, IL — Associate’s Degree, Business Administration
+Certifications: (Microsoft Certified: Azure Administrator Associate (AZ104) • (ISC)² SSCP • (ISC)² CC • Certified Scrum Master • Active Secret Clearance • Google Cloud Digital Leader • Microsoft 365 • Google Data Analytics Certification

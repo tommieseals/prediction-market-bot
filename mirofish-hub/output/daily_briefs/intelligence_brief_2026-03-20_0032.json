@@ -1,0 +1,556 @@
+{
+  "timestamp": "2026-03-20T00:32:46.592640",
+  "executive_summary": "Full cycle complete. 5/5 connectors succeeded. 5 trading opportunities identified.",
+  "market_intelligence": [
+    {
+      "source": "prediction_markets",
+      "predictions": [
+        {
+          "connector": "terminator",
+          "market_id": "test_001",
+          "market_title": "Will AI regulation be passed in the US by 2027?",
+          "market_yes_price": 0.35,
+          "market_no_price": 0.65,
+          "market_volume": 50000,
+          "market_category": "politics",
+          "simulation_id": "sim_be443beb7575",
+          "project_id": "proj_7b41265bc3d2",
+          "report_id": "report_8a050229c69f",
+          "steps": [
+            {
+              "step": "create_project",
+              "status": "done"
+            },
+            {
+              "step": "build_graph",
+              "status": "skipped"
+            },
+            {
+              "step": "create_simulation",
+              "status": "done"
+            },
+            {
+              "step": "prepare_simulation",
+              "status": "done"
+            },
+            {
+              "step": "start_simulation",
+              "status": "done"
+            },
+            {
+              "step": "wait_for_completion",
+              "status": "done"
+            },
+            {
+              "step": "generate_report",
+              "status": "done"
+            }
+          ],
+          "timestamp": "2026-03-19T13:03:46.175778"
+        },
+        {
+          "connector": "terminator",
+          "market_id": "test_001",
+          "market_title": "Will AI regulation be passed in the US by 2027?",
+          "market_yes_price": 0.35,
+          "market_no_price": 0.65,
+          "market_volume": 50000,
+          "market_category": "politics",
+          "simulation_id": "sim_1d2441a2c8fd",
+          "project_id": "proj_10f501dff8de",
+          "report_id": "report_7f40ef75dbe2",
+          "steps": [
+            {
+              "step": "create_project",
+              "status": "done"
+            },
+            {
+              "step": "build_graph",
+              "status": "skipped"
+            },
+            {
+              "step": "create_simulation",
+              "status": "done"
+            },
+            {
+              "step": "prepare_simulation",
+              "status": "done"
+            },
+            {
+              "step": "start_simulation",
+              "status": "done"
+            },
+            {
+              "step": "wait_for_completion",
+              "status": "done"
+            },
+            {
+              "step": "generate_report",
+              "status": "done"
+            }
+          ],
+          "timestamp": "2026-03-19T13:17:22.344285"
+        },
+        {
+          "connector": "terminator",
+          "market_id": "KXNEXTIRANLEADER-45JAN01-MKHA",
+          "market_title": "Who will be the next Supreme Leader of Iran? (death settles to last traded price)",
+          "market_yes_price": 0.62,
+          "market_no_price": 0.38,
+          "market_volume": 3130146.0,
+          "market_category": "politics",
+          "simulation_id": "sim_e8e9890c8d26",
+          "project_id": "proj_3b44e0f90378",
+          "report_id": "report_2b707e383380",
+          "steps": [
+            {
+              "step": "create_project",
+              "status": "done"
+            },
+            {
+              "step": "build_graph",
+              "status": "done"
+            },
+            {
+              "step": "create_simulation",
+              "status": "done"
+            },
+            {
+              "step": "prepare_simulation",
+              "status": "done"
+            },
+            {
+              "step": "start_simulation",
+              "status": "done"
+            },
+            {
+              "step": "wait_for_completion",
+              "status": "done"
+            },
+            {
+              "step": "generate_report",
+              "status": "done"
+            }
+          ],
+          "timestamp": "2026-03-19T14:06:28.895255"
+        },
+        {
+          "connector": "terminator",
+          "market_id": "KXTRUMPPARDONS-29JAN21-BAR",
+          "market_title": "Who will Trump pardon?",
+          "market_yes_price": 0.42,
+          "market_no_price": 0.5800000000000001,
+          "market_volume": 26016.0,
+          "market_category": "politics",
+          "simulation_id": "sim_d44c4730abe2",
+          "project_id": "proj_474e2e333fef",
+          "report_id": "report_8b28d82cf51c",
+          "steps": [
+            {
+              "step": "create_project",
+              "status": "done"
+            },
+            {
+              "step": "build_graph",
+              "status": "done"
+            },
+            {
+              "step": "create_simulation",
+              "status": "done"
+            },
+            {
+              "step": "prepare_simulation",
+              "status": "done"
+            },
+            {
+              "step": "start_simulation",
+              "status": "done"
+            },
+            {
+              "step": "wait_for_completion",
+              "status": "done"
+            },
+            {
+              "step": "generate_report",
+              "status": "done"
+            }
+          ],
+          "timestamp": "2026-03-19T14:28:00.162491"
+        },
+        {
+          "connector": "terminator",
+          "market_id": "KXNEXTIRANLEADER-45JAN01-MKHA",
+          "market_title": "Who will be the next Supreme Leader of Iran? (death settles to last traded price)",
+          "market_yes_price": 0.62,
+          "market_no_price": 0.38,
+          "market_volume": 3130146.0,
+          "market_category": "politics",
+          "simulation_id": "sim_c7ec9cce6d33",
+          "project_id": "proj_d1c42a9c1fc9",
+          "report_id": "report_38864d71aae1",
+          "steps": [
+            {
+              "step": "create_project",
+              "status": "done"
+            },
+            {
+              "step": "build_graph",
+              "status": "done"
+            },
+            {
+              "step": "create_simulation",
+              "status": "done"
+            },
+            {
+              "step": "prepare_simulation",
+              "status": "done"
+            },
+            {
+              "step": "start_simulation",
+              "status": "done"
+            },
+            {
+              "step": "wait_for_completion",
+              "status": "done"
+            },
+            {
+              "step": "generate_report",
+              "status": "done"
+            }
+          ],
+          "timestamp": "2026-03-20T00:11:04.940493"
+        }
+      ]
+    },
+    {
+      "source": "pharma_arbitrage",
+      "predictions": [
+        {
+          "connector": "pharma",
+          "asset_name": "TEST-DRUG-001",
+          "company": "TestPharma Inc",
+          "indication": "Rare Autoimmune Disorder",
+          "arbitrage_score": 8.5,
+          "weighted_value": 750000000,
+          "simulation_id": "sim_a91cece37e19",
+          "project_id": "proj_458079289ef3",
+          "report_id": "report_a597c1260fad",
+          "steps": [
+            {
+              "step": "create_project",
+              "status": "done"
+            },
+            {
+              "step": "build_graph",
+              "status": "skipped"
+            },
+            {
+              "step": "create_simulation",
+              "status": "done"
+            },
+            {
+              "step": "prepare_simulation",
+              "status": "done"
+            },
+            {
+              "step": "start_simulation",
+              "status": "done"
+            },
+            {
+              "step": "wait_for_completion",
+              "status": "done"
+            },
+            {
+              "step": "generate_report",
+              "status": "done"
+            }
+          ],
+          "timestamp": "2026-03-19T13:24:33.837343"
+        },
+        {
+          "connector": "pharma",
+          "asset_name": "RGX-121",
+          "company": "REGENXBIO Inc.",
+          "indication": "Hunter Syndrome (MPS II)",
+          "arbitrage_score": 9.8,
+          "weighted_value": 540000000,
+          "simulation_id": "sim_9904adb614b6",
+          "project_id": "proj_1e2864197abe",
+          "report_id": "report_ee2de5629051",
+          "steps": [
+            {
+              "step": "create_project",
+              "status": "done"
+            },
+            {
+              "step": "build_graph",
+              "status": "done"
+            },
+            {
+              "step": "create_simulation",
+              "status": "done"
+            },
+            {
+              "step": "prepare_simulation",
+              "status": "done"
+            },
+            {
+              "step": "start_simulation",
+              "status": "done"
+            },
+            {
+              "step": "wait_for_completion",
+              "status": "done"
+            },
+            {
+              "step": "generate_report",
+              "status": "done"
+            }
+          ],
+          "timestamp": "2026-03-19T14:43:17.882348"
+        },
+        {
+          "connector": "pharma",
+          "asset_name": "RGX-121",
+          "company": "REGENXBIO Inc.",
+          "indication": "Hunter Syndrome (MPS II)",
+          "arbitrage_score": 9.8,
+          "weighted_value": 540000000,
+          "simulation_id": "sim_a30d43781bbb",
+          "project_id": "proj_8d1a38f499a9",
+          "report_id": "report_a52b9871ddda",
+          "steps": [
+            {
+              "step": "create_project",
+              "status": "done"
+            },
+            {
+              "step": "build_graph",
+              "status": "done"
+            },
+            {
+              "step": "create_simulation",
+              "status": "done"
+            },
+            {
+              "step": "prepare_simulation",
+              "status": "done"
+            },
+            {
+              "step": "start_simulation",
+              "status": "done"
+            },
+            {
+              "step": "wait_for_completion",
+              "status": "done"
+            },
+            {
+              "step": "generate_report",
+              "status": "done"
+            }
+          ],
+          "timestamp": "2026-03-20T00:05:19.203107"
+        }
+      ]
+    },
+    {
+      "source": "portfolio_sentiment",
+      "predictions": [
+        {
+          "connector": "vault",
+          "symbol": "NVDA",
+          "quantity": 100,
+          "cost_basis": 18000,
+          "market_value": 18500,
+          "unrealized_pnl": 500,
+          "simulation_id": "sim_df4d7319a6ca",
+          "project_id": "proj_585a4988bda5",
+          "report_id": "report_29b501ce6095",
+          "steps": [
+            {
+              "step": "create_project",
+              "status": "done"
+            },
+            {
+              "step": "build_graph",
+              "status": "skipped"
+            },
+            {
+              "step": "create_simulation",
+              "status": "done"
+            },
+            {
+              "step": "prepare_simulation",
+              "status": "done"
+            },
+            {
+              "step": "start_simulation",
+              "status": "done"
+            },
+            {
+              "step": "wait_for_completion",
+              "status": "done"
+            },
+            {
+              "step": "generate_report",
+              "status": "done"
+            }
+          ],
+          "timestamp": "2026-03-19T13:38:25.115129"
+        }
+      ]
+    }
+  ],
+  "career_opportunities": [
+    {
+      "connector": "legion",
+      "job_title": "IT Systems Administrator",
+      "company": "Tech Corp Houston",
+      "location": "Houston, TX (Hybrid)",
+      "match_score": 85,
+      "simulation_id": "sim_1b558a1a13e8",
+      "project_id": "proj_e5269e1c4f1f",
+      "report_id": "report_c6fde4a2c3a8",
+      "steps": [
+        {
+          "step": "create_project",
+          "status": "done"
+        },
+        {
+          "step": "build_graph",
+          "status": "skipped"
+        },
+        {
+          "step": "create_simulation",
+          "status": "done"
+        },
+        {
+          "step": "prepare_simulation",
+          "status": "done"
+        },
+        {
+          "step": "start_simulation",
+          "status": "done"
+        },
+        {
+          "step": "wait_for_completion",
+          "status": "done"
+        },
+        {
+          "step": "generate_report",
+          "status": "done"
+        }
+      ],
+      "timestamp": "2026-03-19T13:31:31.926189"
+    }
+  ],
+  "income_streams": [
+    {
+      "connector": "money_machine",
+      "service_name": "AI-Powered Business Automation",
+      "category": "automation",
+      "price_range": "$150-$500/project",
+      "demand": "high",
+      "competition": "medium",
+      "simulation_id": "sim_6849c7da362f",
+      "project_id": "proj_db17675a551b",
+      "report_id": "report_f5e77b309f1d",
+      "steps": [
+        {
+          "step": "create_project",
+          "status": "done"
+        },
+        {
+          "step": "build_graph",
+          "status": "skipped"
+        },
+        {
+          "step": "create_simulation",
+          "status": "done"
+        },
+        {
+          "step": "prepare_simulation",
+          "status": "done"
+        },
+        {
+          "step": "start_simulation",
+          "status": "done"
+        },
+        {
+          "step": "wait_for_completion",
+          "status": "done"
+        },
+        {
+          "step": "generate_report",
+          "status": "done"
+        }
+      ],
+      "timestamp": "2026-03-19T13:44:52.516855"
+    }
+  ],
+  "risk_alerts": [],
+  "recommended_actions": [
+    {
+      "type": "trade",
+      "market": "Will AI regulation be passed in the US by 2027?",
+      "market_id": "test_001",
+      "yes_price": 0.35,
+      "simulation_id": "sim_be443beb7575"
+    },
+    {
+      "type": "trade",
+      "market": "Will AI regulation be passed in the US by 2027?",
+      "market_id": "test_001",
+      "yes_price": 0.35,
+      "simulation_id": "sim_1d2441a2c8fd"
+    },
+    {
+      "type": "trade",
+      "market": "Who will be the next Supreme Leader of Iran? (death settles to last traded price)",
+      "market_id": "KXNEXTIRANLEADER-45JAN01-MKHA",
+      "yes_price": 0.62,
+      "simulation_id": "sim_e8e9890c8d26"
+    },
+    {
+      "type": "trade",
+      "market": "Who will Trump pardon?",
+      "market_id": "KXTRUMPPARDONS-29JAN21-BAR",
+      "yes_price": 0.42,
+      "simulation_id": "sim_d44c4730abe2"
+    },
+    {
+      "type": "trade",
+      "market": "Who will be the next Supreme Leader of Iran? (death settles to last traded price)",
+      "market_id": "KXNEXTIRANLEADER-45JAN01-MKHA",
+      "yes_price": 0.62,
+      "simulation_id": "sim_c7ec9cce6d33"
+    }
+  ],
+  "connector_results": {
+    "terminator": {
+      "status": "success",
+      "duration_seconds": 1983.5642755031586,
+      "job_id": "terminator_20260319_235200"
+    },
+    "pharma": {
+      "status": "success",
+      "duration_seconds": 1807.1690094470978,
+      "job_id": "pharma_20260319_235200"
+    },
+    "vault": {
+      "status": "success",
+      "duration_seconds": 638.8983478546143,
+      "job_id": "vault_20260320_002207"
+    },
+    "legion": {
+      "status": "success",
+      "duration_seconds": 261.2604627609253,
+      "job_id": "legion_20260320_002504"
+    },
+    "money_machine": {
+      "status": "success",
+      "duration_seconds": 200.76392531394958,
+      "job_id": "money_machine_20260320_002925"
+    }
+  }
+}

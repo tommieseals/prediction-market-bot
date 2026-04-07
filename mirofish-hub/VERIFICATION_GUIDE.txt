@@ -1,0 +1,117 @@
+============================================================
+  WHALE TRACKER - VERIFICATION GUIDE
+  How to verify all fixes are working correctly
+============================================================
+
+QUICK CHECK (30 seconds)
+========================
+
+  python -c "import sqlite3; c=sqlite3.connect('data/whale_hunter.db'); print('end_dates:', c.execute(\"SELECT COUNT(*) FROM whale_positions WHERE end_date IS NOT NULL AND end_date != ''\").fetchone()[0], '/', c.execute('SELECT COUNT(*) FROM whale_positions').fetchone()[0]); print('expired:', c.execute(\"SELECT COUNT(*) FROM whale_positions WHERE outcome='expired'\").fetchone()[0]); print('consensus_picks:', c.execute('SELECT COUNT(*) FROM consensus_picks').fetchone()[0])"
+
+
+DETAILED VERIFICATION
+=====================
+
+1. END_DATE COVERAGE (should be >80% of positions)
+---------------------------------------------------
+  python backfill_end_dates.py --stats
+
+  PASS: "With end_date" is >80% of total
+  FAIL: "Without end_date" is >2000 → run: python backfill_end_dates.py
+
+
+2. STALE MARKETS CLEARED (expired should be >4000)
+---------------------------------------------------
+  python -c "import sqlite3; c=sqlite3.connect('data/whale_hunter.db'); print('Expired:', c.execute(\"SELECT COUNT(*) FROM whale_positions WHERE outcome='expired'\").fetchone()[0])"
+
+  PASS: Expired count >4000
+  FAIL: Run backfill: python backfill_end_dates.py
+
+
+3. CONSENSUS SHOWS ONLY LIVE MARKETS
+-------------------------------------
+  curl http://localhost:8081/api/consensus?min_whales=3
+
+  PASS: No expired games (no Denver Nuggets, Fiorentina, etc.)
+  PASS: All picks have future end_dates or are freshly detected
+  FAIL: Restart API: python whale_api.py
+
+
+4. CONSENSUS PICKS BEING SAVED
+-------------------------------
+  python -c "import sqlite3; c=sqlite3.connect('data/whale_hunter.db'); print('Picks saved:', c.execute('SELECT COUNT(*) FROM consensus_picks').fetchone()[0]); [print(f'  {r[0][:40]} | {r[1]} | whales={r[2]} | {r[3]}') for r in c.execute('SELECT market_title,side,whale_count,outcome FROM consensus_picks ORDER BY id DESC LIMIT 5')]"
+
+  PASS: Count >0 and growing with each --fast run
+  FAIL: Check consensus_swarm_connector.py save_pick_for_tracking()
+
+
+5. RESULTS TRACKING WORKING
+-----------------------------
+  python consensus_results_tracker.py --summary
+
+  PASS: Shows wins/losses/pending with P&L
+  FAIL: Check consensus_results_tracker.py resolve_pending_picks()
+
+
+6. FRESH CONSENSUS SCAN
+-------------------------
+  python consensus_swarm_connector.py --fast --top 10
+
+  PASS: Shows "Swept X expired positions" + only live picks
+  PASS: Shows "Tracked pick in consensus_picks table" for each pick
+  FAIL: Check whale_api.py is running on port 8081
+
+
+SUCCESS CRITERIA TABLE
+======================
+
+  Metric                  Before          After
+  ─────────────────────   ──────────      ──────────────
+  Stale data showing      YES (Denver)    NO (filtered)
+  consensus_picks rows    0               Growing each scan
+  Missing end_dates       9,003           < 500
+  Expired positions       1,050           > 4,000
+  Performance tracking    Manual only     Automated P&L
+  Nuggets pick tracked    No              Won, P&L recorded
+
+
+COMMANDS REFERENCE
+==================
+
+  # Start API server
+  python whale_api.py
+
+  # Run fresh consensus (no simulations)
+  python consensus_swarm_connector.py --fast --top 15
+
+  # Run full consensus with MiroFish simulations
+  python consensus_swarm_connector.py --scan --top 5
+
+  # Check/resolve pending outcomes
+  python consensus_results_tracker.py --summary
+
+  # Backfill missing end_dates
+  python backfill_end_dates.py
+
+  # Check backfill stats only
+  python backfill_end_dates.py --stats
+
+  # Full deployment pipeline
+  DEPLOY_FIXES.bat
+
+
+TROUBLESHOOTING
+===============
+
+  "database is locked"
+    → Kill competing Python processes: taskkill /F /IM python.exe
+    → Then retry
+
+  API returns empty consensus
+    → Check: python whale_api.py is running
+    → Check: backfill has populated end_dates
+    → Check: positions exist with outcome='pending'
+
+  Picks not saving
+    → Check: consensus_picks table exists
+    → Run: python -c "import sqlite3; c=sqlite3.connect('data/whale_hunter.db'); c.execute('SELECT COUNT(*) FROM consensus_picks')"

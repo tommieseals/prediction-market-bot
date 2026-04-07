@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROJECT LEGION - Application Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000000;
+            color: #ff0000;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #1a0000 0%, #330000 100%);
+            border-radius: 10px;
+            border: 2px solid #8B0000;
+            box-shadow: 0 0 30px rgba(220, 20, 60, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #DC143C, #FF0000, #8B0000);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 4px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .nav-link {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #1a0000, #330000);
+            border: 2px solid #8B0000;
+            border-radius: 5px;
+            color: #DC143C;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .nav-link:hover {
+            border-color: #DC143C;
+            box-shadow: 0 0 15px rgba(220, 20, 60, 0.5);
+            background: linear-gradient(135deg, #330000, #4a0000);
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .stat-box {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #0d0d0d, #1a0000);
+            border: 2px solid #8B0000;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-box h3 {
+            color: #8B0000;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-box .value {
+            font-size: 2em;
+            color: #DC143C;
+            font-weight: bold;
+        }
+
+        .pipeline-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #DC143C;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8B0000;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .job-track {
+            background: linear-gradient(135deg, #0d0d0d, #1a0000);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #8B0000;
+            transition: all 0.3s ease;
+        }
+
+        .job-track.approved {
+            border-left-color: #DC143C;
+            box-shadow: 0 0 15px rgba(220, 20, 60, 0.2);
+        }
+
+        .job-track.submitting {
+            border-left-color: #FF8C00;
+            box-shadow: 0 0 15px rgba(255, 140, 0, 0.3);
+            animation: pulse-orange 2s ease-in-out infinite;
+        }
+
+        .job-track.submitted {
+            border-left-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+        }
+
+        @keyframes pulse-orange {
+            0%, 100% { box-shadow: 0 0 15px rgba(255, 140, 0, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(255, 140, 0, 0.6); }
+        }
+
+        .job-track:hover {
+            transform: translateX(5px);
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .job-title {
+            color: #FF0000;
+            font-weight: bold;
+            font-size: 1.1em;
+            flex: 1;
+        }
+
+        .job-score {
+            padding: 5px 15px;
+            background: linear-gradient(135deg, #8B0000, #DC143C);
+            color: #000;
+            border-radius: 15px;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+
+        .job-company {
+            color: #DC143C;
+            margin-bottom: 10px;
+        }
+
+        .job-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9em;
+            color: #8B0000;
+            margin-bottom: 10px;
+        }
+
+        .progress-track {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #5a0000;
+        }
+
+        .progress-stages {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .stage {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            background: #1a0000;
+            border: 1px solid #5a0000;
+            border-radius: 5px;
+            font-size: 0.85em;
+            position: relative;
+        }
+
+        .stage.active {
+            background: linear-gradient(135deg, #8B0000, #DC143C);
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(220, 20, 60, 0.5);
+        }
+
+        .stage.completed {
+            background: linear-gradient(135deg, #004a00, #006600);
+            color: #00ff00;
+            border-color: #00ff00;
+        }
+
+        .stage-arrow {
+            color: #5a0000;
+            margin: 0 5px;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            color: #8B0000;
+            margin-top: 10px;
+        }
+
+        .no-jobs {
+            text-align: center;
+            padding: 40px;
+            color: #8B0000;
+            font-size: 1.1em;
+        }
+
+        .last-update {
+            text-align: center;
+            padding: 15px;
+            color: #8B0000;
+            font-size: 0.9em;
+            background: linear-gradient(135deg, #0d0d0d, #1a0000);
+            border-radius: 10px;
+            border: 2px solid #5a0000;
+        }
+
+        @media (max-width: 768px) {
+            .stats-bar {
+                flex-direction: column;
+            }
+            
+            .job-header {
+                flex-direction: column;
+            }
+            
+            .job-score {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+            
+            .progress-stages {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .stage-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏴 APPLICATION TRACKER</h1>
+        <div>Live Resume & Submission Pipeline Monitoring</div>
+        <div class="nav-links">
+            <a href="/legion-tracker.html" class="nav-link">← Back to Dashboard</a>
+            <a href="/tracker.html" class="nav-link">🔄 Refresh</a>
+        </div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-box">
+            <h3>Approved</h3>
+            <div class="value" id="stat-approved">0</div>
+        </div>
+        <div class="stat-box">
+            <h3>Submitting</h3>
+            <div class="value" id="stat-submitting">0</div>
+        </div>
+        <div class="stat-box">
+            <h3>Submitted</h3>
+            <div class="value" id="stat-submitted">0</div>
+        </div>
+    </div>
+
+    <div class="pipeline-section">
+        <div class="section-title">⏳ Approved - Awaiting Submission</div>
+        <div id="approved-jobs">
+            <div class="no-jobs">Loading...</div>
+        </div>
+    </div>
+
+    <div class="pipeline-section">
+        <div class="section-title">🔄 Currently Submitting</div>
+        <div id="submitting-jobs">
+            <div class="no-jobs">Loading...</div>
+        </div>
+    </div>
+
+    <div class="pipeline-section">
+        <div class="section-title">✅ Successfully Submitted</div>
+        <div id="submitted-jobs">
+            <div class="no-jobs">Loading...</div>
+        </div>
+    </div>
+
+    <div class="last-update" id="last-update">
+        Last updated: Never
+    </div>
+
+    <script>
+        const UPDATE_INTERVAL = 5000; // 5 seconds (faster refresh)
+
+        async function loadTrackedJobs() {
+            try {
+                // Add cache-busting parameter
+                const timestamp = new Date().getTime();
+                const response = await fetch(`/api/tracked-jobs?t=${timestamp}`);
+                const data = await response.json();
+
+                // Update stats
+                document.getElementById('stat-approved').textContent = data.approved.length;
+                document.getElementById('stat-submitting').textContent = data.submitting.length;
+                document.getElementById('stat-submitted').textContent = data.submitted.length;
+
+                // Render each section
+                renderJobs('approved-jobs', data.approved, 'approved');
+                renderJobs('submitting-jobs', data.submitting, 'submitting');
+                renderJobs('submitted-jobs', data.submitted, 'submitted');
+
+                // Update timestamp
+                document.getElementById('last-update').textContent = 
+                    `Last updated: ${new Date().toLocaleString()}`;
+
+            } catch (error) {
+                console.error('Error loading tracked jobs:', error);
+            }
+        }
+
+        function renderJobs(elementId, jobs, status) {
+            const container = document.getElementById(elementId);
+            
+            if (jobs.length === 0) {
+                container.innerHTML = '<div class="no-jobs">No jobs in this stage</div>';
+                return;
+            }
+            
+            // Clear existing content completely before rendering new
+            container.innerHTML = '';
+
+            const jobsHtml = jobs.map(job => {
+                const stages = [
+                    { name: 'Approved', key: 'approved' },
+                    { name: 'Queued', key: 'submitting' },
+                    { name: 'Submitted', key: 'submitted' }
+                ];
+
+                let stagesHtml = stages.map((stage, index) => {
+                    let stageClass = '';
+                    if (stage.key === status) {
+                        stageClass = 'active';
+                    } else if (index < stages.findIndex(s => s.key === status)) {
+                        stageClass = 'completed';
+                    }
+
+                    const arrow = index < stages.length - 1 ? '<span class="stage-arrow">→</span>' : '';
+                    return `<div class="stage ${stageClass}">${stage.name}</div>${arrow}`;
+                }).join('');
+
+                return `
+                    <div class="job-track ${status}">
+                        <div class="job-header">
+                            <div class="job-title">${job.title}</div>
+                            <div class="job-score">Score: ${job.score}</div>
+                        </div>
+                        <div class="job-company">${job.company}</div>
+                        <div class="job-meta">
+                            <span>Platform: ${job.platform.toUpperCase()}</span>
+                            <span>Status: ${job.status}</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-stages">
+                                ${stagesHtml}
+                            </div>
+                            <div class="timestamp">Last updated: ${new Date(job.time).toLocaleString()}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = jobsHtml;
+        }
+
+        // Initial load and set interval
+        loadTrackedJobs();
+        setInterval(loadTrackedJobs, UPDATE_INTERVAL);
+    </script>
+</body>
+</html>
+

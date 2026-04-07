@@ -42,8 +42,8 @@ $Nodes = @{
         Critical = $true
     }
     "Mac-Pro" = @{
-        IP = "100.92.123.115"
-        SSH = "administrator@100.92.123.115"
+        IP = "100.89.75.126"
+        SSH = "administrator@100.89.75.126"
         Role = "Heavy AI Workloads"
         Critical = $false
     }
@@ -55,7 +55,7 @@ $Nodes = @{
     }
 }
 
-$StateFile = "C:\Users\tommi\clawd\memory\tailscale-state.json"
+$StateFile = "C:\Users\User\clawd\memory\tailscale-state.json"
 
 function Get-State {
     if (Test-Path $StateFile) {

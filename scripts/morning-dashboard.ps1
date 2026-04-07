@@ -44,7 +44,7 @@ Write-Section "NODE STATUS"
 $nodes = @(
     @{ name = "Dell (This)"; ip = "localhost"; local = $true },
     @{ name = "Mac Mini"; ip = "100.88.105.106"; user = "tommie" },
-    @{ name = "Mac Pro"; ip = "100.92.123.115"; user = "administrator" }
+    @{ name = "Mac Pro"; ip = "100.89.75.126"; user = "administrator" }
 )
 
 foreach ($node in $nodes) {
@@ -93,7 +93,7 @@ foreach ($node in $nodes) {
 # ============================================================
 Write-Section "NVIDIA API BUDGET (50 per day)"
 
-$usageFile = "C:\Users\tommi\clawd\memory\nvidia-usage.json"
+$usageFile = "C:\Users\User\clawd\memory\nvidia-usage.json"
 if (Test-Path $usageFile) {
     $usage = Get-Content $usageFile | ConvertFrom-Json
     $today = (Get-Date).ToString("yyyy-MM-dd")
@@ -132,7 +132,7 @@ if ($tunnelProcess) {
     Write-OK "TaskBot Tunnel: Running (PID: $($tunnelProcess.Id))"
     
     # Try to get current URL
-    $urlFile = "C:\Users\tommi\clawd\memory\taskbot-url.txt"
+    $urlFile = "C:\Users\User\clawd\memory\taskbot-url.txt"
     if (Test-Path $urlFile) {
         $url = Get-Content $urlFile -Raw
         if ($url) {
@@ -162,7 +162,7 @@ if (-not $Quick) {
 # ============================================================
 Write-Section "RECENT ACTIVITY"
 
-$memoryDir = "C:\Users\tommi\clawd\memory"
+$memoryDir = "C:\Users\User\clawd\memory"
 $today = Get-Date
 $recentFiles = @()
 
@@ -203,7 +203,7 @@ else {
 # ============================================================
 Write-Section "DAILY IMPROVEMENT STREAK"
 
-$improvementsFile = "C:\Users\tommi\clawd\memory\daily-improvements.md"
+$improvementsFile = "C:\Users\User\clawd\memory\daily-improvements.md"
 if (Test-Path $improvementsFile) {
     $content = Get-Content $improvementsFile -Raw
     $dates = [regex]::Matches($content, "## (\d{4}-\d{2}-\d{2})")

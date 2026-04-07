@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiroFish Health Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e17;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #1e293b;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            color: #f1f5f9;
+            margin-bottom: 6px;
+        }
+        .header .subtitle {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        .header .last-update {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #111827;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .card h2 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            margin-bottom: 14px;
+        }
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #1e293b;
+        }
+        .status-row:last-child { border-bottom: none; }
+        .status-label { color: #94a3b8; font-size: 0.9rem; }
+        .status-value { font-weight: 600; font-size: 0.9rem; }
+        .indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .indicator.green { background: #22c55e; box-shadow: 0 0 6px #22c55e88; }
+        .indicator.red { background: #ef4444; box-shadow: 0 0 6px #ef444488; }
+        .indicator.yellow { background: #eab308; box-shadow: 0 0 6px #eab30888; }
+        .indicator.gray { background: #475569; }
+        .big-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            line-height: 1;
+        }
+        .big-number.green { color: #22c55e; }
+        .big-number.red { color: #ef4444; }
+        .big-number.yellow { color: #eab308; }
+        .stat-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            flex: 1;
+            min-width: 80px;
+            text-align: center;
+        }
+        .stat-item .label {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .stat-item .value {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #1e293b;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        .fill.green { background: #22c55e; }
+        .fill.red { background: #ef4444; }
+        .fill.yellow { background: #eab308; }
+        .error-banner {
+            background: #7f1d1d;
+            border: 1px solid #991b1b;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            max-width: 1200px;
+            margin: 0 auto 16px;
+            display: none;
+            color: #fecaca;
+        }
+        .kill-banner {
+            background: #78350f;
+            border: 1px solid #92400e;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            max-width: 1200px;
+            margin: 0 auto 16px;
+            display: none;
+            color: #fde68a;
+            text-align: center;
+            font-weight: 600;
+        }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .loading { animation: pulse 1.5s infinite; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>MiroFish Health Dashboard</h1>
+        <div class="subtitle">Whale Tracker System Monitor</div>
+        <div class="last-update" id="lastUpdate">Loading...</div>
+    </div>
+
+    <div class="error-banner" id="errorBanner"></div>
+    <div class="kill-banner" id="killBanner">KILL SWITCH ACTIVE - Consensus picks paused</div>
+
+    <div class="grid">
+        <!-- Component Status -->
+        <div class="card">
+            <h2>System Status</h2>
+            <div class="status-row">
+                <span class="status-label"><span class="indicator gray" id="apiInd"></span>API</span>
+                <span class="status-value" id="apiStatus">--</span>
+            </div>
+            <div class="status-row">
+                <span class="status-label"><span class="indicator gray" id="dbInd"></span>Database</span>
+                <span class="status-value" id="dbStatus">--</span>
+            </div>
+            <div class="status-row">
+                <span class="status-label"><span class="indicator gray" id="freshInd"></span>Data Freshness</span>
+                <span class="status-value" id="freshStatus">--</span>
+            </div>
+            <div class="status-row">
+                <span class="status-label"><span class="indicator gray" id="staleInd"></span>Stale Count</span>
+                <span class="status-value" id="staleStatus">--</span>
+            </div>
+        </div>
+
+        <!-- Win Rate -->
+        <div class="card">
+            <h2>Win Rate</h2>
+            <div style="text-align:center; padding: 10px 0;">
+                <div class="big-number" id="winRate">--</div>
+                <div style="color:#64748b; margin-top:6px; font-size:0.85rem;" id="winRateDetail">--</div>
+            </div>
+            <div class="progress-bar">
+                <div class="fill green" id="winRateBar" style="width:0%"></div>
+            </div>
+        </div>
+
+        <!-- Position Counts -->
+        <div class="card">
+            <h2>Positions</h2>
+            <div class="stat-group">
+                <div class="stat-item">
+                    <div class="label">Total</div>
+                    <div class="value" id="posTotal">--</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Pending</div>
+                    <div class="value" style="color:#eab308" id="posPending">--</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Won</div>
+                    <div class="value" style="color:#22c55e" id="posWon">--</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Lost</div>
+                    <div class="value" style="color:#ef4444" id="posLost">--</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Expired</div>
+                    <div class="value" style="color:#64748b" id="posExpired">--</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Whales -->
+        <div class="card">
+            <h2>Whales</h2>
+            <div class="stat-group">
+                <div class="stat-item">
+                    <div class="label">Total</div>
+                    <div class="value" id="whaleTotal">--</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Elite</div>
+                    <div class="value" style="color:#a78bfa" id="whaleElite">--</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Info -->
+        <div class="card">
+            <h2>Database</h2>
+            <div class="status-row">
+                <span class="status-label">Size</span>
+                <span class="status-value" id="dbSize">--</span>
+            </div>
+            <div class="status-row">
+                <span class="status-label">Latest Position</span>
+                <span class="status-value" id="latestPos" style="font-size:0.8rem">--</span>
+            </div>
+        </div>
+
+        <!-- Consensus -->
+        <div class="card">
+            <h2>Consensus Picks</h2>
+            <div class="stat-group">
+                <div class="stat-item">
+                    <div class="label">Total</div>
+                    <div class="value" id="conTotal">--</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Pending</div>
+                    <div class="value" style="color:#eab308" id="conPending">--</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Resolved</div>
+                    <div class="value" style="color:#22c55e" id="conResolved">--</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setIndicator(id, color) {
+            var el = document.getElementById(id);
+            el.className = 'indicator ' + color;
+        }
+
+        function setText(id, text) {
+            document.getElementById(id).textContent = text;
+        }
+
+        function formatNum(n) {
+            if (n === null || n === undefined) return '--';
+            return n.toLocaleString();
+        }
+
+        function formatTime(iso) {
+            if (!iso) return '--';
+            try {
+                var d = new Date(iso);
+                return d.toLocaleString();
+            } catch(e) {
+                return iso;
+            }
+        }
+
+        var fetchErrors = 0;
+
+        function refresh() {
+            var now = new Date();
+            setText('lastUpdate', 'Last refresh: ' + now.toLocaleTimeString() + ' (auto-refresh 60s)');
+
+            // Fetch detailed health
+            fetch('/api/health/detailed')
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    fetchErrors = 0;
+                    document.getElementById('errorBanner').style.display = 'none';
+
+                    // API status
+                    var apiOk = d.api === 'healthy';
+                    setIndicator('apiInd', apiOk ? 'green' : 'red');
+                    setText('apiStatus', apiOk ? 'Healthy' : d.api);
+
+                    // DB status
+                    var dbOk = d.database && d.database.accessible;
+                    setIndicator('dbInd', dbOk ? 'green' : 'red');
+                    setText('dbStatus', dbOk ? 'Accessible' : 'Error');
+                    setText('dbSize', d.database ? d.database.size_mb + ' MB' : '--');
+
+                    // Freshness
+                    var mins = d.freshness ? d.freshness.minutes_ago : null;
+                    if (mins !== null) {
+                        var freshColor = mins <= 60 ? 'green' : mins <= 120 ? 'yellow' : 'red';
+                        setIndicator('freshInd', freshColor);
+                        if (mins < 60) {
+                            setText('freshStatus', Math.round(mins) + ' min ago');
+                        } else {
+                            setText('freshStatus', (mins / 60).toFixed(1) + ' hrs ago');
+                        }
+                    } else {
+                        setIndicator('freshInd', 'gray');
+                        setText('freshStatus', 'No data');
+                    }
+                    setText('latestPos', formatTime(d.freshness ? d.freshness.latest_position : null));
+
+                    // Stale
+                    var staleCount = d.stale ? d.stale.pending_past_enddate : 0;
+                    setIndicator('staleInd', staleCount === 0 ? 'green' : 'red');
+                    setText('staleStatus', staleCount.toString());
+
+                    // Positions
+                    var p = d.positions || {};
+                    setText('posTotal', formatNum(p.total));
+                    setText('posPending', formatNum(p.pending));
+                    setText('posWon', formatNum(p.won));
+                    setText('posLost', formatNum(p.lost));
+                    setText('posExpired', formatNum(p.expired));
+
+                    // Win rate
+                    var resolved = (p.won || 0) + (p.lost || 0);
+                    var wr = resolved > 0 ? ((p.won || 0) / resolved * 100) : 0;
+                    setText('winRate', wr.toFixed(1) + '%');
+                    setText('winRateDetail', (p.won || 0) + 'W / ' + (p.lost || 0) + 'L (' + resolved + ' resolved)');
+                    document.getElementById('winRateBar').style.width = wr + '%';
+                    var wrEl = document.getElementById('winRate');
+                    wrEl.className = 'big-number ' + (wr >= 60 ? 'green' : wr >= 45 ? 'yellow' : 'red');
+
+                    // Whales
+                    var w = d.whales || {};
+                    setText('whaleTotal', formatNum(w.total));
+                    setText('whaleElite', formatNum(w.elite));
+
+                    // Consensus
+                    var c = d.consensus || {};
+                    setText('conTotal', formatNum(c.total_picks));
+                    setText('conPending', formatNum(c.pending));
+                    setText('conResolved', formatNum(c.resolved));
+
+                    // Kill switch
+                    document.getElementById('killBanner').style.display = d.kill_switch ? 'block' : 'none';
+                })
+                .catch(function(err) {
+                    fetchErrors++;
+                    var banner = document.getElementById('errorBanner');
+                    banner.textContent = 'Failed to fetch health data: ' + err.message + ' (attempt ' + fetchErrors + ')';
+                    banner.style.display = 'block';
+
+                    setIndicator('apiInd', 'red');
+                    setText('apiStatus', 'Unreachable');
+                });
+        }
+
+        // Initial load + auto-refresh
+        refresh();
+        setInterval(refresh, 60000);
+    </script>
+</body>
+</html>

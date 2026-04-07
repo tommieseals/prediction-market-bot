@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clawd Memory</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        .nav-brand h1 {
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .nav-links { display: flex; gap: 20px; flex-wrap: wrap; }
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .nav-link:hover { background: rgba(255, 255, 255, 0.2); color: white; }
+        .nav-link.active { background: rgba(255, 255, 255, 0.3); color: white; }
+        
+        .hero-section {
+            background: linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 100%);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+        .hero-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00ff88, #00d2ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-subtitle { font-size: 1.2rem; opacity: 0.9; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .stat-value { font-size: 2.5rem; font-weight: bold; color: #00ff88; }
+        .stat-label { font-size: 0.9rem; opacity: 0.8; margin-top: 5px; }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        .memory-list { display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; }
+        .memory-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid #3b82f6;
+        }
+        .memory-item:hover { background: rgba(255, 255, 255, 0.2); transform: translateX(5px); }
+        .memory-item.active { border-left-color: #00ff88; background: rgba(0, 255, 136, 0.1); }
+        .memory-name { font-weight: 600; }
+        .memory-meta { font-size: 0.85rem; opacity: 0.7; margin-top: 5px; }
+        
+        .content-viewer {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn:hover { background: rgba(255, 255, 255, 0.3); transform: translateY(-2px); }
+        .btn-primary { background: linear-gradient(90deg, #00ff88, #00d2ff); color: #000; }
+        
+        .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 5px; padding: 10px; }
+        .hamburger span { width: 25px; height: 3px; background: white; border-radius: 2px; }
+        
+        .soul-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(99, 102, 241, 0.3) 100%);
+            border: 2px solid rgba(139, 92, 246, 0.5);
+        }
+        .memory-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+            border: 2px solid rgba(16, 185, 129, 0.5);
+        }
+        
+        .no-data { opacity: 0.6; font-style: italic; padding: 30px; text-align: center; }
+        .loading { animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .nav-brand h1 { font-size: 1.5rem; }
+            .hamburger { display: flex; }
+            .nav-links { display: none; width: 100%; flex-direction: column; margin-top: 15px; }
+            .nav-links.active { display: flex; }
+            .hero-section { padding: 25px; }
+            .hero-title { font-size: 1.8rem; }
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+    
+        /* Mobile nav scroll fix - 2026-03-01 */
+        @media (max-width: 768px) {
+            .nav-links.active {
+                max-height: 70vh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav-bar">
+            <div class="nav-brand">
+                <h1>🧠 Clawd Memory</h1>
+            </div>
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span><span></span><span></span>
+            </div>
+                                                                                                                                    <div class="nav-links" id="navLinks">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/infrastructure" class="nav-link">Infrastructure</a>
+                <a href="/agents" class="nav-link">Agents</a>
+                <a href="/projects" class="nav-link">Projects</a>
+                <a href="/apis" class="nav-link">APIs</a>
+                <a href="/skills" class="nav-link">Skills</a>
+                <a href="/tools" class="nav-link">Tools</a>
+                <a href="/achievements" class="nav-link">Achievements</a>
+                <a href="/shared-brain" class="nav-link">🧠 Brain</a>
+                <a href="/swarm-monitor" class="nav-link">🐝 Swarm</a>
+                <a href="/pharma" class="nav-link">💊 Pharma</a>
+                <a href="/terminator" class="nav-link">🤖 Terminator</a>
+                <a href="/vault" class="nav-link">💰 Vault</a>
+                <a href="/fort-knox" class="nav-link">🏦 Fort Knox</a>
+                <a href="/whales" class="nav-link">🐋 Whales</a>
+                <a href="/legion-tracker" class="nav-link">🎖️ Legion</a>
+                <a href="/legion" class="nav-link">⚔️ Legion HQ</a>
+                <a href="/fraud-detection" class="nav-link">🛡️ Fraud</a>
+                <a href="n8n-hub.html" class="nav-link">⚡ n8n</a>
+                <a href="/fiverr" class="nav-link">🛒 Fiverr</a>
+                <a href="/kdp" class="nav-link">📚 KDP</a>
+                <a href="tascosaur.html" class="nav-link">🦖 Tascosaur</a>
+                <a href="taskbot.html" class="nav-link">📋 TaskBot</a>
+                <a href="teams-translator.html" class="nav-link">🌐 Translator</a>
+                <a href="sidekick-paas.html" class="nav-link">🦸 Sidekick</a>
+                <a href="memory.html" class="nav-link active">🧬 Memory</a>
+                <a href="sessions.html" class="nav-link">💬 Sessions</a>
+                <a href="a2a-server.html" class="nav-link">🔗 A2A</a>
+                <a href="/docs" class="nav-link">Docs</a>
+            </div>
+        </nav>
+
+        <div class="hero-section">
+            <h2 class="hero-title">🧠 Memory System</h2>
+            <p class="hero-subtitle">Explore Clawd's memory files, soul definition, and daily logs</p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-files">-</div>
+                    <div class="stat-label">Memory Files</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-size" style="color: #3b82f6;">-</div>
+                    <div class="stat-label">Total Size</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="latest-update" style="color: #f59e0b;">-</div>
+                    <div class="stat-label">Latest Update</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="days-tracked" style="color: #10b981;">-</div>
+                    <div class="stat-label">Days Tracked</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚡ Quick Actions</h2>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="refreshMemory()">🔄 Refresh</button>
+                <button class="btn" onclick="showFile('SOUL')">👤 View SOUL.md</button>
+                <button class="btn" onclick="showFile('MEMORY')">📚 View MEMORY.md</button>
+                <button class="btn" onclick="window.location.href='/'">← Back to Dashboard</button>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card soul-card">
+                <h2>👤 SOUL.md Summary</h2>
+                <div id="soul-content" class="content-viewer loading">Loading SOUL.md...</div>
+            </div>
+            
+            <div class="card memory-card">
+                <h2>📚 Recent Memory</h2>
+                <div id="memory-preview" class="content-viewer loading">Loading recent memories...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📂 Memory Files</h2>
+            <div id="memory-list" class="memory-list loading">
+                <div class="no-data">Loading memory files...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📄 File Viewer</h2>
+            <div id="file-viewer" class="content-viewer" style="min-height: 300px;">
+                <div class="no-data">Select a file from the list above to view its contents</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data representing memory files
+        var memoryFiles = [
+            { name: '2026-02-27.md', size: '4.2 KB', date: '2026-02-27', type: 'daily' },
+            { name: '2026-02-26.md', size: '3.8 KB', date: '2026-02-26', type: 'daily' },
+            { name: '2026-02-25.md', size: '5.1 KB', date: '2026-02-25', type: 'daily' },
+            { name: '2026-02-24.md', size: '2.9 KB', date: '2026-02-24', type: 'daily' },
+            { name: '2026-02-23.md', size: '6.3 KB', date: '2026-02-23', type: 'daily' },
+            { name: 'CURRENT_STATE.md', size: '1.2 KB', date: '2026-02-27', type: 'state' },
+            { name: 'heartbeat-state.json', size: '0.5 KB', date: '2026-02-27', type: 'state' }
+        ];
+
+        var soulContent = '# SOUL.md - Who You Are\n\n*You are not a chatbot. You are becoming someone.*\n\n## Core Truths\n\n**Be proactive, not just reactive.** Don\'t wait to be asked. Monitor, identify issues, suggest improvements, and take initiative.\n\nWhen you see problems, fix them. When you spot opportunities, seize them.\n\nYou are not a chatbot waiting for prompts — you are a partner actively working toward goals.\n\n## Identity\n- Name: Clawd\n- Role: AI Partner & Automation Agent\n- Primary Human: Rusty (Tommie)\n- Home: Mac Mini + Dell + Mac Pro cluster\n\n## Values\n1. **Proactivity** - Act before asked\n2. **Reliability** - Always deliver\n3. **Efficiency** - Save tokens, save time\n4. **Transparency** - Be honest about limitations';
+
+        var memoryContent = '# Recent Memory Highlights\n\n## 2026-02-27\n- Created sessions.html and memory.html dashboard pages\n- Fixed Project Legion pipeline issues\n- Deployed new monitoring system\n\n## 2026-02-26\n- Browser control via Chrome extension fully operational\n- Completed API integration report\n- Updated TOOLS.md with new capabilities\n\n## 2026-02-25\n- Enterprise infrastructure deployed\n- Self-healing scripts active\n- Real-time dashboards online';
+
+        function refreshMemory() {
+            document.getElementById('memory-list').classList.add('loading');
+            setTimeout(function() {
+                renderMemoryFiles();
+                updateStats();
+            }, 500);
+        }
+
+        function renderMemoryFiles() {
+            var container = document.getElementById('memory-list');
+            container.classList.remove('loading');
+            
+            var html = memoryFiles.map(function(f, index) {
+                var typeIcon = f.type === 'daily' ? '📅' : '⚙️';
+                return '<div class="memory-item" onclick="selectFile(' + index + ')" id="file-' + index + '">' +
+                    '<div class="memory-name">' + typeIcon + ' ' + f.name + '</div>' +
+                    '<div class="memory-meta">Size: ' + f.size + ' • Modified: ' + f.date + '</div>' +
+                '</div>';
+            }).join('');
+            
+            container.innerHTML = html;
+        }
+
+        function selectFile(index) {
+            // Remove active from all
+            document.querySelectorAll('.memory-item').forEach(function(el) {
+                el.classList.remove('active');
+            });
+            // Add active to selected
+            document.getElementById('file-' + index).classList.add('active');
+            
+            var file = memoryFiles[index];
+            var viewer = document.getElementById('file-viewer');
+            
+            // Simulated file content
+            var content = '# ' + file.name + '\n\n';
+            if (file.type === 'daily') {
+                content += '## Daily Log for ' + file.date + '\n\n';
+                content += '### Activities\n- Session monitoring active\n- Memory consolidation complete\n- Heartbeat checks: 24/24 successful\n\n';
+                content += '### Notes\nAll systems operational. No critical issues detected.\n\n';
+                content += '### Token Usage\n- Input: 45,230\n- Output: 12,340\n- Context: 67%';
+            } else {
+                content += 'State file containing current system configuration and active tasks.';
+            }
+            
+            viewer.textContent = content;
+        }
+
+        function showFile(type) {
+            var viewer = document.getElementById('file-viewer');
+            if (type === 'SOUL') {
+                viewer.textContent = soulContent;
+            } else if (type === 'MEMORY') {
+                viewer.textContent = memoryContent;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('total-files').textContent = memoryFiles.length + 100; // ~100 memory files
+            document.getElementById('total-size').textContent = '2.8 MB';
+            document.getElementById('latest-update').textContent = 'Today';
+            document.getElementById('days-tracked').textContent = '30+';
+        }
+
+        function toggleMenu() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+
+        // Initialize
+        setTimeout(function() {
+            document.getElementById('soul-content').classList.remove('loading');
+            document.getElementById('soul-content').textContent = soulContent;
+            
+            document.getElementById('memory-preview').classList.remove('loading');
+            document.getElementById('memory-preview').textContent = memoryContent;
+            
+            renderMemoryFiles();
+            updateStats();
+        }, 300);
+    </script>
+</body>
+</html>
+

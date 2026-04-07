@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content=width=device-width, initial-scale=1.0>
+    <title>Infrastructure v5 - Custom Flow Design</title>
+    <style>
+        :root {
+            --bg-deep-space: #0a0e17;
+            --bg-card: #0d1321;
+            --accent-cyan: #00ffff;
+            --accent-purple: #9d4edd;
+            --success-green: #00ff88;
+            --warning-orange: #ffa500;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Segoe UI, system-ui, sans-serif;
+            background: var(--bg-deep-space);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .demo-banner {
+            background: linear-gradient(90deg, #00ff88, #00d2ff);
+            color: #000;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: bold;
+        }
+        h1 {
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+        .section {
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .section-title {
+            color: var(--accent-cyan);
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ═══════════════════════════════════════════════════════════ */
+        /* CUSTOM FLOW DIAGRAM - Like TaskBot architecture            */
+        /* ═══════════════════════════════════════════════════════════ */
+        .flow-diagram {
+            position: relative;
+            padding: 2rem;
+            min-height: 600px;
+        }
+
+        /* SVG connectors layer */
+        .flow-connectors {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .connector-line {
+            stroke: rgba(0, 255, 255, 0.4);
+            stroke-width: 2;
+            stroke-dasharray: 6 4;
+            fill: none;
+        }
+        .connector-dot {
+            fill: rgba(0, 255, 255, 0.8);
+        }
+
+        /* Flow node cards */
+        .flow-node {
+            position: absolute;
+            background: rgba(20, 28, 47, 0.95);
+            border-radius: 16px;
+            padding: 0;
+            min-width: 160px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .flow-node:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 255, 255, 0.2);
+        }
+
+        /* Colored top bar */
+        .node-bar {
+            height: 4px;
+            width: 100%;
+        }
+        .node-bar.cyan { background: linear-gradient(90deg, #00d2ff, #00ffff); }
+        .node-bar.purple { background: linear-gradient(90deg, #9d4edd, #c77dff); }
+        .node-bar.green { background: linear-gradient(90deg, #00ff88, #00d9a5); }
+        .node-bar.orange { background: linear-gradient(90deg, #ffa500, #ffcc00); }
+        .node-bar.blue { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .node-bar.red { background: linear-gradient(90deg, #ef4444, #f87171); }
+        .node-bar.teal { background: linear-gradient(90deg, #14b8a6, #2dd4bf); }
+
+        .node-content {
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        /* Icon circle */
+        .node-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem;
+            font-size: 1.5rem;
+        }
+        .node-icon.cyan-bg { background: rgba(0, 255, 255, 0.15); }
+        .node-icon.purple-bg { background: rgba(157, 78, 221, 0.15); }
+        .node-icon.green-bg { background: rgba(0, 255, 136, 0.15); }
+        .node-icon.orange-bg { background: rgba(255, 165, 0, 0.15); }
+        .node-icon.blue-bg { background: rgba(59, 130, 246, 0.15); }
+        .node-icon.red-bg { background: rgba(239, 68, 68, 0.15); }
+        .node-icon.teal-bg { background: rgba(20, 184, 166, 0.15); }
+
+        .node-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        .node-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Small nodes for inputs */
+        .flow-node.small {
+            min-width: 130px;
+        }
+        .flow-node.small .node-content {
+            padding: 1rem;
+        }
+        .flow-node.small .node-icon {
+            width: 44px;
+            height: 44px;
+            font-size: 1.2rem;
+        }
+        .flow-node.small .node-title {
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class=demo-banner>
+        🎨 DEMO v5 - Custom Card Nodes + SVG Connectors (TaskBot style)
+    </div>
+    
+    <h1>🤖 Agent Architecture - Custom Flow Design</h1>
+    
+    <div class=section>
+        <div class=section-title>Agent Architecture Flow</div>
+        
+        <div class=flow-diagram>
+            <!-- SVG Connectors -->
+            <svg class=flow-connectors viewBox=0 0 1000 550 preserveAspectRatio=xMidYMid meet>
+                <!-- Telegram to Gateway -->
+                <path class=connector-line d=M 170 100 Q 170 160, 400 180/>
+                <circle class=connector-dot cx=170 cy=100 r=4/>
+                <circle class=connector-dot cx=400 cy=180 r=4/>
+                
+                <!-- Web to Gateway -->
+                <path class=connector-line d=M 400 100 L 400 160/>
+                <circle class=connector-dot cx=400 cy=100 r=4/>
+                <circle class=connector-dot cx=400 cy=160 r=4/>
+                
+                <!-- Cron to Gateway -->
+                <path class=connector-line d=M 630 100 Q 630 160, 480 180/>
+                <circle class=connector-dot cx=630 cy=100 r=4/>
+                <circle class=connector-dot cx=480 cy=180 r=4/>
+                
+                <!-- Gateway to Main Agent -->
+                <path class=connector-line d=M 400 260 L 400 310/>
+                <circle class=connector-dot cx=400 cy=260 r=4/>
+                <circle class=connector-dot cx=400 cy=310 r=4/>
+                
+                <!-- Main Agent to Context -->
+                <path class=connector-line d=M 320 380 Q 200 380, 170 420/>
+                <circle class=connector-dot cx=320 cy=380 r=4/>
+                <circle class=connector-dot cx=170 cy=420 r=4/>
+                
+                <!-- Main Agent to Sub-Agents -->
+                <path class=connector-line d=M 480 380 Q 600 380, 630 420/>
+                <circle class=connector-dot cx=480 cy=380 r=4/>
+                <circle class=connector-dot cx=630 cy=420 r=4/>
+                
+                <!-- Main Agent to Admin -->
+                <path class=connector-line d=M 400 420 L 400 480/>
+                <circle class=connector-dot cx=400 cy=420 r=4/>
+                <circle class=connector-dot cx=400 cy=480 r=4/>
+                
+                <!-- Admin to Dashboard -->
+                <path class=connector-line d=M 480 530 Q 700 530, 800 490/>
+                <circle class=connector-dot cx=480 cy=530 r=4/>
+                <circle class=connector-dot cx=800 cy=490 r=4/>
+            </svg>
+            
+            <!-- Input Sources Row -->
+            <div class=flow-node small style=left: 100px; top: 30px;>
+                <div class=node-bar blue></div>
+                <div class=node-content>
+                    <div class=node-icon blue-bg>📱</div>
+                    <div class=node-title>Telegram</div>
+                    <div class=node-desc>Primary Channel</div>
+                </div>
+            </div>
+            
+            <div class=flow-node small style=left: 330px; top: 30px;>
+                <div class=node-bar cyan></div>
+                <div class=node-content>
+                    <div class=node-icon cyan-bg>🌐</div>
+                    <div class=node-title>Web Chat</div>
+                    <div class=node-desc>Dashboard UI</div>
+                </div>
+            </div>
+            
+            <div class=flow-node small style=left: 560px; top: 30px;>
+                <div class=node-bar purple></div>
+                <div class=node-content>
+                    <div class=node-icon purple-bg>⏰</div>
+                    <div class=node-title>Cron Jobs</div>
+                    <div class=node-desc>Scheduled Tasks</div>
+                </div>
+            </div>
+            
+            <!-- Gateway -->
+            <div class=flow-node style=left: 300px; top: 160px; min-width: 200px;>
+                <div class=node-bar teal></div>
+                <div class=node-content>
+                    <div class=node-icon teal-bg>🔮</div>
+                    <div class=node-title>Clawdbot Gateway</div>
+                    <div class=node-desc>Auth • Route • Queue</div>
+                </div>
+            </div>
+            
+            <!-- Main Agent -->
+            <div class=flow-node style=left: 285px; top: 310px; min-width: 230px;>
+                <div class=node-bar cyan></div>
+                <div class=node-content>
+                    <div class=node-icon cyan-bg>🧠</div>
+                    <div class=node-title>Main Agent</div>
+                    <div class=node-desc>Claude Opus 4.5 • Conversation</div>
+                </div>
+            </div>
+            
+            <!-- Context Files -->
+            <div class=flow-node style=left: 80px; top: 420px;>
+                <div class=node-bar green></div>
+                <div class=node-content>
+                    <div class=node-icon green-bg>📁</div>
+                    <div class=node-title>Context Files</div>
+                    <div class=node-desc>SOUL • MEMORY • TOOLS</div>
+                </div>
+            </div>
+            
+            <!-- Sub-Agents -->
+            <div class=flow-node style=left: 540px; top: 420px;>
+                <div class=node-bar purple></div>
+                <div class=node-content>
+                    <div class=node-icon purple-bg>👥</div>
+                    <div class=node-title>Sub-Agents</div>
+                    <div class=node-desc>Background • Research</div>
+                </div>
+            </div>
+            
+            <!-- Admin Agent -->
+            <div class=flow-node style=left: 290px; top: 480px; min-width: 220px;>
+                <div class=node-bar red></div>
+                <div class=node-content>
+                    <div class=node-icon red-bg>🛡️</div>
+                    <div class=node-title>Admin Agent</div>
+                    <div class=node-desc>Health • Security • Monitoring</div>
+                </div>
+            </div>
+            
+            <!-- Dashboard -->
+            <div class=flow-node style=left: 720px; top: 440px;>
+                <div class=node-bar orange></div>
+                <div class=node-content>
+                    <div class=node-icon orange-bg>📊</div>
+                    <div class=node-title>Dashboard</div>
+                    <div class=node-desc>:8080 • Live Data</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class=section style=background: linear-gradient(135deg, var(--bg-card), rgba(0, 255, 255, 0.05));>
+        <div class=section-title>✅ What Changed</div>
+        <ul style=list-style: none; line-height: 2.2; font-size: 1.1rem;>
+            <li>✅ <strong>Custom card nodes</strong> — colored top bar, icon in circle, title + description</li>
+            <li>✅ <strong>SVG connector paths</strong> — dashed lines with dots at endpoints</li>
+            <li>✅ <strong>Curved Bézier paths</strong> — elegant flow, not harsh angles</li>
+            <li>✅ <strong>Hover effects</strong> — cards lift up on hover</li>
+            <li>✅ <strong>Visual hierarchy</strong> — inputs at top → gateway → agents → output</li>
+            <li>✅ <strong>Same style as TaskBot architecture</strong></li>
+        </ul>
+    </div>
+</body>
+</html>
+ENDHTML
+

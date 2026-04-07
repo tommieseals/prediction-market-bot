@@ -1,0 +1,2 @@
+requests>=2.31.0
+# All other deps are stdlib (asyncio, sqlite3, json, logging, etc.)

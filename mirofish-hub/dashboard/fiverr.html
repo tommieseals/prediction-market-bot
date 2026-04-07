@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiverr Automation - Clawd Dashboard</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #1dbf73 0%, #00b22d 50%, #0f9d58 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.2);
+        }
+        .nav-brand h1 { font-size: 1.8rem; }
+        .nav-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .nav-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .nav-links a:hover, .nav-links a.active { background: rgba(255,255,255,0.2); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 2rem; }
+        .diagram-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
+        }
+        .diagram-title { text-align: center; margin-bottom: 1.5rem; }
+        .diagram-title h2 { color: #1dbf73; font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .diagram-title p { color: #718096; }
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        .stat-value { font-size: 2rem; font-weight: 700; }
+        .stat-label { font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem; }
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .diagram-card { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><h1>🛒 Fiverr Automation</h1></div>
+        <div class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/projects">Projects</a>
+            <a href="/whales">🐋 Whales</a>
+            <a href="/fiverr" class="active">🛒 Fiverr</a>
+        </div>
+    </nav>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function FlowingLine({ x1, y1, x2, y2, color = "#1dbf73", delay = 0 }) {
+            const pathD = `M ${x1} ${y1} L ${x2} ${y2}`;
+            return (
+                <g>
+                    <path d={pathD} fill="none" stroke={color + "40"} strokeWidth="3" strokeDasharray="8,4" />
+                    <circle r="5" fill={color}>
+                        <animateMotion dur="2s" repeatCount="indefinite" begin={delay + "s"} path={pathD} />
+                    </circle>
+                </g>
+            );
+        }
+
+        function ModuleNode({ x, y, w, h, title, subtitle, icon, color }) {
+            return (
+                <g>
+                    <rect x={x} y={y} width={w} height={h} rx={12} fill="white" stroke="#E2E8F0" strokeWidth="1" filter="url(#shadow)" />
+                    <rect x={x} y={y} width={w} height={6} rx={3} fill={color} />
+                    <circle cx={x + w/2} cy={y + 30} r={22} fill={color + "20"} />
+                    <text x={x + w/2} y={y + 35} textAnchor="middle" fontSize="24">{icon}</text>
+                    <text x={x + w/2} y={y + 62} textAnchor="middle" fill="#1A202C" fontSize="12" fontWeight="600">{title}</text>
+                    <text x={x + w/2} y={y + 78} textAnchor="middle" fill="#718096" fontSize="9">{subtitle}</text>
+                    <circle cx={x + w - 12} cy={y + 12} r="5" fill="#1dbf73">
+                        <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
+                    </circle>
+                </g>
+            );
+        }
+
+        function FiverrPipeline() {
+            return (
+                <svg viewBox="0 0 900 350" style={{width: "100%"}}>
+                    <defs>
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.15" />
+                        </filter>
+                    </defs>
+
+                    {/* Central Hub */}
+                    <rect x="370" y="120" width="160" height="110" rx="55" fill="#1dbf73" />
+                    <text x="450" y="160" textAnchor="middle" fill="#fff" fontSize="32">🛒</text>
+                    <text x="450" y="190" textAnchor="middle" fill="#fff" fontSize="14" fontWeight="600">Fiverr Hub</text>
+                    <text x="450" y="210" textAnchor="middle" fill="#fff" fontSize="10" opacity="0.8">Central Controller</text>
+
+                    {/* Modules */}
+                    <ModuleNode x={50} y={40} w={140} h={95} title="Auto-Responder" subtitle="AI Replies" icon="💬" color="#4299E1" />
+                    <ModuleNode x={50} y={160} w={140} h={95} title="Gig Monitor" subtitle="Performance" icon="📊" color="#9F7AEA" />
+                    <ModuleNode x={50} y={280} w={140} h={65} title="Order Tracker" subtitle="Deadlines" icon="📋" color="#ED8936" />
+                    
+                    <ModuleNode x={710} y={40} w={140} h={95} title="Revenue" subtitle="Analytics" icon="💰" color="#48BB78" />
+                    <ModuleNode x={710} y={160} w={140} h={95} title="Auto-Post" subtitle="Gig Updates" icon="📝" color="#E53E3E" />
+                    <ModuleNode x={710} y={280} w={140} h={65} title="Notifications" subtitle="Alerts" icon="🔔" color="#DD6B20" />
+
+                    {/* Flowing connections */}
+                    <FlowingLine x1={190} y1={87} x2={370} y2={155} color="#4299E1" delay={0} />
+                    <FlowingLine x1={190} y1={207} x2={370} y2={175} color="#9F7AEA" delay={0.4} />
+                    <FlowingLine x1={190} y1={312} x2={370} y2={200} color="#ED8936" delay={0.8} />
+                    <FlowingLine x1={530} y1={155} x2={710} y2={87} color="#48BB78" delay={0.2} />
+                    <FlowingLine x1={530} y1={175} x2={710} y2={207} color="#E53E3E" delay={0.6} />
+                    <FlowingLine x1={530} y1={200} x2={710} y2={312} color="#DD6B20" delay={1} />
+                </svg>
+            );
+        }
+
+        function FiverrDashboard() {
+            return (
+                <div className="container">
+                    <div className="stats-row">
+                        <div className="stat-card">
+                            <div className="stat-value" style={{color: "#1dbf73"}}>6</div>
+                            <div className="stat-label">Active Modules</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value">1,827</div>
+                            <div className="stat-label">Lines of Code</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value">13</div>
+                            <div className="stat-label">Scripts</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value" style={{color: "#48BB78"}}>✓</div>
+                            <div className="stat-label">GitHub Synced</div>
+                        </div>
+                    </div>
+
+                    <div className="diagram-card">
+                        <div className="diagram-title">
+                            <h2>🛒 Fiverr Automation Pipeline</h2>
+                            <p>Complete gig automation system with AI-powered responses and analytics</p>
+                        </div>
+                        <FiverrPipeline />
+                    </div>
+
+                    <div className="diagram-card">
+                        <div className="diagram-title">
+                            <h2>📦 Module Details</h2>
+                        </div>
+                        <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem"}}>
+                            <div style={{background: "#EBF8FF", padding: "1.5rem", borderRadius: "12px", borderLeft: "4px solid #4299E1"}}>
+                                <h3 style={{color: "#2B6CB0"}}>💬 Auto-Responder</h3>
+                                <p style={{color: "#2C5282", marginTop: "0.5rem"}}>Instant AI-powered responses to buyer inquiries. Handles FAQs, custom requests, and availability checks.</p>
+                            </div>
+                            <div style={{background: "#FAF5FF", padding: "1.5rem", borderRadius: "12px", borderLeft: "4px solid #9F7AEA"}}>
+                                <h3 style={{color: "#6B46C1"}}>📊 Gig Monitor</h3>
+                                <p style={{color: "#553C9A", marginTop: "0.5rem"}}>Real-time tracking of gig impressions, clicks, and conversion rates. Alerts on performance drops.</p>
+                            </div>
+                            <div style={{background: "#FFFAF0", padding: "1.5rem", borderRadius: "12px", borderLeft: "4px solid #ED8936"}}>
+                                <h3 style={{color: "#C05621"}}>📋 Order Tracker</h3>
+                                <p style={{color: "#7B341E", marginTop: "0.5rem"}}>Automated order management, deadline reminders, and delivery status updates.</p>
+                            </div>
+                            <div style={{background: "#F0FFF4", padding: "1.5rem", borderRadius: "12px", borderLeft: "4px solid #48BB78"}}>
+                                <h3 style={{color: "#276749"}}>💰 Revenue Analytics</h3>
+                                <p style={{color: "#22543D", marginTop: "0.5rem"}}>Track earnings, pending clearance, and monthly revenue trends.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<FiverrDashboard />, document.getElementById("root"));
+    </script>
+</body>
+</html>
+

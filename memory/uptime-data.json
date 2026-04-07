@@ -1,0 +1,836 @@
+{
+    "checks":  [
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:03:39.2485886-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:03:39.2836338-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:03:39.2875879-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:03:39.2885892-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:03:39.2905879-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:03:39.2925883-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:03:39.2935896-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:03:52.4606462-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:03:52.4836458-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:03:52.4866484-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:03:52.4896541-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:03:52.4916501-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:03:52.4926525-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:03:52.4956795-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:04:15.9628582-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:04:15.9908699-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:04:15.9928589-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:04:15.9949039-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:04:15.9968786-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:04:15.9998907-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:04:16.0008909-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:04:59.3276875-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:04:59.3506922-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:04:59.3528492-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:04:59.3538593-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:04:59.3558561-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:04:59.3568549-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:04:59.3588929-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:21.6379541-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:21.6689614-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:21.6719552-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:21.6739500-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:21.6749930-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:21.6759840-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:21.6769518-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:35.6644402-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:35.6956086-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:35.7016093-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:35.7046161-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:35.7106069-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:35.7126103-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:35.7156084-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:45.3205186-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:45.3458030-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:45.3508026-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:45.3558063-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:45.3618045-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:45.3648013-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:05:45.3668027-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:05.6437300-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:05.6707585-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:05.6747311-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:05.6757680-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:05.6767630-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:05.6777651-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:05.6787307-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:24.8060961-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:24.8390670-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:24.8420708-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:24.8440693-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:24.8450669-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:24.8460681-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:24.8471034-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:28.7311602-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:28.7751650-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:28.7771536-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:28.7791579-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:28.7801563-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:28.7811802-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:28.7821568-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:42.6499641-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:42.6819639-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:42.6879742-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:42.6939615-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:42.6969614-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:42.6999637-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  null,
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:06:42.7039732-05:00",
+                       "error":  null,
+                       "type":  null
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:07:10.5935382-05:00",
+                       "error":  null,
+                       "type":  ""
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:07:10.6155767-05:00",
+                       "error":  null,
+                       "type":  ""
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:07:10.6185729-05:00",
+                       "error":  null,
+                       "type":  ""
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:07:10.6205403-05:00",
+                       "error":  null,
+                       "type":  ""
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:07:10.6225402-05:00",
+                       "error":  null,
+                       "type":  ""
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:07:10.6265417-05:00",
+                       "error":  null,
+                       "type":  ""
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:07:10.6275383-05:00",
+                       "error":  null,
+                       "type":  ""
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:07:20.1175205-05:00",
+                       "error":  null,
+                       "type":  ""
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:07:20.1464880-05:00",
+                       "error":  null,
+                       "type":  ""
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:07:20.1505109-05:00",
+                       "error":  null,
+                       "type":  ""
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:07:20.1564921-05:00",
+                       "error":  null,
+                       "type":  ""
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:07:20.1584860-05:00",
+                       "error":  null,
+                       "type":  ""
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:07:20.1604856-05:00",
+                       "error":  null,
+                       "type":  ""
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:07:20.1624872-05:00",
+                       "error":  null,
+                       "type":  ""
+                   },
+                   {
+                       "up":  true,
+                       "timestamp":  "2026-03-14T09:08:32.0113274-05:00",
+                       "name":  "Mac-Mini",
+                       "latency":  426,
+                       "type":  "node"
+                   },
+                   {
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:08:37.1175260-05:00",
+                       "name":  "Mac-Pro",
+                       "latency":  null,
+                       "type":  "node"
+                   },
+                   {
+                       "up":  true,
+                       "timestamp":  "2026-03-14T09:08:37.1185255-05:00",
+                       "name":  "Dell",
+                       "latency":  0,
+                       "type":  "node"
+                   },
+                   {
+                       "up":  true,
+                       "timestamp":  "2026-03-14T09:08:37.5667610-05:00",
+                       "name":  "Ollama-Mini",
+                       "latency":  445,
+                       "type":  "service"
+                   },
+                   {
+                       "up":  true,
+                       "timestamp":  "2026-03-14T09:08:37.8627371-05:00",
+                       "name":  "Ollama-Dell",
+                       "latency":  295,
+                       "type":  "service"
+                   },
+                   {
+                       "up":  true,
+                       "timestamp":  "2026-03-14T09:08:38.3262242-05:00",
+                       "name":  "Clawdbot",
+                       "latency":  462,
+                       "type":  "service"
+                   },
+                   {
+                       "latency":  517,
+                       "name":  "Mac-Mini",
+                       "up":  true,
+                       "timestamp":  "2026-03-14T09:09:52.0039583-05:00",
+                       "error":  null,
+                       "type":  "node"
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "Mac-Pro",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:09:57.0982060-05:00",
+                       "error":  "SSH failed",
+                       "type":  "node"
+                   },
+                   {
+                       "latency":  0,
+                       "name":  "Dell",
+                       "up":  true,
+                       "timestamp":  "2026-03-14T09:09:57.0992095-05:00",
+                       "error":  null,
+                       "type":  "node"
+                   },
+                   {
+                       "latency":  null,
+                       "name":  "Google-Cloud",
+                       "up":  false,
+                       "timestamp":  "2026-03-14T09:09:57.8550967-05:00",
+                       "error":  "SSH failed",
+                       "type":  "node"
+                   },
+                   {
+                       "latency":  375,
+                       "name":  "Ollama-Mini",
+                       "up":  true,
+                       "timestamp":  "2026-03-14T09:09:58.2323433-05:00",
+                       "error":  null,
+                       "type":  "service"
+                   },
+                   {
+                       "latency":  52,
+                       "name":  "Ollama-Dell",
+                       "up":  true,
+                       "timestamp":  "2026-03-14T09:09:58.2859050-05:00",
+                       "error":  null,
+                       "type":  "service"
+                   },
+                   {
+                       "latency":  409,
+                       "name":  "Clawdbot-Gateway",
+                       "up":  true,
+                       "timestamp":  "2026-03-14T09:09:58.6974411-05:00",
+                       "error":  null,
+                       "type":  "service"
+                   }
+               ],
+    "metadata":  {
+                     "totalChecks":  104,
+                     "created":  "2026-03-14T09:03:39.2275845-05:00",
+                     "version":  "1.0",
+                     "lastCheck":  "2026-03-14T09:09:58.7809236-05:00"
+                 }
+}

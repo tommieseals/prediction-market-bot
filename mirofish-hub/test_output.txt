@@ -1,0 +1,35 @@
+﻿python : C:\Users\User\AppData\Local\Programs\Python\Python312\Lib\site-packages\requests\__init__.py:113: 
+RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.2.0)/charset_normalizer (3.4.6) doesn't match a supported 
+version!
+At line:1 char:38
++ ... sers\USER\clawd\mirofish-hub; python test_agents_only.py 2>&1 | Out-F ...
++                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\User\A...ported version!:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  warnings.warn(
+Traceback (most recent call last):
+  File "C:\Users\USER\clawd\mirofish-hub\test_agents_only.py", line 79, in <module>
+    decision = evaluator.evaluate(simple_spec, mock_result, market_price=0.55)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: EvaluatorAgent.evaluate() got an unexpected keyword argument 'market_price'
+============================================================
+THREE-AGENT COMPONENT TEST
+============================================================
+
+[1] PLANNER TEST
+  Import OK
+  Agent created OK
+  Category: sports
+  Key factors: ['team_form', 'injuries', 'home_advantage']
+  Thresholds: edge=0.08, conf=0.65
+  [OK] PLANNER WORKS!
+
+[2] EVALUATOR TEST
+  Import OK
+  Agent created OK
+  [FAIL] TypeError: EvaluatorAgent.evaluate() got an unexpected keyword argument 'market_price'
+
+============================================================
+TEST COMPLETE
+============================================================

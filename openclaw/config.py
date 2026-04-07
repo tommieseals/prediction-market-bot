@@ -318,12 +318,14 @@ class Config:
         ],
         "analysis": [
             "ollama_local_reasoning",
+            "ollama_local_fast",
             "ollama_jarvis_reasoning",
             "ollama_tom_reasoning",
             "clawdbot_gateway",
         ],
         "self_thought": [
             "ollama_local_reasoning",
+            "ollama_local_fast",
             "ollama_tom_reasoning",
             "ollama_jarvis_reasoning",
             "clawdbot_gateway",

@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Analytics - Whale Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+.header { background: #1e293b; border-bottom: 1px solid #334155; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 20px; font-weight: 700; }
+.header h1 span { color: #818cf8; }
+.nav-links { display: flex; gap: 16px; }
+.nav-links a { color: #94a3b8; text-decoration: none; font-size: 14px; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; }
+.nav-links a:hover, .nav-links a.active { color: #e2e8f0; background: #334155; }
+.header-right { display: flex; align-items: center; gap: 16px; }
+.live-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+/* Stats row */
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; text-align: center; }
+.stat-card .value { font-size: 28px; font-weight: 700; color: #f8fafc; }
+.stat-card .label { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+.stat-card .value.green { color: #22c55e; }
+.stat-card .value.red { color: #ef4444; }
+.stat-card .value.blue { color: #3b82f6; }
+.stat-card .value.purple { color: #a78bfa; }
+
+/* Chart sections */
+.section { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+.section h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
+.chart-box { background: #0f172a; border-radius: 8px; padding: 16px; height: 300px; position: relative; overflow: hidden; will-change: contents; }
+.chart-box h3 { font-size: 14px; color: #94a3b8; margin-bottom: 12px; }
+
+/* Whale selector */
+.whale-select { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: 8px 16px; border-radius: 8px; font-size: 14px; min-width: 250px; }
+.whale-select option { background: #1e293b; }
+
+/* Pick history */
+.pick-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.pick-table th { text-align: left; padding: 10px 12px; color: #94a3b8; border-bottom: 1px solid #334155; font-weight: 500; }
+.pick-table td { padding: 10px 12px; border-bottom: 1px solid #1e293b; }
+.pick-table tr:hover { background: #1e293b80; }
+.badge { padding: 3px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+.badge.won { background: rgba(34,197,94,0.15); color: #22c55e; }
+.badge.lost { background: rgba(239,68,68,0.15); color: #ef4444; }
+.badge.pending { background: rgba(234,179,8,0.15); color: #eab308; }
+.pnl-pos { color: #22c55e; }
+.pnl-neg { color: #ef4444; }
+
+/* Leaderboard */
+.lb-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.lb-table th { text-align: left; padding: 10px 12px; color: #94a3b8; border-bottom: 1px solid #334155; font-weight: 500; }
+.lb-table td { padding: 10px 12px; border-bottom: 1px solid #1e293b; }
+.lb-table tr:hover { background: #1e293b80; }
+.elite-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+.elite-high { background: rgba(34,197,94,0.15); color: #22c55e; }
+.elite-mid { background: rgba(59,130,246,0.15); color: #3b82f6; }
+.elite-low { background: rgba(234,179,8,0.15); color: #eab308; }
+.cat-badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #334155; margin-right: 4px; }
+
+.loading { color: #64748b; font-style: italic; padding: 20px; text-align: center; }
+
+/* Prevent layout shifts during load */
+.section { min-height: 200px; contain: layout style; }
+#moneyFlow, #hotWhales, #leaderboard, #pickHistory { min-height: 250px; }
+.stats-row { min-height: 100px; }
+.chart-grid { contain: layout; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>&#x1F4CA;</span> Whale <span>Analytics</span></h1>
+  <div class="nav-links">
+    <a href="/">Tracker</a>
+    <a href="/leaderboard">Leaderboard</a>
+    <a href="/consensus">Consensus</a>
+    <a href="/analytics" class="active">Analytics</a>
+  </div>
+  <div class="header-right">
+    <span class="live-dot"></span>
+    <span id="refreshTime" style="font-size:12px;color:#64748b">Loading...</span>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Stats Row -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card"><div class="value blue" id="statWhales">-</div><div class="label">Elite Whales</div></div>
+    <div class="stat-card"><div class="value green" id="statWinRate">-</div><div class="label">Win Rate</div></div>
+    <div class="stat-card"><div class="value" id="statPositions">-</div><div class="label">Positions Tracked</div></div>
+    <div class="stat-card"><div class="value green" id="statPnL">-</div><div class="label">Total P&L</div></div>
+    <div class="stat-card"><div class="value purple" id="statPicks">-</div><div class="label">Consensus Picks</div></div>
+  </div>
+
+  <!-- Smart Money Flow -->
+  <div class="section">
+    <h2>&#x1F525; Smart Money Flow — Where Whales Are Betting</h2>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>Positions by Category</h3>
+        <div style="height: 250px; position: relative;">
+          <canvas id="catFlowChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-box">
+        <h3>Win Rate by Category</h3>
+        <div style="height: 250px; position: relative;">
+          <canvas id="catWinChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Whale Performance -->
+  <div class="section">
+    <h2>&#x1F40B; Whale Performance
+      <select class="whale-select" id="whaleSelect" onchange="loadWhaleChart()">
+        <option value="">Select a whale...</option>
+      </select>
+    </h2>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>Cumulative P&L Over Time</h3>
+        <div style="height: 250px; position: relative;">
+          <canvas id="whalePnlChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-box">
+        <h3>Win Rate by Category</h3>
+        <div style="height: 250px; position: relative;">
+          <canvas id="whaleCatChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div id="whaleRecent" style="margin-top:16px"></div>
+  </div>
+
+  <!-- Real-Time Money Flow -->
+  <div class="section">
+    <h2>💰 Real-Time Money Flow — Where Smart Money Is Going NOW</h2>
+    <div id="moneyFlow"><p class="loading">Loading money flow...</p></div>
+  </div>
+
+  <!-- Hot Whales (On Fire Right Now) -->
+  <div class="section">
+    <h2>🔥 Hot Whales — Who's On Fire Right Now</h2>
+    <div id="hotWhales"><p class="loading">Loading hot whales...</p></div>
+  </div>
+
+  <!-- Hot Whales Leaderboard -->
+  <div class="section">
+    <h2>&#x1F3C6; Elite Whales Leaderboard</h2>
+    <div id="leaderboard"><p class="loading">Loading leaderboard...</p></div>
+  </div>
+
+  <!-- Consensus Pick Performance -->
+  <div class="section">
+    <h2>&#x1F3AF; Consensus Pick Performance</h2>
+    <div id="pickStats" style="margin-bottom:16px"></div>
+    <div id="pickHistory"><p class="loading">Loading pick history...</p></div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let catFlowChart, catWinChart, whalePnlChart, whaleCatChart;
+
+// ── LOAD STATS ──
+async function loadStats() {
+  try {
+    const res = await fetch(API + '/api/stats');
+    const d = await res.json();
+    document.getElementById('statWhales').textContent = d.elite_whales || d.total_whales || '-';
+    document.getElementById('statWinRate').textContent = d.win_rate ? d.win_rate.toFixed(1) + '%' : '-';
+    document.getElementById('statPositions').textContent = (d.total_positions || 0).toLocaleString();
+    const netPnl = d.net_pnl || 0;
+    const pnlClass = netPnl >= 0 ? 'green' : 'red';
+    const pnlEl = document.getElementById('statPnL');
+    pnlEl.textContent = '$' + (netPnl / 1000).toFixed(0) + 'K';
+    pnlEl.className = 'value ' + pnlClass;
+    document.getElementById('refreshTime').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+    // Also load consensus pick count
+    const pickRes = await fetch(API + '/api/consensus/history');
+    const pickData = await pickRes.json();
+    const ps = pickData.summary || {};
+    const pickLabel = `${ps.won || 0}W/${ps.lost || 0}L/${ps.pending || 0}P`;
+    document.getElementById('statPicks').textContent = `${ps.total || 0} (${pickLabel})`;
+  } catch(e) { console.error('Stats error:', e); }
+}
+
+// ── CATEGORY FLOW ──
+async function loadCategoryFlow() {
+  try {
+    const [heatRes, perfRes] = await Promise.all([
+      fetch(API + '/api/portfolio/heat'),
+      fetch(API + '/api/category/performance')
+    ]);
+    const heat = await heatRes.json();
+    const perf = await perfRes.json();
+
+    // Flow chart (positions by category)
+    const cats = Object.keys(heat.by_category || {});
+    const sizes = cats.map(c => heat.by_category[c].size_usd || 0);
+    const colors = cats.map(c => {
+      if (c === 'sports') return '#3b82f6';
+      if (c === 'crypto') return '#f59e0b';
+      if (c === 'politics') return '#a78bfa';
+      return '#64748b';
+    });
+
+    if (catFlowChart) catFlowChart.destroy();
+    catFlowChart = new Chart(document.getElementById('catFlowChart'), {
+      type: 'bar',
+      data: {
+        labels: cats.map(c => c.charAt(0).toUpperCase() + c.slice(1)),
+        datasets: [{
+          label: 'Position Size ($)',
+          data: sizes,
+          backgroundColor: colors,
+          borderRadius: 6,
+          maxBarThickness: 50,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { ticks: { color: '#94a3b8', callback: v => '$' + (v/1000000).toFixed(1) + 'M' }, grid: { color: '#1e293b' } },
+          x: { ticks: { color: '#e2e8f0', maxRotation: 45, minRotation: 45 }, grid: { display: false } }
+        }
+      }
+    });
+
+    // Win rate chart
+    const perfCats = Object.keys(perf.categories || {});
+    const winRates = perfCats.map(c => (perf.categories[c].win_rate || 0) * 100);
+    const perfColors = perfCats.map(c => {
+      const wr = perf.categories[c].win_rate || 0;
+      return wr > 0.7 ? '#22c55e' : wr > 0.5 ? '#3b82f6' : '#ef4444';
+    });
+
+    if (catWinChart) catWinChart.destroy();
+    catWinChart = new Chart(document.getElementById('catWinChart'), {
+      type: 'bar',
+      data: {
+        labels: perfCats.map(c => c.charAt(0).toUpperCase() + c.slice(1)),
+        datasets: [{
+          label: 'Win Rate %',
+          data: winRates,
+          backgroundColor: perfColors,
+          borderRadius: 6,
+          maxBarThickness: 50,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { max: 100, ticks: { color: '#94a3b8', callback: v => v + '%' }, grid: { color: '#1e293b' } },
+          x: { ticks: { color: '#e2e8f0', maxRotation: 45, minRotation: 45 }, grid: { display: false } }
+        }
+      }
+    });
+  } catch(e) { console.error('Category flow error:', e); }
+}
+
+// ── WHALE SELECT ──
+async function loadWhaleList() {
+  try {
+    const res = await fetch(API + '/api/leaderboard');
+    const d = await res.json();
+    const select = document.getElementById('whaleSelect');
+    (d.leaderboard || d || []).forEach(w => {
+      const opt = document.createElement('option');
+      opt.value = w.address;
+      opt.textContent = (w.display_name || w.name || w.address.slice(0,10)) + ' (Elite: ' + (w.elite_score || 0).toFixed(0) + ')';
+      select.appendChild(opt);
+    });
+  } catch(e) { console.error('Whale list error:', e); }
+}
+
+// ── WHALE CHART ──
+async function loadWhaleChart() {
+  const addr = document.getElementById('whaleSelect').value;
+  if (!addr) return;
+
+  try {
+    const [chartRes, detailRes] = await Promise.all([
+      fetch(API + '/api/whales/' + addr + '/chart'),
+      fetch(API + '/api/whales/' + addr)
+    ]);
+    const chartData = await chartRes.json();
+    const detail = await detailRes.json();
+
+    // PnL chart
+    const daily = chartData.daily || [];
+    const labels = daily.map(d => d.date || d.day);
+    const cumPnl = daily.map(d => d.cumulative_pnl || d.cum_pnl || 0);
+
+    if (whalePnlChart) whalePnlChart.destroy();
+    whalePnlChart = new Chart(document.getElementById('whalePnlChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Cumulative P&L',
+          data: cumPnl,
+          borderColor: '#22c55e',
+          backgroundColor: 'rgba(34,197,94,0.1)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { ticks: { color: '#94a3b8', callback: v => '$' + (v/1000).toFixed(1) + 'K' }, grid: { color: '#1e293b' } },
+          x: { ticks: { color: '#94a3b8', maxTicksLimit: 8 }, grid: { display: false } }
+        }
+      }
+    });
+
+    // Category pie
+    const cats = detail.category_breakdown || detail.categories || {};
+    const catLabels = Object.keys(cats);
+    const catWins = catLabels.map(c => cats[c].won || cats[c].wins || 0);
+    const pieColors = ['#3b82f6', '#f59e0b', '#a78bfa', '#22c55e', '#ef4444'];
+
+    if (whaleCatChart) whaleCatChart.destroy();
+    if (catLabels.length > 0) {
+      whaleCatChart = new Chart(document.getElementById('whaleCatChart'), {
+        type: 'doughnut',
+        data: {
+          labels: catLabels.map(c => c.charAt(0).toUpperCase() + c.slice(1)),
+          datasets: [{
+            data: catWins,
+            backgroundColor: pieColors.slice(0, catLabels.length),
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: { color: '#e2e8f0' } } }
+        }
+      });
+    }
+
+    // Recent bets
+    const positions = detail.recent_positions || detail.positions || [];
+    let html = '<table class="pick-table"><tr><th>Market</th><th>Side</th><th>Entry</th><th>Result</th><th>P&L</th></tr>';
+    positions.slice(0, 15).forEach(p => {
+      const outcome = p.outcome || 'pending';
+      const pnl = p.actual_pnl || 0;
+      const pnlClass = pnl > 0 ? 'pnl-pos' : pnl < 0 ? 'pnl-neg' : '';
+      html += '<tr>';
+      html += '<td>' + (p.market_title || '').slice(0, 40) + '</td>';
+      html += '<td>' + (p.side || '-') + '</td>';
+      html += '<td>$' + (p.entry_price || 0).toFixed(2) + '</td>';
+      html += '<td><span class="badge ' + outcome + '">' + outcome + '</span></td>';
+      html += '<td class="' + pnlClass + '">' + (pnl > 0 ? '+' : '') + '$' + pnl.toFixed(0) + '</td>';
+      html += '</tr>';
+    });
+    html += '</table>';
+    document.getElementById('whaleRecent').innerHTML = html;
+  } catch(e) { console.error('Whale chart error:', e); }
+}
+
+// ── LEADERBOARD ──
+async function loadLeaderboard() {
+  try {
+    const res = await fetch(API + '/api/leaderboard');
+    const d = await res.json();
+    const whales = d.leaderboard || d || [];
+
+    let html = '<table class="lb-table"><tr><th>#</th><th>Whale</th><th>Elite</th><th>P&L</th><th>Win Rate</th><th>Bets</th><th>Categories</th></tr>';
+    whales.slice(0, 20).forEach((w, i) => {
+      const elite = w.elite_score || 0;
+      const eliteClass = elite >= 65 ? 'elite-high' : elite >= 50 ? 'elite-mid' : 'elite-low';
+      const wr = w.tracked_accuracy || w.win_rate || 0;
+      const pnl = w.pnl || 0;
+      const cats = (w.categories || []).map(c => {
+        const emoji = c === 'sports' ? '\u{1F3C0}' : c === 'crypto' ? '\u{1FA99}' : c === 'politics' ? '\u{1F3DB}' : '\u{1F4E6}';
+        return '<span class="cat-badge">' + emoji + ' ' + c + '</span>';
+      }).join('');
+
+      html += '<tr>';
+      html += '<td>' + (i+1) + '</td>';
+      html += '<td><strong>' + (w.display_name || w.name || w.address?.slice(0,10) || '?') + '</strong></td>';
+      html += '<td><span class="elite-badge ' + eliteClass + '">' + elite.toFixed(0) + '</span></td>';
+      html += '<td class="' + (pnl >= 0 ? 'pnl-pos' : 'pnl-neg') + '">$' + (pnl/1000).toFixed(1) + 'K</td>';
+      html += '<td>' + (wr * 100).toFixed(0) + '%</td>';
+      html += '<td>' + (w.tracked_bets || w.num_trades || 0) + '</td>';
+      html += '<td>' + cats + '</td>';
+      html += '</tr>';
+    });
+    html += '</table>';
+    document.getElementById('leaderboard').innerHTML = html;
+  } catch(e) {
+    document.getElementById('leaderboard').innerHTML = '<p class="loading">Error loading leaderboard</p>';
+  }
+}
+
+// ── CONSENSUS PICK HISTORY ──
+async function loadPickHistory() {
+  try {
+    const res = await fetch(API + '/api/consensus/history');
+    const d = await res.json();
+    const picks = d.picks || [];
+    const s = d.summary || {};
+
+    // Stats
+    let statsHtml = '<div class="stats-row">';
+    statsHtml += '<div class="stat-card"><div class="value">' + (s.total || 0) + '</div><div class="label">Total Picks</div></div>';
+    statsHtml += '<div class="stat-card"><div class="value green">' + (s.won || 0) + '</div><div class="label">Won</div></div>';
+    statsHtml += '<div class="stat-card"><div class="value red">' + (s.lost || 0) + '</div><div class="label">Lost</div></div>';
+    statsHtml += '<div class="stat-card"><div class="value">' + (s.pending || 0) + '</div><div class="label">Pending</div></div>';
+    const wrPct = s.win_rate ? (s.win_rate * 100).toFixed(0) + '%' : 'N/A';
+    statsHtml += '<div class="stat-card"><div class="value green">' + wrPct + '</div><div class="label">Win Rate</div></div>';
+    statsHtml += '<div class="stat-card"><div class="value ' + (s.total_pnl >= 0 ? 'green' : 'red') + '">$' + (s.total_pnl || 0).toFixed(0) + '</div><div class="label">Total P&L</div></div>';
+    statsHtml += '</div>';
+    document.getElementById('pickStats').innerHTML = statsHtml;
+    // Don't overwrite — loadStats() already set the detailed W/L/P label
+
+    // Table
+    let html = '<table class="pick-table"><tr><th>Market</th><th>Side</th><th>Whales</th><th>Confidence</th><th>Entry</th><th>Result</th><th>P&L</th><th>Date</th></tr>';
+    picks.forEach(p => {
+      const outcome = p.outcome || 'pending';
+      const pnl = p.profit_loss || 0;
+      const pnlStr = outcome === 'pending' ? '-' : (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(0);
+      const pnlClass = pnl > 0 ? 'pnl-pos' : pnl < 0 ? 'pnl-neg' : '';
+      const date = p.created_at ? p.created_at.split('T')[0] : '-';
+      html += '<tr>';
+      html += '<td>' + (p.market_title || '').slice(0, 40) + '</td>';
+      html += '<td>' + (p.side || '-') + '</td>';
+      html += '<td>' + (p.whale_count || 0) + '</td>';
+      html += '<td>' + (p.confidence || 0) + '%</td>';
+      html += '<td>$' + (p.avg_entry_price || 0).toFixed(2) + '</td>';
+      html += '<td><span class="badge ' + outcome + '">' + outcome + '</span></td>';
+      html += '<td class="' + pnlClass + '">' + pnlStr + '</td>';
+      html += '<td>' + date + '</td>';
+      html += '</tr>';
+    });
+    html += '</table>';
+    if (picks.length === 0) html = '<p class="loading">No picks tracked yet. Run: python consensus_swarm_connector.py --fast</p>';
+    document.getElementById('pickHistory').innerHTML = html;
+  } catch(e) {
+    document.getElementById('pickHistory').innerHTML = '<p class="loading">Error loading pick history</p>';
+  }
+}
+
+// ── HOT WHALES ──
+async function loadHotWhales() {
+  try {
+    const res = await fetch(API + '/api/hot-whales?days=7');
+    const d = await res.json();
+    const whales = d.hot_whales || [];
+
+    let html = '<table class="lb-table"><tr><th>Status</th><th>Whale</th><th>Elite</th><th>Streak</th><th>7d Win Rate</th><th>7d P&L</th><th>Total P&L</th></tr>';
+    whales.slice(0, 15).forEach(w => {
+      const status = w.win_streak >= 5 ? '🔥' : w.win_streak >= 3 ? '⚡' : w.recent_win_rate >= 70 ? '📈' : '';
+      const elite = w.elite_score || 0;
+      const eliteClass = elite >= 65 ? 'elite-high' : elite >= 50 ? 'elite-mid' : 'elite-low';
+      const recentPnl = w.recent_pnl || 0;
+      const totalPnl = w.total_pnl || 0;
+
+      html += '<tr>';
+      html += '<td style="font-size:20px">' + status + '</td>';
+      html += '<td><strong>' + (w.name || w.address?.slice(0,10)) + '</strong></td>';
+      html += '<td><span class="elite-badge ' + eliteClass + '">' + elite.toFixed(0) + '</span></td>';
+      html += '<td>' + w.win_streak + '🏆</td>';
+      html += '<td>' + w.recent_win_rate?.toFixed(0) + '% (' + w.recent_wins + '/' + w.recent_bets + ')</td>';
+      html += '<td class="' + (recentPnl >= 0 ? 'pnl-pos' : 'pnl-neg') + '">$' + (recentPnl/1000).toFixed(1) + 'K</td>';
+      html += '<td class="' + (totalPnl >= 0 ? 'pnl-pos' : 'pnl-neg') + '">$' + (totalPnl/1000).toFixed(1) + 'K</td>';
+      html += '</tr>';
+    });
+    html += '</table>';
+    document.getElementById('hotWhales').innerHTML = html;
+  } catch(e) {
+    document.getElementById('hotWhales').innerHTML = '<p class="loading">Error loading hot whales</p>';
+  }
+}
+
+// ── MONEY FLOW ──
+async function loadMoneyFlow() {
+  try {
+    const res = await fetch(API + '/api/money-flow');
+    const d = await res.json();
+    const flows = d.flows || [];
+
+    let html = '<table class="lb-table"><tr><th>Market</th><th>Side</th><th>Whales</th><th>Size</th><th>Avg Elite</th><th>Category</th><th>Top Names</th></tr>';
+    flows.slice(0, 15).forEach(f => {
+      const sideColor = f.side === 'YES' ? '#22c55e' : '#ef4444';
+      const catEmoji = f.category === 'sports' ? '🏀' : f.category === 'crypto' ? '🪙' : f.category === 'politics' ? '🏛️' : '📦';
+      const names = (f.whales || []).slice(0, 3).join(', ');
+
+      html += '<tr>';
+      html += '<td>' + (f.market || '').slice(0, 45) + (f.market?.length > 45 ? '...' : '') + '</td>';
+      html += '<td style="color:' + sideColor + ';font-weight:700">' + f.side + '</td>';
+      html += '<td>' + f.whale_count + ' 🐋</td>';
+      html += '<td>$' + (f.total_size/1000).toFixed(0) + 'K</td>';
+      html += '<td>' + f.avg_elite?.toFixed(0) + '</td>';
+      html += '<td>' + catEmoji + ' ' + f.category + '</td>';
+      html += '<td style="font-size:12px;color:#94a3b8">' + names + '</td>';
+      html += '</tr>';
+    });
+    html += '</table>';
+    if (flows.length === 0) html = '<p class="loading">No active money flow detected in last 48 hours</p>';
+    document.getElementById('moneyFlow').innerHTML = html;
+  } catch(e) {
+    document.getElementById('moneyFlow').innerHTML = '<p class="loading">Error loading money flow</p>';
+  }
+}
+
+// ── INIT (STAGGERED TO PREVENT LAYOUT SHIFT) ──
+async function init() {
+  // Stage 1: Critical above-fold content
+  await loadStats();
+  await loadCategoryFlow();
+  
+  // Stage 2: Whale selector (fast, small payload)
+  await loadWhaleList();
+  
+  // Small delay to let browser paint
+  await new Promise(r => setTimeout(r, 50));
+  
+  // Stage 3: Tables (load sequentially to prevent jarring)
+  await loadMoneyFlow();
+  await loadHotWhales();
+  
+  await new Promise(r => setTimeout(r, 50));
+  
+  // Stage 4: Heavy content last
+  await loadLeaderboard();
+  await loadPickHistory();
+}
+
+init();
+setInterval(() => {
+  loadStats();
+  loadCategoryFlow();
+  loadPickHistory();
+}, 60000);
+</script>
+</body>
+</html>

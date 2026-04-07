@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerminatorBot - Clawd Dashboard</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0f0f1a 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(233,69,96,0.3);
+            background: rgba(0,0,0,0.5);
+        }
+        .nav-brand h1 { font-size: 1.5rem; color: #e94560; }
+        .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-links a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(233,69,96,0.2);
+            color: #e94560;
+        }
+        .container { max-width: 1800px; margin: 0 auto; padding: 1.5rem; }
+        
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(233,69,96,0.2);
+            border-radius: 8px;
+            padding: 0.8rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .status-item { display: flex; align-items: center; gap: 0.5rem; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .status-dot.green { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
+        .status-dot.red { background: #ff4444; box-shadow: 0 0 10px #ff4444; }
+        .status-dot.yellow { background: #ffaa00; box-shadow: 0 0 10px #ffaa00; }
+        
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        /* Cards */
+        .card {
+            background: rgba(20,20,30,0.8);
+            border: 1px solid rgba(233,69,96,0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .card-title { font-size: 1.1rem; color: #e94560; font-weight: 600; }
+        .card-badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-green { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .badge-red { background: rgba(255,68,68,0.2); color: #ff4444; }
+        .badge-yellow { background: rgba(255,170,0,0.2); color: #ffaa00; }
+        
+        /* Portfolio Stats */
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+        .portfolio-stat {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+        }
+        .portfolio-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #00ff88;
+        }
+        .portfolio-value.negative { color: #ff4444; }
+        .portfolio-label {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 0.3rem;
+        }
+        
+        /* Strategy Table */
+        .strategy-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .strategy-table th {
+            text-align: left;
+            padding: 0.8rem;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .strategy-table td {
+            padding: 1rem 0.8rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .strategy-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .strategy-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .strategy-details { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+        
+        /* Positions Table */
+        .positions-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .positions-table th {
+            text-align: left;
+            padding: 0.6rem;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+        .positions-table td {
+            padding: 0.6rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .side-yes { color: #00ff88; }
+        .side-no { color: #ff4444; }
+        .pnl-positive { color: #00ff88; }
+        .pnl-negative { color: #ff4444; }
+        
+        /* Risk Meters */
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        .risk-item {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        .risk-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .risk-label { font-size: 0.8rem; color: rgba(255,255,255,0.6); }
+        .risk-value { font-size: 0.9rem; font-weight: 600; }
+        .risk-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .risk-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        .risk-fill.safe { background: #00ff88; }
+        .risk-fill.warning { background: #ffaa00; }
+        .risk-fill.danger { background: #ff4444; }
+        
+        /* Opportunity List */
+        .opportunity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid #e94560;
+        }
+        .opportunity-market {
+            font-size: 0.85rem;
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .opportunity-edge {
+            font-weight: 700;
+            color: #00ff88;
+        }
+        
+        /* Last Updated */
+        .last-updated {
+            text-align: center;
+            padding: 1rem;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.8rem;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-bar { flex-wrap: wrap; padding: 1rem; }
+            .nav-links { width: 100%; justify-content: center; margin-top: 0.5rem; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .portfolio-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><h1>🤖 TERMINATOR</h1></div>
+        <div class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/infrastructure">Infrastructure</a>
+            <a href="/agents">Agents</a>
+            <a href="/vault">💰 Vault</a>
+                <a href="/whales" class="nav-link">🐋 Whales</a>
+            <a href="/terminator" class="active">🤖 Terminator</a>
+            <a href="/legion">⚔️ Legion</a>
+            <a href="/swarm-monitor">🐝 Swarm</a>
+        </div>
+    </nav>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        const API_BASE = '/api';
+
+        function TerminatorDashboard() {
+            const [portfolio, setPortfolio] = useState({
+                balance: 10000,
+                daily_pnl: 0,
+                total_pnl: 0,
+                drawdown_pct: 0,
+                circuit_breaker_status: 'OPERATIONAL'
+            });
+            const [strategies, setStrategies] = useState([
+                { id: 'alpha', name: 'Alpha ML', icon: '🤖', status: 'active', trades_today: 2, win_rate: 100, pnl_today: 0, edge_found: 2, config: { min_edge: '5%', confidence: '70%' }, color: '#9F7AEA' },
+                { id: 'contrarian', name: 'Contrarian', icon: '🔄', status: 'active', trades_today: 0, win_rate: 0, pnl_today: 0, edge_found: 130, config: { consensus: '85%', bias: '15%' }, color: '#DD6B20' },
+                { id: 'dumb_bet', name: 'Dumb Bet', icon: '🎲', status: 'active', trades_today: 0, win_rate: 0, pnl_today: 0, edge_found: 140, config: { max_prob: '10%', min_vol: '500' }, color: '#E53E3E' },
+                { id: 'arbitrage', name: 'Arbitrage', icon: '⚖️', status: 'warning', trades_today: 0, win_rate: 0, pnl_today: 0, edge_found: 0, config: { min_edge: '2%', min_liq: '100' }, color: '#38A169' }
+            ]);
+            const [positions, setPositions] = useState([]);
+            const [opportunities, setOpportunities] = useState([
+                { market: 'Will the US acquire any new territory?', edge: 32.08, strategy: 'alpha' },
+                { market: 'When will Elon Musk become a trillionaire?', edge: 31.37, strategy: 'alpha' },
+                { market: 'Who will be the next Supreme Leader of Iran?', edge: 25.14, strategy: 'contrarian' }
+            ]);
+            const [risk, setRisk] = useState({
+                drawdown: 0,
+                drawdown_limit: 5,
+                consecutive_losses: 0,
+                max_losses: 3,
+                hourly_loss: 0,
+                hourly_cap: 300,
+                kelly: 0.50
+            });
+            const [platforms, setPlatforms] = useState([
+                { name: 'Kalshi', status: 'active', balance: 10000 },
+                { name: 'Polymarket', status: 'inactive', balance: null },
+                { name: 'Betfair', status: 'inactive', balance: null },
+                { name: 'Limitless', status: 'inactive', balance: null }
+            ]);
+            const [lastUpdate, setLastUpdate] = useState(new Date());
+            const [loading, setLoading] = useState(false);
+
+            // Fetch data from API
+            const fetchData = async () => {
+                setLoading(true);
+                try {
+                    const portfolioRes = await fetch(`${API_BASE}/portfolio`);
+                    if (portfolioRes.ok) {
+                        const data = await portfolioRes.json();
+                        setPortfolio(data);
+                    }
+                    
+                    const strategiesRes = await fetch(`${API_BASE}/strategies`);
+                    if (strategiesRes.ok) {
+                        const data = await strategiesRes.json();
+                        if (data.strategies) {
+                            setStrategies(prev => prev.map(s => {
+                                const updated = data.strategies.find(u => u.id === s.id);
+                                return updated ? { ...s, ...updated } : s;
+                            }));
+                        }
+                    }
+                    
+                    const positionsRes = await fetch(`${API_BASE}/positions`);
+                    if (positionsRes.ok) {
+                        const data = await positionsRes.json();
+                        setPositions(data.positions || []);
+                    }
+                    
+                    const riskRes = await fetch(`${API_BASE}/risk`);
+                    if (riskRes.ok) {
+                        const data = await riskRes.json();
+                        if (data.metrics) {
+                            setRisk({
+                                drawdown: data.metrics.current_drawdown * 100,
+                                drawdown_limit: data.metrics.drawdown_limit * 100,
+                                consecutive_losses: data.metrics.consecutive_losses,
+                                max_losses: data.metrics.max_consecutive_losses,
+                                hourly_loss: data.metrics.hourly_loss,
+                                hourly_cap: data.metrics.hourly_loss_cap,
+                                kelly: data.metrics.kelly_fraction
+                            });
+                        }
+                    }
+                    
+                    setLastUpdate(new Date());
+                } catch (err) {
+                    console.log('API fetch error:', err);
+                }
+                setLoading(false);
+            };
+
+            useEffect(() => {
+                fetchData();
+                const interval = setInterval(fetchData, 30000);
+                return () => clearInterval(interval);
+            }, []);
+
+            const formatCurrency = (val) => {
+                const num = Number(val);
+                const prefix = num >= 0 ? '+' : '';
+                return `${prefix}$${Math.abs(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            };
+
+            return (
+                <div className="container">
+                    {/* Status Bar */}
+                    <div className="status-bar">
+                        <div className="status-item">
+                            <span className={`status-dot ${portfolio.circuit_breaker_status === 'OPERATIONAL' ? 'green' : 'red'}`}></span>
+                            <span>Circuit Breaker: {portfolio.circuit_breaker_status}</span>
+                        </div>
+                        <div className="status-item">
+                            <span>Mode: <strong style={{color: '#00ff88'}}>PAPER TRADING</strong></span>
+                        </div>
+                        <div className="status-item">
+                            <span>Platforms: <strong>1/4</strong> Active</span>
+                        </div>
+                        <button onClick={fetchData} style={{background: 'rgba(233,69,96,0.2)', border: '1px solid #e94560', color: '#e94560', padding: '0.4rem 1rem', borderRadius: '4px', cursor: 'pointer'}}>
+                            {loading ? '↻ Refreshing...' : '↻ Refresh'}
+                        </button>
+                    </div>
+
+                    {/* Portfolio Overview */}
+                    <div className="card" style={{marginBottom: '1.5rem'}}>
+                        <div className="card-header">
+                            <span className="card-title">📊 Portfolio Overview</span>
+                            <span className="card-badge badge-green">LIVE</span>
+                        </div>
+                        <div className="portfolio-grid">
+                            <div className="portfolio-stat">
+                                <div className="portfolio-value">${portfolio.balance.toLocaleString()}</div>
+                                <div className="portfolio-label">Total Balance</div>
+                            </div>
+                            <div className="portfolio-stat">
+                                <div className={`portfolio-value ${portfolio.daily_pnl >= 0 ? '' : 'negative'}`}>
+                                    {formatCurrency(portfolio.daily_pnl)}
+                                </div>
+                                <div className="portfolio-label">Today's P&L</div>
+                            </div>
+                            <div className="portfolio-stat">
+                                <div className={`portfolio-value ${portfolio.total_pnl >= 0 ? '' : 'negative'}`}>
+                                    {formatCurrency(portfolio.total_pnl)}
+                                </div>
+                                <div className="portfolio-label">Total P&L</div>
+                            </div>
+                            <div className="portfolio-stat">
+                                <div className="portfolio-value" style={{color: portfolio.drawdown_pct > 3 ? '#ff4444' : '#00ff88'}}>
+                                    {(portfolio.drawdown_pct * 100).toFixed(2)}%
+                                </div>
+                                <div className="portfolio-label">Drawdown (5% Max)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="dashboard-grid">
+                        {/* Strategies Panel */}
+                        <div className="card">
+                            <div className="card-header">
+                                <span className="card-title">⚡ Trading Strategies</span>
+                                <span className="card-badge badge-green">4 ACTIVE</span>
+                            </div>
+                            <table className="strategy-table">
+                                <thead>
+                                    <tr>
+                                        <th>Strategy</th>
+                                        <th>Status</th>
+                                        <th>Trades</th>
+                                        <th>Win Rate</th>
+                                        <th>P&L</th>
+                                        <th>Edges</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {strategies.map(s => (
+                                        <tr key={s.id}>
+                                            <td>
+                                                <div className="strategy-name">
+                                                    <div className="strategy-icon" style={{background: s.color + '30'}}>{s.icon}</div>
+                                                    <div>
+                                                        <div>{s.name}</div>
+                                                        <div className="strategy-details">
+                                                            {Object.entries(s.config).map(([k,v]) => `${k}: ${v}`).join(' | ')}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span className={`card-badge ${s.status === 'active' ? 'badge-green' : 'badge-yellow'}`}>
+                                                    {s.status === 'active' ? '● Active' : '⚠ Limited'}
+                                                </span>
+                                            </td>
+                                            <td>{s.trades_today}</td>
+                                            <td>{s.win_rate.toFixed(0)}%</td>
+                                            <td className={s.pnl_today >= 0 ? 'pnl-positive' : 'pnl-negative'}>
+                                                {formatCurrency(s.pnl_today)}
+                                            </td>
+                                            <td><strong>{s.edge_found}</strong></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Risk Dashboard */}
+                        <div className="card">
+                            <div className="card-header">
+                                <span className="card-title">🛡️ Risk Management</span>
+                                <span className="card-badge badge-green">SAFE</span>
+                            </div>
+                            <div className="risk-grid">
+                                <div className="risk-item">
+                                    <div className="risk-header">
+                                        <span className="risk-label">Drawdown</span>
+                                        <span className="risk-value">{risk.drawdown.toFixed(2)}% / {risk.drawdown_limit}%</span>
+                                    </div>
+                                    <div className="risk-bar">
+                                        <div className={`risk-fill ${risk.drawdown < 2 ? 'safe' : risk.drawdown < 4 ? 'warning' : 'danger'}`} 
+                                             style={{width: `${(risk.drawdown / risk.drawdown_limit) * 100}%`}}></div>
+                                    </div>
+                                </div>
+                                <div className="risk-item">
+                                    <div className="risk-header">
+                                        <span className="risk-label">Consecutive Losses</span>
+                                        <span className="risk-value">{risk.consecutive_losses} / {risk.max_losses}</span>
+                                    </div>
+                                    <div className="risk-bar">
+                                        <div className={`risk-fill ${risk.consecutive_losses < 2 ? 'safe' : 'warning'}`}
+                                             style={{width: `${(risk.consecutive_losses / risk.max_losses) * 100}%`}}></div>
+                                    </div>
+                                </div>
+                                <div className="risk-item">
+                                    <div className="risk-header">
+                                        <span className="risk-label">Hourly Loss</span>
+                                        <span className="risk-value">${risk.hourly_loss.toFixed(0)} / ${risk.hourly_cap.toFixed(0)}</span>
+                                    </div>
+                                    <div className="risk-bar">
+                                        <div className="risk-fill safe" style={{width: `${(risk.hourly_loss / risk.hourly_cap) * 100}%`}}></div>
+                                    </div>
+                                </div>
+                                <div className="risk-item">
+                                    <div className="risk-header">
+                                        <span className="risk-label">Kelly Fraction</span>
+                                        <span className="risk-value">{(risk.kelly * 100).toFixed(0)}% (Half Kelly)</span>
+                                    </div>
+                                    <div className="risk-bar">
+                                        <div className="risk-fill safe" style={{width: '50%'}}></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Platform Status */}
+                        <div className="card">
+                            <div className="card-header">
+                                <span className="card-title">🌐 Platform Connections</span>
+                            </div>
+                            {platforms.map(p => (
+                                <div key={p.name} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
+                                    <div style={{display: 'flex', alignItems: 'center', gap: '0.8rem'}}>
+                                        <span className={`status-dot ${p.status === 'active' ? 'green' : 'red'}`}></span>
+                                        <span>{p.name}</span>
+                                    </div>
+                                    <div>
+                                        {p.balance ? (
+                                            <span style={{color: '#00ff88'}}>${p.balance.toLocaleString()}</span>
+                                        ) : (
+                                            <span style={{color: 'rgba(255,255,255,0.3)'}}>No credentials</span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Opportunities Pipeline */}
+                        <div className="card">
+                            <div className="card-header">
+                                <span className="card-title">🎯 Top Opportunities</span>
+                                <span className="card-badge badge-yellow">{opportunities.length} PENDING</span>
+                            </div>
+                            {opportunities.map((opp, i) => (
+                                <div key={i} className="opportunity-item">
+                                    <div>
+                                        <div className="opportunity-market">{opp.market}</div>
+                                        <div style={{fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.2rem'}}>
+                                            via {opp.strategy}
+                                        </div>
+                                    </div>
+                                    <div className="opportunity-edge">{opp.edge.toFixed(2)}% edge</div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Active Positions */}
+                        <div className="card" style={{gridColumn: 'span 2'}}>
+                            <div className="card-header">
+                                <span className="card-title">📈 Active Positions</span>
+                                <span className="card-badge badge-green">{positions.length} OPEN</span>
+                            </div>
+                            {positions.length > 0 ? (
+                                <table className="positions-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Market</th>
+                                            <th>Side</th>
+                                            <th>Entry</th>
+                                            <th>Current</th>
+                                            <th>Qty</th>
+                                            <th>Unrealized P&L</th>
+                                            <th>Strategy</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {positions.map((pos, i) => (
+                                            <tr key={i}>
+                                                <td style={{maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis'}}>{pos.market_title}</td>
+                                                <td className={pos.side === 'YES' ? 'side-yes' : 'side-no'}>{pos.side}</td>
+                                                <td>${pos.entry_price.toFixed(2)}</td>
+                                                <td>${pos.current_price.toFixed(2)}</td>
+                                                <td>{pos.quantity.toLocaleString()}</td>
+                                                <td className={pos.unrealized_pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}>
+                                                    {formatCurrency(pos.unrealized_pnl)}
+                                                </td>
+                                                <td>{pos.strategy}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <div style={{textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.4)'}}>
+                                    No active positions. Paper trading mode - ready to execute.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="last-updated">
+                        Last updated: {lastUpdate.toLocaleTimeString()} | Auto-refresh every 30 seconds
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<TerminatorDashboard />, document.getElementById("root"));
+    </script>
+</body>
+</html>
+

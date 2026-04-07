@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content=width=device-width, initial-scale=1.0>
+    <title>Fraud Detection - Clawd Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,0.2); }
+        .nav-brand h1 { font-size: 2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .nav-links { display: flex; gap: 20px; flex-wrap: wrap; }
+        .nav-link { color: rgba(255,255,255,0.8); text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; font-weight: 500; }
+        .nav-link:hover { background: rgba(255,255,255,0.2); color: white; }
+        .card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px; }
+        .card h2 { font-size: 1.5rem; margin-bottom: 20px; color: #fbbf24; }
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .feature-card { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; border-left: 4px solid #ef4444; }
+        .feature-card h3 { color: #fbbf24; margin-bottom: 10px; }
+        .tech-stack { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+        .tech-badge { background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; }
+        pre { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; overflow-x: auto; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class=container>
+        <nav class=nav-bar>
+            <div class=nav-brand><h1>🛡️ Fraud Detection Platform</h1></div>
+            <div class=nav-links>
+                <a href=index.html class=nav-link>Dashboard</a>
+                <a href=projects.html class=nav-link>Projects</a>
+            <a href="/whales">🐋 Whales</a>
+            </div>
+        </nav>
+        
+        <div class=card>
+            <h2>🎯 Platform Overview</h2>
+            <p style=font-size:1.1rem;opacity:0.9;line-height:1.6;>Real-time fraud detection system with ML scoring, rules engine, and drift monitoring. Built for enterprise-scale transaction analysis.</p>
+            <div class=tech-stack>
+                <span class=tech-badge>Python</span>
+                <span class=tech-badge>scikit-learn</span>
+                <span class=tech-badge>FastAPI</span>
+                <span class=tech-badge>Streamlit</span>
+                <span class=tech-badge>Docker</span>
+                <span class=tech-badge>Random Forest</span>
+            </div>
+        </div>
+
+        <div class=card>
+            <h2>⚙️ Features</h2>
+            <div class=feature-grid>
+                <div class=feature-card>
+                    <h3>🤖 ML Classifier</h3>
+                    <p>Random Forest model with 10 engineered features for real-time scoring</p>
+                </div>
+                <div class=feature-card>
+                    <h3>📏 Rules Engine</h3>
+                    <p>4 configurable business rules for domain-specific fraud patterns</p>
+                </div>
+                <div class=feature-card>
+                    <h3>📊 Drift Detection</h3>
+                    <p>PSI-based drift monitoring to catch model degradation</p>
+                </div>
+                <div class=feature-card>
+                    <h3>⚡ Real-time API</h3>
+                    <p>FastAPI endpoints for sub-100ms scoring decisions</p>
+                </div>
+            </div>
+        </div>
+
+        <div class=card>
+            <h2>📍 Location</h2>
+            <pre>Windows Dell: C:\Users\tommi\clawd\temp_fraud\</pre>
+            <p style=margin-top:15px;opacity:0.8;>Status: ✅ Active Development</p>
+        </div>
+    </div>
+</body>
+</html>
+ENDFILE
+

@@ -28,7 +28,7 @@ def test_route_falls_back_to_mixed_when_free_routes_fail(tmp_path, monkeypatch):
     ledger = QuotaLedger(path=Path(tmp_path) / "keys.json")
     router = ModelRouter(ledger)
 
-    def fake_execute(candidate, prompt, timeout_seconds):
+    def fake_execute(candidate, prompt, timeout_seconds, task_type):
         if candidate["provider"] == "ollama":
             raise RuntimeError("ollama unavailable")
         return "gateway response", 0
@@ -81,3 +81,28 @@ def test_discover_node_binary_uses_known_mac_path(tmp_path, monkeypatch):
     monkeypatch.setenv("NODE_BIN", str(fake_node))
 
     assert ModelRouter._discover_node_binary() == str(fake_node)
+
+
+def test_long_analysis_prompt_prioritizes_fast_local_route(tmp_path, monkeypatch):
+    monkeypatch.setenv("OGE_RUNTIME_MACHINE", "jarvis")
+    router = ModelRouter(QuotaLedger(path=Path(tmp_path) / "keys.json"))
+
+    plan = router.get_candidate_plan(task_type="analysis", max_cost="mixed", quality="high")
+    prioritized = router._prioritize_candidates(plan, "x" * 1500, "analysis")
+
+    assert prioritized[0]["route_id"] == "ollama_local_fast"
+    assert prioritized[1]["route_id"] == "clawdbot_gateway"
+
+
+def test_build_ollama_request_compacts_analysis_fast_route():
+    prompt = "word " * 500
+    normalized, num_predict, timeout_cap = ModelRouter._build_ollama_request(
+        {"route_id": "ollama_local_fast", "model": "qwen2.5:7b", "host": "127.0.0.1"},
+        prompt,
+        timeout_seconds=90,
+        task_type="analysis",
+    )
+
+    assert len(normalized) <= 700
+    assert num_predict == 96
+    assert timeout_cap == 30

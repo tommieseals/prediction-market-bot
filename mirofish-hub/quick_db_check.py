@@ -1,0 +1,27 @@
+import sqlite3
+
+# Whale Hunter DB
+conn = sqlite3.connect('data/whale_hunter.db')
+cur = conn.cursor()
+cur.execute('SELECT COUNT(*) FROM tracked_whales')
+print(f"Tracked Whales: {cur.fetchone()[0]}")
+cur.execute('SELECT COUNT(*) FROM whale_positions')
+print(f"Total Positions: {cur.fetchone()[0]}")
+cur.execute("SELECT COUNT(*) FROM whale_positions WHERE outcome='pending'")
+print(f"Pending: {cur.fetchone()[0]}")
+cur.execute("SELECT COUNT(*) FROM whale_positions WHERE outcome='won'")
+print(f"Won: {cur.fetchone()[0]}")
+cur.execute("SELECT COUNT(*) FROM whale_positions WHERE outcome='lost'")
+print(f"Lost: {cur.fetchone()[0]}")
+conn.close()
+
+print("\n--- Outcomes DB ---")
+conn2 = sqlite3.connect('outcomes.db')
+cur2 = conn2.cursor()
+cur2.execute('SELECT COUNT(*) FROM consensus_picks')
+print(f"Consensus Picks: {cur2.fetchone()[0]}")
+cur2.execute("SELECT COUNT(*) FROM consensus_picks WHERE status='pending'")
+print(f"Pending: {cur2.fetchone()[0]}")
+cur2.execute("SELECT COUNT(*) FROM consensus_picks WHERE mirofish_validated=1")
+print(f"MiroFish Validated: {cur2.fetchone()[0]}")
+conn2.close()

@@ -31,7 +31,7 @@ boat_crew_section = '''
                 
                 <!-- Mac Pro -->
                 <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 15px; border-left: 4px solid #9F7AEA;">
-                    <h3 style="color: #9F7AEA; margin-bottom: 0.5rem;">💪 Mac Pro (100.92.123.115)</h3>
+                    <h3 style="color: #9F7AEA; margin-bottom: 0.5rem;">💪 Mac Pro (100.89.75.126)</h3>
                     <p style="opacity: 0.8; margin-bottom: 1rem;">Code Bitch - Compute Node</p>
                     <ul style="list-style: none; font-size: 0.9rem;">
                         <li>✓ Fort Knox Storage (PRIMARY)</li>

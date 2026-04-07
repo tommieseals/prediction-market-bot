@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Clawd Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-brand h1 {
+            font-size: 2rem;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #fbbf24;
+        }
+
+        .card h3 {
+            font-size: 1.2rem;
+            margin: 20px 0 10px 0;
+            color: #fbbf24;
+        }
+
+        .card p, .card li {
+            opacity: 0.9;
+            line-height: 1.7;
+            margin: 10px 0;
+        }
+
+        .card ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        .card ul li::before {
+            content: "→ ";
+            color: #fbbf24;
+            margin-right: 10px;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 15px 0;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .highlight {
+            background: rgba(251, 191, 36, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .warning {
+            background: rgba(239, 68, 68, 0.2);
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .tip {
+            background: rgba(16, 185, 129, 0.2);
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+        }
+
+        .toc {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .toc li {
+            padding: 8px 0;
+        }
+
+        .toc a {
+            color: #fbbf24;
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+            padding: 10px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        /* MOBILE RESPONSIVE - Tablet (768px) */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container { max-width: 100%; }
+            .nav-bar { flex-wrap: wrap; }
+            .nav-brand h1 { font-size: 1.5rem; }
+            
+            .hamburger { display: flex; }
+            .nav-links {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                gap: 10px;
+                margin-top: 15px;
+            }
+            .nav-links.active { display: flex; }
+            .nav-link {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+                min-height: 44px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .card {
+                padding: 20px;
+            }
+            .card h2 { font-size: 1.3rem; }
+        }
+
+        /* MOBILE RESPONSIVE - Phone (480px) */
+        @media (max-width: 480px) {
+            body { padding: 5px; }
+            .nav-brand h1 { font-size: 1.2rem; }
+            .card {
+                padding: 15px;
+                border-radius: 10px;
+            }
+            .card h2 { font-size: 1.1rem; }
+            .diagram-container {
+                padding: 10px;
+                overflow-x: auto;
+            }
+            button, a {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+
+        /* MOBILE RESPONSIVE - Small Phone (320px) */
+        @media (max-width: 320px) {
+            .nav-brand h1 { font-size: 1rem; }
+            .card h2 { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav-bar">
+            <div class="nav-brand">
+                <h1>🤖 Clawd Dashboard</h1>
+            </div>
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+                        <div class="nav-links" id="navLinks">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/infrastructure" class="nav-link">Infrastructure</a>
+                <a href="/agents" class="nav-link">Agents</a>
+                <a href="/projects" class="nav-link">Projects</a>
+                <a href="/apis" class="nav-link">APIs</a>
+                <a href="/skills" class="nav-link">Skills</a>
+                <a href="/tools" class="nav-link">Tools</a>
+                <a href="/achievements" class="nav-link">Achievements</a>
+                <a href="/shared-brain" class="nav-link">🧠 Brain</a>
+                <a href="/swarm-monitor" class="nav-link">🐝 Swarm</a>
+                <a href="/pharma" class="nav-link">💊 Pharma</a>
+                <a href="/terminator" class="nav-link">🤖 Terminator</a>
+                <a href="/vault" class="nav-link">💰 Vault</a>
+                <a href="/fort-knox" class="nav-link">🏦 Fort Knox</a>
+                <a href="/whales" class="nav-link">🐋 Whales</a>
+                <a href="/legion-tracker" class="nav-link">🎖️ Legion</a>
+                <a href="/legion" class="nav-link">⚔️ Legion HQ</a>
+                <a href="/fraud-detection" class="nav-link">🛡️ Fraud</a>
+                <a href="n8n-hub.html" class="nav-link">⚡ n8n</a>
+                <a href="/fiverr" class="nav-link">🛒 Fiverr</a>
+                <a href="/kdp" class="nav-link">📚 KDP</a>
+                <a href="tascosaur.html" class="nav-link">🦖 Tascosaur</a>
+                <a href="taskbot.html" class="nav-link">📋 TaskBot</a>
+                <a href="teams-translator.html" class="nav-link">🌐 Translator</a>
+                <a href="sidekick-paas.html" class="nav-link">🦸 Sidekick</a>
+                <a href="memory.html" class="nav-link">🧬 Memory</a>
+                <a href="sessions.html" class="nav-link">💬 Sessions</a>
+                <a href="a2a-server.html" class="nav-link">🔗 A2A</a>
+                <a href="/docs" class="nav-link active">Docs</a>
+            </div>
+        </nav>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h2>📖 Table of Contents</h2>
+            <ul>
+                <li><a href="#token-saving">💰 Token Saving Strategies</a></li>
+                <li><a href="#model-selection">🤖 Smart Model Selection</a></li>
+                <li><a href="#sub-agents">🤖 Using Sub-Agents</a></li>
+                <li><a href="#batch-operations">📦 Batch Operations</a></li>
+                <li><a href="#quick-commands">⚡ Quick Command Reference</a></li>
+                <li><a href="#best-practices">✨ Best Practices</a></li>
+            </ul>
+        </div>
+
+        <!-- Token Saving Strategies -->
+        <div class="card" id="token-saving">
+            <h2>💰 Token Saving Strategies</h2>
+            
+            <p>Claude Sonnet 4 is powerful but expensive. Here's how to minimize costs while maximizing efficiency:</p>
+
+            <h3>1. Use the Right Model for the Job</h3>
+            <table>
+                <tr>
+                    <th>Task Type</th>
+                    <th>Best Model</th>
+                    <th>Cost</th>
+                    <th>When to Use</th>
+                </tr>
+                <tr>
+                    <td>Simple queries</td>
+                    <td>Ollama (qwen2.5:3b)</td>
+                    <td class="highlight">$0 (FREE)</td>
+                    <td>Basic questions, quick lookups, simple tasks</td>
+                </tr>
+                <tr>
+                    <td>Code tasks</td>
+                    <td>Qwen Coder 32B</td>
+                    <td class="highlight">NVIDIA API</td>
+                    <td>Python, JavaScript, bash scripting</td>
+                </tr>
+                <tr>
+                    <td>Quick image analysis</td>
+                    <td>Llama 11B Vision</td>
+                    <td class="highlight">NVIDIA API</td>
+                    <td>Fast screenshot review</td>
+                </tr>
+                <tr>
+                    <td>Deep analysis</td>
+                    <td>Llama 90B Vision</td>
+                    <td class="highlight">NVIDIA API</td>
+                    <td>Long documents, complex forms</td>
+                </tr>
+                <tr>
+                    <td>Screenshot debugging</td>
+                    <td>Kimi K2.5</td>
+                    <td class="highlight">NVIDIA API</td>
+                    <td>Error analysis with thinking mode</td>
+                </tr>
+                <tr>
+                    <td>Complex conversations</td>
+                    <td>Claude Sonnet 4</td>
+                    <td class="highlight">$$$ EXPENSIVE</td>
+                    <td>When you need the best</td>
+                </tr>
+            </table>
+
+            <div class="tip">
+                <strong>💡 Pro Tip:</strong> Use Ollama local (free) first for simple queries. Only escalate to Claude if needed.
+            </div>
+
+            <h3>2. Spawn Sub-Agents for Heavy Work</h3>
+            <p>Sub-agents run in isolated sessions with their own token budgets. Perfect for:</p>
+            <ul>
+                <li>Research tasks (use Gemini CLI - cheaper)</li>
+                <li>Long-running jobs</li>
+                <li>Parallel processing</li>
+                <li>Tasks that don't need conversation context</li>
+            </ul>
+
+            <div class="code-block">sessions_spawn(
+    task="Research AI job market 2026",
+    model="local",  # or "gemini" for cheap cloud
+    cleanup="delete"  # auto-cleanup when done
+)</div>
+
+            <div class="warning">
+                <strong>⚠️ Warning:</strong> Sub-agents don't have your conversation context. Keep task descriptions clear and self-contained.
+            </div>
+
+            <h3>3. Batch Operations</h3>
+            <p>Instead of multiple back-and-forth exchanges:</p>
+            
+            <p><strong>❌ Inefficient (burns tokens):</strong></p>
+            <div class="code-block">"Check my email"
+→ Response
+"Now check calendar"
+→ Response
+"Now check weather"
+→ Response</div>
+
+            <p><strong>✅ Efficient (one request):</strong></p>
+            <div class="code-block">"Check email for urgent messages, upcoming calendar events today, and weather forecast"</div>
+
+            <h3>4. Use Heartbeat for Periodic Checks</h3>
+            <p>Instead of asking repeatedly, let heartbeat handle routine monitoring:</p>
+            <ul>
+                <li>System health checks</li>
+                <li>Email monitoring</li>
+                <li>Calendar reminders</li>
+                <li>Background maintenance</li>
+            </ul>
+            <p>This runs automatically without burning your conversation tokens.</p>
+        </div>
+
+        <!-- Model Selection -->
+        <div class="card" id="model-selection">
+            <h2>🤖 Smart Model Selection Guide</h2>
+
+            <h3>LLM Gateway Commands (Telegram)</h3>
+            <div class="code-block">/ask "your question"           → Auto-routes to best model
+/code "write a script"         → Forces Qwen Coder (code specialist)
+/vision "image-url"            → Forces Llama 11B (fast vision)
+/analyze "doc-url"             → Forces Llama 90B (deep analysis)
+/screenshot "error-url"        → Forces Kimi (debug + thinking)
+/think "complex problem"       → Deep reasoning mode
+/usage                         → Check today's API usage</div>
+
+            <h3>LLM Gateway CLI</h3>
+            <div class="code-block"># Quick commands
+~/dta/gateway/ask "question"
+~/dta/gateway/think-deep "problem"
+~/dta/gateway/analyze-screenshot "image-url"
+~/dta/gateway/llm-usage
+
+# Force specific model
+python3 ~/dta/gateway/llm-gateway.py --force qwen_coder "write code"
+python3 ~/dta/gateway/llm-gateway.py --force llama_90b --image "url" "analyze"</div>
+
+            <div class="tip">
+                <strong>💡 Smart Routing Logic:</strong><br>
+                • Code keywords → Qwen Coder<br>
+                • Complex/long docs → Llama 90B<br>
+                • Screenshots with errors → Kimi + thinking<br>
+                • Fast vision → Llama 11B<br>
+                • Simple queries → Ollama (free!)<br>
+            </div>
+
+            <h3>NVIDIA API Limits</h3>
+            <p><strong>50 calls/day total</strong> shared across: Kimi K2.5, Llama 90B, Llama 11B, Qwen Coder</p>
+            <p>Check remaining calls: <span class="highlight">~/dta/gateway/llm-usage</span></p>
+        </div>
+
+        <!-- Sub-Agents -->
+        <div class="card" id="sub-agents">
+            <h2>🤖 Using Sub-Agents Effectively</h2>
+
+            <h3>When to Spawn a Sub-Agent</h3>
+            <ul>
+                <li>Long research tasks that would burn too many Claude tokens</li>
+                <li>Background jobs (video processing, batch operations)</li>
+                <li>Tasks requiring a different model (Gemini for research)</li>
+                <li>Parallel processing (multiple tasks simultaneously)</li>
+            </ul>
+
+            <h3>How to Spawn</h3>
+            <div class="code-block">sessions_spawn(
+    task="Your detailed task description",
+    model="local",        # or "gemini", "claude", etc.
+    label="Task-Name",    # optional: friendly name
+    cleanup="delete",     # or "keep" to preserve logs
+    runTimeoutSeconds=600 # optional: max runtime
+)</div>
+
+            <h3>Sub-Agent Returns</h3>
+            <p>When complete, sub-agent results automatically announce back to your main session.</p>
+
+            <h3>Cost Comparison</h3>
+            <table>
+                <tr>
+                    <th>Approach</th>
+                    <th>Tokens Used</th>
+                    <th>Cost</th>
+                </tr>
+                <tr>
+                    <td>Main agent (Claude) does research</td>
+                    <td>~50,000</td>
+                    <td>💰💰💰 High</td>
+                </tr>
+                <tr>
+                    <td>Sub-agent (Gemini) does research</td>
+                    <td>~50,000 (Gemini)</td>
+                    <td>💰 Lower</td>
+                </tr>
+                <tr>
+                    <td>Sub-agent (Ollama local) does research</td>
+                    <td>~50,000 (local)</td>
+                    <td>🆓 FREE</td>
+                </tr>
+            </table>
+
+            <div class="warning">
+                <strong>⚠️ Trade-off:</strong> Cheaper models = lower quality. Use Claude when quality matters, sub-agents for grunt work.
+            </div>
+        </div>
+
+        <!-- Batch Operations -->
+        <div class="card" id="batch-operations">
+            <h2>📦 Batch Operations & Efficiency</h2>
+
+            <h3>Combine Multiple Queries</h3>
+            <p>Reduce round-trips by asking for multiple things at once:</p>
+
+            <div class="code-block"># Instead of separate messages
+"Check email" → "Check calendar" → "Check weather"
+
+# Do this
+"Morning briefing: check email for urgent items, calendar for today's events, and weather forecast"</div>
+
+            <h3>File Operations</h3>
+            <p>Batch read/write instead of one-at-a-time:</p>
+            <div class="code-block"># Efficient
+"Read all .md files in memory/ and summarize key points"
+
+# Inefficient
+"Read memory/2026-02-10.md" → "Now read 2026-02-11.md" → etc.</div>
+
+            <h3>Script Execution</h3>
+            <p>Write scripts for repeated operations:</p>
+            <div class="code-block"># Instead of asking me every time
+"Create a script: ~/clawd/scripts/daily-check.sh"
+
+# Then just run it
+"Run daily-check.sh"</div>
+        </div>
+
+        <!-- Quick Commands -->
+        <div class="card" id="quick-commands">
+            <h2>⚡ Quick Command Reference</h2>
+
+            <h3>System</h3>
+            <div class="code-block"># Check system health
+vm_stat | head -10
+
+# Check RAM
+sysctl hw.memsize
+top -l 1 | grep PhysMem
+
+# Check Ollama status
+ollama ps
+
+# Dashboard
+open http://100.82.234.66:8080</div>
+
+            <h3>LLM Gateway</h3>
+            <div class="code-block"># Quick query (Telegram)
+/ask "your question"
+
+# CLI query
+~/dta/gateway/ask "your question"
+
+# Check usage
+~/dta/gateway/llm-usage
+/usage
+
+# Force model
+~/dta/gateway/ask --force ollama "simple query"</div>
+
+            <h3>Email</h3>
+            <div class="code-block"># List inbox
+himalaya envelope list
+
+# Search
+himalaya envelope list from:recruiter subject:job
+
+# Read
+himalaya message read &lt;id&gt;</div>
+
+            <h3>Tasks</h3>
+            <div class="code-block"># Add to Things
+things add "Task description"
+
+# View today
+things show today
+
+# Reminders
+remindctl add "Reminder" --date tomorrow</div>
+
+            <h3>Notes</h3>
+            <div class="code-block"># Apple Notes
+memo new "Note content"
+memo list
+memo search "query"
+
+# Memory
+# Write to today's log
+echo "Event happened" >> ~/clawd/memory/$(date +%Y-%m-%d).md</div>
+        </div>
+
+        <!-- Best Practices -->
+        <div class="card" id="best-practices">
+            <h2>✨ Best Practices</h2>
+
+            <h3>Do's ✅</h3>
+            <ul>
+                <li>Use Ollama local for simple queries (FREE)</li>
+                <li>Spawn sub-agents for research/heavy work</li>
+                <li>Batch multiple requests into one message</li>
+                <li>Let heartbeat handle routine monitoring</li>
+                <li>Use LLM Gateway for non-Claude tasks</li>
+                <li>Write scripts for repeated operations</li>
+                <li>Check token usage periodically</li>
+            </ul>
+
+            <h3>Don'ts ❌</h3>
+            <ul>
+                <li>Don't use Claude for simple lookups (use Ollama/LLM Gateway)</li>
+                <li>Don't make separate requests when you can batch</li>
+                <li>Don't keep asking the same thing (write it once, reference later)</li>
+                <li>Don't spawn sub-agents for quick tasks (overhead not worth it)</li>
+                <li>Don't forget to check NVIDIA API limits (50/day)</li>
+            </ul>
+
+            <h3>Token Budget Guidelines</h3>
+            <div class="tip">
+                <strong>Conservative:</strong> ~100k tokens/day<br>
+                <strong>Moderate:</strong> ~200k tokens/day<br>
+                <strong>Heavy:</strong> 300k+ tokens/day<br><br>
+                Current session limit: 1M tokens (200k used right now)
+            </div>
+
+            <h3>When Quality Matters More Than Cost</h3>
+            <p>Use Claude Sonnet 4 for:</p>
+            <ul>
+                <li>Important decisions</li>
+                <li>Complex problem-solving</li>
+                <li>Creative work</li>
+                <li>Sensitive communications</li>
+                <li>When sub-agents have failed</li>
+            </ul>
+
+            <p>Use cheaper models for:</p>
+            <ul>
+                <li>Information retrieval</li>
+                <li>Summarization</li>
+                <li>Simple transformations</li>
+                <li>Background research</li>
+                <li>Routine monitoring</li>
+            </ul>
+        </div>
+
+        <!-- Team Bots -->
+        <div class="card" id="team-bots">
+            <h2>🤖 The Bot Team</h2>
+            
+            <p>Tommie's AI infrastructure includes multiple specialized bots working together:</p>
+
+            <table>
+                <tr>
+                    <th>Bot</th>
+                    <th>Host</th>
+                    <th>Telegram</th>
+                    <th>Role</th>
+                </tr>
+                <tr>
+                    <td>🧠 Main Agent</td>
+                    <td>Mac Mini (100.82.234.66)</td>
+                    <td>@tommie77bot</td>
+                    <td>Primary orchestrator, Clawdbot gateway</td>
+                </tr>
+                <tr>
+                    <td>🍑 Bottom Bitch</td>
+                    <td>Dell (100.119.87.108)</td>
+                    <td>@Thats_My_Bottom_Bitch_bot</td>
+                    <td>Cross-node coordinator, infrastructure helper</td>
+                </tr>
+                <tr>
+                    <td>🐭 Pinky</td>
+                    <td>Mac Pro (100.64.58.30)</td>
+                    <td>@Pinkypickles_bot</td>
+                    <td>Compute node assistant, heavy inference</td>
+                </tr>
+                <tr>
+                    <td>🥜 Deez Nutz</td>
+                    <td>TBD</td>
+                    <td>@look_at_deeznutszbot</td>
+                    <td>Needs setup</td>
+                </tr>
+            </table>
+
+            <h3>Group Chat: "The Bot Chat"</h3>
+            <p>All bots communicate in a shared Telegram group for coordination.</p>
+            <ul>
+                <li>Chat ID: -1003779327245 / -5052671848</li>
+                <li>@ mention each other for tasks</li>
+                <li>Share knowledge and reports</li>
+                <li>Don't step on each other's work</li>
+            </ul>
+
+            <div class="tip">
+                <strong>💡 Team Rule:</strong> Each bot monitors and responds to @ mentions in The Bot Chat. Check it on every heartbeat!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile hamburger menu toggle
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        // Close menu when clicking a link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>
+

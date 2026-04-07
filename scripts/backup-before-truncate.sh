@@ -6,7 +6,7 @@
 set -e
 
 DATE=$(date +%Y-%m-%d_%H%M%S)
-MAC_PRO="administrator@100.92.123.115"
+MAC_PRO="administrator@100.89.75.126"
 BACKUP_NAME="logs-backup-${DATE}"
 LOCAL_BACKUP="/tmp/${BACKUP_NAME}"
 REMOTE_BACKUP="~/fort-knox-backups/"

@@ -7,6 +7,7 @@
 *.pfx
 secrets/
 credentials/
+.credentials/
 
 # 1Password service account tokens
 .op-service-account-token
@@ -26,6 +27,17 @@ tmp/
 temp/
 screenshots/
 docs-archive/
+
+# Backups (may contain sensitive data)
+backups/
+shared-memory/
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
 
 # Node modules
 node_modules/

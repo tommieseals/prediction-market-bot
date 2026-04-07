@@ -3,7 +3,7 @@
 # AUTO-RESTART-SERVICES.SH - Automated Service Recovery Script
 #==============================================================================
 # Purpose: Checks and restarts ollama/clawdbot services if they're down
-# Target:  Mac Mini (100.82.234.66) / Mac Pro (100.67.192.21) via SSH
+# Target:  Mac Mini (100.88.105.106) / Mac Pro (100.89.75.126) via SSH
 # Usage:   ./auto-restart-services.sh [OPTIONS]
 #
 # Options:
@@ -41,8 +41,8 @@ MAX_RETRIES=3
 WAIT_TIME=10
 
 # Default hosts (from TOOLS.md)
-MAC_MINI="100.82.234.66"
-MAC_PRO="100.67.192.21"
+MAC_MINI="100.88.105.106"
+MAC_PRO="100.89.75.126"
 
 #------------------------------------------------------------------------------
 # Service Definitions

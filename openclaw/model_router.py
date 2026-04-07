@@ -104,16 +104,16 @@ class ModelRouter:
         timeout_seconds: int = 45,
     ) -> dict:
         """Execute the first working route and return text plus decision metadata."""
-        plans = [(max_cost, self.get_candidate_plan(task_type, max_cost, quality, model))]
+        plans = [(max_cost, self._prioritize_candidates(self.get_candidate_plan(task_type, max_cost, quality, model), prompt, task_type))]
         if max_cost == "free":
-            plans.append(("mixed", self.get_candidate_plan(task_type, "mixed", quality, model)))
+            plans.append(("mixed", self._prioritize_candidates(self.get_candidate_plan(task_type, "mixed", quality, model), prompt, task_type)))
 
         failures: list[dict] = []
         for planned_cost, plan in plans:
             for candidate in plan:
                 started = time.perf_counter()
                 try:
-                    response, tokens_used = self._execute_candidate(candidate, prompt, timeout_seconds)
+                    response, tokens_used = self._execute_candidate(candidate, prompt, timeout_seconds, task_type)
                     latency_ms = int((time.perf_counter() - started) * 1000)
                     if response:
                         decision = RouteDecision(
@@ -224,20 +224,36 @@ class ModelRouter:
             "burn_plan": self.burn_free_quota(),
         }
 
-    def _execute_candidate(self, candidate: dict, prompt: str, timeout_seconds: int) -> tuple[str | None, int]:
+    def _execute_candidate(
+        self,
+        candidate: dict,
+        prompt: str,
+        timeout_seconds: int,
+        task_type: str,
+    ) -> tuple[str | None, int]:
         provider = candidate["provider"]
         if provider == "ollama":
-            return self._call_ollama(candidate, prompt, timeout_seconds)
+            return self._call_ollama(candidate, prompt, timeout_seconds, task_type)
         if provider == "clawdbot":
             return self._call_clawdbot(prompt, timeout_seconds), 0
         raise RuntimeError(f"Provider not directly executable yet: {provider}")
 
-    def _call_ollama(self, candidate: dict, prompt: str, timeout_seconds: int) -> tuple[str | None, int]:
+    def _call_ollama(
+        self,
+        candidate: dict,
+        prompt: str,
+        timeout_seconds: int,
+        task_type: str,
+    ) -> tuple[str | None, int]:
         host = candidate["host"]
         port = candidate["port"]
         model = candidate["model"]
-        normalized_prompt = _normalize_prompt(prompt, max_chars=2000)
-        request_timeout = min(timeout_seconds, 45 if host in {"127.0.0.1", "localhost"} else 20)
+        normalized_prompt, num_predict, request_timeout = self._build_ollama_request(
+            candidate,
+            prompt,
+            timeout_seconds,
+            task_type,
+        )
 
         with socket.create_connection((host, port), timeout=1.5):
             pass
@@ -248,7 +264,7 @@ class ModelRouter:
                 "model": model,
                 "prompt": normalized_prompt,
                 "stream": False,
-                "options": {"num_predict": 300},
+                "options": {"num_predict": num_predict},
             },
             timeout=request_timeout,
         )
@@ -366,6 +382,55 @@ class ModelRouter:
             if candidate and Path(candidate).exists():
                 return candidate
         return None
+
+    @staticmethod
+    def _prioritize_candidates(candidates: list[dict], prompt: str, task_type: str) -> list[dict]:
+        if task_type not in {"analysis", "self_thought"} or len(prompt) <= 1200:
+            return candidates
+
+        preferred_order = {
+            "ollama_local_fast": 0,
+            "clawdbot_gateway": 1,
+            "ollama_local_reasoning": 2,
+        }
+        indexed = list(enumerate(candidates))
+        indexed.sort(key=lambda item: (preferred_order.get(item[1].get("route_id"), 50), item[0]))
+        return [candidate for _, candidate in indexed]
+
+    @staticmethod
+    def _build_ollama_request(
+        candidate: dict,
+        prompt: str,
+        timeout_seconds: int,
+        task_type: str,
+    ) -> tuple[str, int, int]:
+        route_id = candidate.get("route_id", "")
+        model = candidate.get("model", "")
+        local_host = candidate.get("host") in {"127.0.0.1", "localhost"}
+
+        max_chars = 2000
+        num_predict = 300
+        timeout_cap = 45 if local_host else 20
+
+        if task_type == "health_check":
+            max_chars = 500
+            num_predict = 48
+            timeout_cap = 20 if local_host else 15
+        elif task_type in {"analysis", "self_thought"}:
+            if route_id == "ollama_local_fast" or model in {"qwen2.5:7b", "qwen3:4b", "gemma4:e4b"}:
+                max_chars = 700
+                num_predict = 96
+                timeout_cap = 30 if local_host else 20
+            else:
+                max_chars = 1100
+                num_predict = 220
+                timeout_cap = 45 if local_host else 20
+        elif task_type == "research":
+            max_chars = 1200
+            num_predict = 180
+            timeout_cap = 45 if local_host else 20
+
+        return _normalize_prompt(prompt, max_chars=max_chars), num_predict, min(timeout_seconds, timeout_cap)
 
     @staticmethod
     def _discover_node_binary() -> str | None:

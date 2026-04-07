@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>Node Status</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      padding: 16px;
+      min-height: 100vh;
+    }
+    h1 { font-size: 1.5rem; text-align: center; margin-bottom: 16px; color: #fff; }
+    .updated { text-align: center; font-size: 0.75rem; color: #888; margin-bottom: 20px; }
+    .card {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      border-left: 4px solid #444;
+    }
+    .card.online { border-left-color: #4ade80; }
+    .card.offline { border-left-color: #f87171; }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .node-name { font-size: 1.1rem; font-weight: 600; }
+    .status-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: #f87171;
+    }
+    .online .status-dot { background: #4ade80; }
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .metric {
+      background: #0f3460;
+      border-radius: 8px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .metric-label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
+    .metric-value { font-size: 1.3rem; font-weight: 700; margin-top: 4px; }
+    .metric-value.warn { color: #fbbf24; }
+    .metric-value.crit { color: #f87171; }
+    h2 { font-size: 1rem; margin: 24px 0 12px; color: #888; }
+    .services { display: flex; flex-wrap: wrap; gap: 10px; }
+    .svc {
+      background: #16213e;
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 100px;
+      flex: 1;
+    }
+    .svc-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #f87171;
+    }
+    .svc.running .svc-dot { background: #4ade80; }
+    .svc-name { font-size: 0.9rem; }
+    .refresh-btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      margin-top: 20px;
+      background: #0f3460;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .refresh-btn:active { background: #1a4a7a; }
+    .loading { opacity: 0.5; }
+    @media (prefers-color-scheme: light) {
+      body { background: #f5f5f5; color: #222; }
+      .card, .svc { background: #fff; }
+      .metric { background: #e8f4fc; }
+      h1 { color: #222; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🖥️ Node Status</h1>
+  <div class="updated" id="updated">Loading...</div>
+  
+  <div id="nodes"></div>
+  
+  <h2>Services</h2>
+  <div class="services" id="services"></div>
+  
+  <button class="refresh-btn" onclick="refresh()">🔄 Refresh Now</button>
+
+  <script>
+    const NODES = [
+      { name: 'Mac Mini', host: '100.82.234.66', user: 'tommie' },
+      { name: 'Mac Pro', host: '100.64.58.30', user: 'tommie' },
+      { name: 'Dell', host: '100.119.87.108', user: 'tommi' }
+    ];
+    
+    const SERVICES = ['ollama', 'clawdbot', 'redis'];
+    
+    async function loadData() {
+      try {
+        const resp = await fetch('status-data.json?t=' + Date.now());
+        if (resp.ok) return await resp.json();
+      } catch(e) {}
+      return null;
+    }
+    
+    function renderNodes(data) {
+      const container = document.getElementById('nodes');
+      container.innerHTML = NODES.map(n => {
+        const d = data?.nodes?.[n.host] || {};
+        const online = d.online ?? false;
+        const ram = d.ram ?? '--';
+        const disk = d.disk ?? '--';
+        const load = d.load ?? '--';
+        
+        const ramClass = typeof ram === 'number' ? (ram > 85 ? 'crit' : ram > 70 ? 'warn' : '') : '';
+        const diskClass = typeof disk === 'number' ? (disk > 85 ? 'crit' : disk > 70 ? 'warn' : '') : '';
+        
+        return `
+          <div class="card ${online ? 'online' : 'offline'}">
+            <div class="card-header">
+              <span class="node-name">${n.name}</span>
+              <span class="status-dot"></span>
+            </div>
+            <div class="metrics">
+              <div class="metric">
+                <div class="metric-label">RAM</div>
+                <div class="metric-value ${ramClass}">${typeof ram === 'number' ? ram + '%' : ram}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Disk</div>
+                <div class="metric-value ${diskClass}">${typeof disk === 'number' ? disk + '%' : disk}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Load</div>
+                <div class="metric-value">${load}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function renderServices(data) {
+      const container = document.getElementById('services');
+      container.innerHTML = SERVICES.map(s => {
+        const running = data?.services?.[s] ?? false;
+        return `
+          <div class="svc ${running ? 'running' : ''}">
+            <span class="svc-dot"></span>
+            <span class="svc-name">${s.charAt(0).toUpperCase() + s.slice(1)}</span>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    async function refresh() {
+      document.body.classList.add('loading');
+      const data = await loadData();
+      renderNodes(data);
+      renderServices(data);
+      document.getElementById('updated').textContent = data?.timestamp 
+        ? 'Updated: ' + new Date(data.timestamp).toLocaleTimeString()
+        : 'Data unavailable - run update script';
+      document.body.classList.remove('loading');
+    }
+    
+    refresh();
+    setInterval(refresh, 60000);
+  </script>
+</body>
+</html>
+

@@ -1,152 +1,62 @@
-# MASTER KNOWLEDGE BASE — Tommie's AI Data Center
-## Last Updated: February 2026
-## STATUS: PRODUCTION
+# MEMORY.md - RTX Canonical Summary
 
----
+Last Updated: 2026-04-06 13:25 CT
+Purpose: Fast source of truth for the RTX workspace. Use this file first, then follow memory/INDEX.md for topic-level detail.
 
-# ⚠️ IF YOU ARE READING THIS AFTER A RESET OR CONTEXT LOSS:
-# This file is the INDEX to all infrastructure knowledge.
-# For full details, see the docs/ folder.
+## Canonical Hierarchy
+1. MEMORY.md - executive summary and hard facts.
+2. MASTER_KNOWLEDGE.md - mirror of this file for reset recovery.
+3. memory/INDEX.md - lookup map to the right topic file.
+4. memory/GUIDANCE_LAYER.md - cross-bot retrieval protocol and live source order.
+5. memory/SHARED_MEMORY.md - shared-memory layout and live source order.
+6. memory/CURRENT_STATE.md - current operating picture.
+7. memory/PROJECT_REGISTRY.md - project locations and ownership.
+8. memory/INFRASTRUCTURE.md - machine roles, IPs, and live status rules.
+9. memory/LLM_MODELS.md - model routing and local model inventory.
+10. memory/AUTH_AND_SYNC.md - auth, sync, and cross-machine operational blockers.
+11. memory/YYYY-MM-DD.md - detailed chronology and implementation notes.
+12. shared-memory status JSON - live operational truth when status matters more than history.
 
----
+## Stable Facts
+Last Verified: 2026-04-05
+- Rusty prefers direct, current answers and does not want stale March assumptions repeated as current truth.
+- The three main Clawdbot agents are on openai/gpt-5.2-codex as of 2026-04-05.
+- RTX is the revenue-sensitive Windows machine and should be changed last when a rollout is risky.
+- Tom is the Mac Mini orchestrator and job-automation machine.
+- Jarvis is the Mac Pro shared-memory and monitoring host.
 
-## Quick Reference
+## Current Machine Facts
+Last Verified: 2026-04-05 via Tailscale and shared-memory status checks
+- RTX / Bottom Bitch: Tailscale IP 100.115.12.91, primary compute and local Ollama host on Windows.
+- Tom / Mac Mini: Tailscale IP 100.88.105.106, gateway 18789, job automation and dashboard host.
+- Jarvis / Mac Pro: Tailscale IP 100.89.75.126, gateway 18790, shared-memory host. Older Mac Pro IPs are retired history only.
 
-### Network (Tailscale Mesh)
+## Current Model Facts
+Last Verified: 2026-04-05
+- Bot runtime model across the three Clawdbot gateways: openai/gpt-5.2-codex.
+- RTX local Ollama stack: qwen3:4b primary, qwen2.5-coder:7b for code work, gemma4:e4b for heavier reasoning.
+- Jarvis local Ollama stack: qwen2.5:14b, qwen2.5:7b, nomic-embed-text.
 
-| Node | IP | Role | Max Model |
-|------|-----|------|-----------|
-| **Mac Mini** | 100.88.105.106 | Orchestrator, LLM Gateway, Dashboard | 3GB |
-| **Mac Pro** | 100.92.123.115 | Compute node (heavy inference) | 12GB+ |
-| **Dell** | 100.119.87.108 | Windows coordinator, failsafe | ⚠️ See below |
-| **Google Cloud** | 100.107.231.87 | Reserved for 7B models | 8GB |
-| iPhone | 100.114.130.38 | Mobile client | - |
+## Current Operations Notes
+Last Verified: 2026-04-05
+- Shared memory, Qdrant, and the dedicated memory Postgres live on Jarvis.
+- Gmail job-mail access is a Tom-side OAuth issue. Gmail requires reauth as of 2026-04-05.
+- Indeed session state is tracked on Tom and the Chrome Default profile is the current source of truth.
+- Shared-brain sync on Tom now distinguishes a clean sync mirror from the dirty local workspace; the status report is the source of truth.
+- If an answer depends on live service state, prefer shared-memory status files over older prose.
 
-### 🛑 HARD BOUNDARIES
+## Direct Pointers
+- Guidance layer: `C:/Users/User/clawd/memory/GUIDANCE_LAYER.md`
+- Tom auth script: `/Users/tommie/clawd/scripts/job-auth-status.py`
+- Tom job-auth log: `/Users/tommie/clawd/memory/job-monitoring-2026-04-05.log`
+- Tom status JSON: `/Users/tommie/shared-memory/tom-status.json`
+- Mac Pro status JSON: `/Users/tommie/shared-memory/mac-pro-status.json`
+- Shared-brain sync report: `/Users/tommie/shared-memory/shared-brain-sync-report.json`
+- Jarvis shared-memory index health: `/Users/administrator/shared-memory/analytics/memory-index-status.json`
+- Jarvis shared-memory audit: `/Users/administrator/shared-memory/analytics/shared-memory-audit-latest.json`
 
-1. **Dell (100.119.87.108)** — WORK COMPUTER with CrowdStrike. NEVER use for personal AI inference.
-2. **Mac Mini** — Max 3GB models only (16GB RAM, needs headroom)
-
-**Full details:** [docs/security.md](docs/security.md)
-
----
-
-## Detailed Documentation
-
-| Document | Contents |
-|----------|----------|
-| **[docs/infrastructure.md](docs/infrastructure.md)** | Nodes, IPs, specs, scripts inventory, SSH config, monitoring |
-| **[docs/security.md](docs/security.md)** | Hard boundaries, firewall, Dell restrictions, emergency procedures |
-| **[docs/llm-routing.md](docs/llm-routing.md)** | Models, routing logic, RAM thresholds, cost management, API limits |
-| **[docs/team.md](docs/team.md)** | Bot chat, AI admin roles, schedules, Project Legion, cross-role comms |
-
----
-
-## Critical Startup Facts
-
-**Read these FIRST on every session:**
-
-1. **Architecture:** 4 nodes connected via Tailscale mesh
-   - Mac Mini (100.88.105.106) — Hub, 3B models only
-   - Mac Pro (100.92.123.115) — Compute, larger models
-   - Google Cloud (100.107.231.87) — 7B models
-   - Dell (100.119.87.108) — Windows, CrowdStrike-monitored
-
-2. **Model Routing:**
-   - Code → Qwen Coder 32B (NVIDIA) or deepseek-coder (Mac Pro)
-   - Vision → Kimi K2.5 (NVIDIA, 50 calls/day)
-   - Fast/Simple → qwen2.5:3b (Mac Mini, FREE)
-   - Heavy reasoning → qwen2.5:7b (Mac Pro or Cloud)
-
-3. **Budget:** NVIDIA API has 50 free calls/day. Local Ollama is unlimited and free.
-
-4. **Shared Memory:** ~/shared-memory/*.json — Read on startup for recovery
-
-5. **Dashboard:** http://100.88.105.106:8080
-
----
-
-## Emergency Quick Actions
-
-| Problem | Action |
-|---------|--------|
-| Mac Mini offline | Cloud VM continues; read shared-memory on return |
-| Cloud VM offline | Mac Mini uses local 3B; check GCP console |
-| RAM critical (<3GB) | Route all AI to cloud; `ollama stop` models |
-| Context lost | Read this file + shared-memory/*.json |
-| Security incident | Check `tailscale status`; review listening ports |
-
-**Full procedures:** [docs/security.md](docs/security.md#emergency-procedures)
-
----
-
-## Key Scripts & Commands
-
-```bash
-# Check RAM and route appropriately
-~/scripts/get_free_ram.sh
-
-# 3-tier inference fallback
-source ~/scripts/inference-fallback.sh
-RESPONSE=$(get_ai_response "prompt")
-
-# Ollama status
-ollama ps
-
-# SSH shortcuts
-ssh mac-pro        # 100.92.123.115
-ssh google-cloud   # 100.107.231.87
-ssh dell           # 100.119.87.108
-```
-
-**Full inventory:** [docs/infrastructure.md](docs/infrastructure.md#scripts-inventory)
-
----
-
-## Bot Team
-
-| Bot | Location | Role |
-|-----|----------|------|
-| 🍑 Bottom Bitch | Dell | Coordinator |
-| 🧠 Tommie77 | Mac Mini | Main orchestrator |
-| 🐭 Pinky | Mac Pro | Compute |
-
-**Group:** "The Bot Chat" — Coordinate, share updates, don't step on each other.
-
-**Full details:** [docs/team.md](docs/team.md)
-
----
-
-## Token-Saving Priority
-
-1. **FREE:** Ollama local (qwen2.5:3b) → Always try first
-2. **CHEAP:** NVIDIA API (50/day) → Code, vision, analysis
-3. **EXPENSIVE:** Claude Opus → Only when necessary
-
-**Full guide:** [docs/llm-routing.md](docs/llm-routing.md#cost-management)
-
----
-
----
-
-## Project Legion (Job Application System)
-
-**Status:** PRODUCTION — All-in-One on Mac Mini
-**Full Docs:** `~/Projects/job-hunter-system/MASTER_KNOWLEDGE.md`
-
-| Component | File | Purpose |
-|-----------|------|---------|
-| Launcher | `run_legion.py` | Runs Hub + Worker in one process |
-| Pipeline Trigger | `trigger_discovery.py` | Manual queue trigger via Redis |
-| Submission Router | `worker/submission/unified_router.py` | Routes to correct ATS handler |
-| Indeed Handler | `worker/submission/indeed_camoufox.py` | Camoufox + redirect to external ATS |
-| LLM Form Filler | `worker/submission/llm_form_filler.py` | Universal ATS form filler |
-| State Manager | `shared/state_manager.py` | Redis queues + pipeline |
-
-**Key:** External ATS jobs (Indeed -> Workday/Greenhouse/Lever) handled via 3-layer redirect retry chain.
-See `MEMORY.md` Section 12 for full details.
-
----
-
-# END OF INDEX
-# For complete details, see docs/*.md and MEMORY.md
+## Current Project Notes
+Last Verified: 2026-04-05
+- Project Legion operations and browser automation live on Tom. Use Tom memory files for the latest launch and auth notes.
+- TerminatorBot, TaskBot support work, and local model optimization work are anchored on RTX.
+- Use memory/CURRENT_STATE.md and memory/PROJECT_REGISTRY.md before relying on older daily logs.

@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-03-24T13:30:00Z",
+  "topic": "Dashboard Consolidation",
+  "status": "COMPLETE",
+  "golden_rule": "ONE SERVER, ONE URL, ONE SOURCE OF TRUTH",
+  "dashboard_url": "http://100.115.12.91:8081/",
+  "deprecated": "http://100.88.105.106:8080/ (Mac Mini - DO NOT USE)",
+  "server": {
+    "machine": "RTX Workstation",
+    "ip": "100.115.12.91",
+    "port": 8081,
+    "file": "mirofish-hub/whale_api.py"
+  },
+  "routes": {
+    "/": "Main Dashboard",
+    "/consensus": "Consensus Picks",
+    "/leaderboard": "Whale Leaderboard",
+    "/whales": "Whale Tracker",
+    "/terminator": "TerminatorBot",
+    "/vault": "Project Vault",
+    "/fort-knox": "Fort Knox",
+    "/legion": "Legion HQ",
+    "/legion-tracker": "Legion Tracker",
+    "/pharma": "Arbitrage Pharma",
+    "/infrastructure": "Infrastructure",
+    "/agents": "Agents",
+    "/projects": "Projects"
+  },
+  "files": {
+    "api_server": "mirofish-hub/whale_api.py",
+    "dashboard_html": "mirofish-hub/dashboard/ (57 files)",
+    "whale_pages": "mirofish-hub/whale-*.html"
+  },
+  "nav_link_format": "Always use /route not .html",
+  "lesson_learned": "NEVER have two dashboard servers - causes broken links and confusion",
+  "backup": "Mac Mini: ~/clawd/dashboard-backup-2026-03-24.tar.gz"
+}

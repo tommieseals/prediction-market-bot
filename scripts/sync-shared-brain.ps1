@@ -7,8 +7,9 @@ param(
     [string]$Action = "pull"
 )
 
-$LocalPath = "C:\Users\tommi\clawd\shared-brain"
-$RemoteHost = "administrator@100.92.123.115"
+$RepoPath = "C:\Users\User\clawd"
+$LocalPath = "C:\Users\User\clawd\shared-brain"
+$RemoteHost = "administrator@100.89.75.126"
 $RemotePath = "~/shared-brain"
 
 function Log($msg) {
@@ -17,36 +18,24 @@ function Log($msg) {
 
 switch ($Action) {
     "push" {
-        Log "Pushing local changes to Mac Pro..."
-        
-        # Copy files
-        scp -r "$LocalPath\*" "${RemoteHost}:$RemotePath/"
-        
-        # Commit on remote
-        ssh $RemoteHost "cd $RemotePath && git add -A && git commit -m 'Update from Dell - $(Get-Date -Format 'yyyy-MM-dd HH:mm')' 2>/dev/null || echo 'No changes to commit'"
-        
-        Log "Done! Changes pushed and committed."
+        Log "Pushing shared-brain changes via git..."
+        if (!(Test-Path $LocalPath)) {
+            throw "Shared-brain path not found: $LocalPath"
+        }
+        git -C $RepoPath add -- "shared-brain"
+        git -C $RepoPath commit -m "shared-brain sync $(Get-Date -Format 'yyyy-MM-dd HH:mm')" 2>$null | Out-Null
+        git -C $RepoPath push origin HEAD
+        Log "Done! Shared-brain changes pushed to origin."
     }
     "pull" {
-        Log "Pulling latest from Mac Pro..."
-        
-        # Ensure local directory exists
-        if (!(Test-Path $LocalPath)) {
-            New-Item -ItemType Directory -Path $LocalPath -Force
-        }
-        
-        # Pull files
-        scp -r "${RemoteHost}:${RemotePath}/*" "$LocalPath/"
-        
+        Log "Pulling latest shared-brain changes via git..."
+        git -C $RepoPath pull --ff-only origin HEAD
         Log "Done! Local copy updated."
     }
     "status" {
         Log "Checking shared-brain status..."
-        
-        # Show latest commit
-        ssh $RemoteHost "cd $RemotePath && git log -3 --format='%h %s (%cr by %an)'"
-        
-        # Show changed files
-        ssh $RemoteHost "cd $RemotePath && git status -s"
+        git -C $RepoPath remote -v
+        git -C $RepoPath log -3 --format="%h %s (%cr by %an)"
+        git -C $RepoPath status --short -- "shared-brain"
     }
 }

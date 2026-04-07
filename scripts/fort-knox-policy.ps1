@@ -2,10 +2,10 @@
 # Compresses backups older than 7 days and sends to Mac Pro
 # Run daily via Task Scheduler
 
-$BackupDir = "C:\Users\tommi\clawd\backups"
-$FortKnox = "administrator@100.92.123.115"
+$BackupDir = "C:\Users\User\clawd\backups"
+$FortKnox = "administrator@100.89.75.126"
 $FortKnoxPath = "~/fort-knox/dell-backups"
-$LogFile = "C:\Users\tommi\clawd\logs\fort-knox.log"
+$LogFile = "C:\Users\User\clawd\logs\fort-knox.log"
 $DaysToKeepLocal = 7
 $DaysToKeepRemote = 30
 

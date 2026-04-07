@@ -51,7 +51,7 @@ param(
     [switch]$Stats
 )
 
-$RepoPath = "C:\Users\tommi\clawd"
+$RepoPath = "C:\Users\User\clawd"
 $Today = Get-Date -Format "yyyy-MM-dd"
 $Now = Get-Date -Format "HH:mm:ss"
 

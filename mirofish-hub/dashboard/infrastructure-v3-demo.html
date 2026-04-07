@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content=width=device-width, initial-scale=1.0>
+    <title>Infrastructure Dashboard v3 - DEMO</title>
+    <style>
+        :root {
+            --bg-deep-space: #0a0e17;
+            --bg-card: #0d1321;
+            --bg-card-light: #141c2f;
+            --accent-cyan: #00ffff;
+            --accent-purple: #9d4edd;
+            --success-green: #00ff88;
+            --warning-orange: #ffa500;
+            --danger-red: #ff3366;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --gradient-flow: linear-gradient(90deg, #00ffff, #9d4edd);
+            --glow-cyan: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Segoe UI, system-ui, sans-serif;
+            background: var(--bg-deep-space);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .demo-banner {
+            background: linear-gradient(90deg, #ff6b35, #f7931e);
+            color: #000;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        h1 {
+            background: var(--gradient-flow);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+        .section {
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .section-title {
+            color: var(--accent-cyan);
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* FLOWCHART STYLES - The key difference from v2!                  */
+        /* ═══════════════════════════════════════════════════════════════ */
+        .flowchart {
+            position: relative;
+            padding: 2rem;
+            min-height: 400px;
+        }
+        .flow-node {
+            position: absolute;
+            background: var(--bg-card-light);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            text-align: center;
+            box-shadow: var(--glow-cyan);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        .flow-node:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
+        }
+        .flow-node.primary {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 20px rgba(157, 78, 221, 0.5);
+        }
+        .flow-node.success {
+            border-color: var(--success-green);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+        }
+        .flow-node .label {
+            font-weight: bold;
+            color: var(--accent-cyan);
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+        .flow-node .value {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+        .flow-node .sublabel {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-top: 0.3rem;
+        }
+        
+        /* SVG connector lines with animated flow */
+        .flow-lines {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .flow-line {
+            stroke: var(--accent-cyan);
+            stroke-width: 2;
+            fill: none;
+            opacity: 0.6;
+        }
+        .flow-line.animated {
+            stroke-dasharray: 10 5;
+            animation: flowPulse 1.5s linear infinite;
+        }
+        @keyframes flowPulse {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: -30; }
+        }
+        .flow-arrow {
+            fill: var(--accent-cyan);
+        }
+        
+        /* Decision diamond */
+        .flow-node.decision {
+            transform: rotate(45deg);
+            border-radius: 4px;
+            padding: 1.5rem;
+        }
+        .flow-node.decision .inner {
+            transform: rotate(-45deg);
+        }
+    </style>
+</head>
+<body>
+    <div class=demo-banner>
+        🎨 DEMO PAGE - Showing flowchart approach before applying to main dashboard
+    </div>
+    
+    <h1>🚀 Infrastructure Dashboard v3 - Flowchart Demo</h1>
+    
+    <!-- SECTION 1: Agent Architecture with Flow -->
+    <div class=section>
+        <div class=section-title>🤖 Agent Architecture (with actual flow)</div>
+        
+        <div class=flowchart style=height: 450px;>
+            <!-- SVG Lines connecting nodes -->
+            <svg class=flow-lines viewBox=0 0 800 400 preserveAspectRatio=none>
+                <defs>
+                    <marker id=arrowhead markerWidth=10 markerHeight=7 refX=9 refY=3.5 orient=auto>
+                        <polygon class=flow-arrow points=0 0, 10 3.5, 0 7 />
+                    </marker>
+                </defs>
+                <!-- Sub-Agent to Main Agent -->
+                <path class=flow-line animated d=M 120 80 L 120 150 L 300 150 marker-end=url(#arrowhead)/>
+                <!-- Main Agent to Telegram -->
+                <path class=flow-line animated d=M 420 170 L 550 170 marker-end=url(#arrowhead)/>
+                <!-- Main Agent to Memory -->
+                <path class=flow-line animated d=M 360 200 L 360 280 marker-end=url(#arrowhead)/>
+                <!-- Telegram to Admin Agent -->
+                <path class=flow-line animated d=M 650 200 L 650 280 marker-end=url(#arrowhead)/>
+                <!-- Admin to Health Check -->
+                <path class=flow-line animated d=M 580 350 L 450 350 marker-end=url(#arrowhead)/>
+                <!-- Admin to Security -->
+                <path class=flow-line animated d=M 720 350 L 780 350 L 780 250 marker-end=url(#arrowhead)/>
+            </svg>
+            
+            <!-- Flow Nodes -->
+            <div class=flow-node style=left: 50px; top: 30px;>
+                <div class=label>🔄 Sub-Agent</div>
+                <div class=value>sessions_spawn</div>
+                <div class=sublabel>Background Tasks</div>
+            </div>
+            
+            <div class=flow-node primary style=left: 300px; top: 120px; min-width: 160px;>
+                <div class=label>🧠 Main Agent</div>
+                <div class=value>Claude Opus</div>
+                <div class=sublabel>Primary Conversation</div>
+            </div>
+            
+            <div class=flow-node success style=left: 550px; top: 120px;>
+                <div class=label>📱 Telegram</div>
+                <div class=value>@Dlowbands</div>
+                <div class=sublabel>Primary Channel</div>
+            </div>
+            
+            <div class=flow-node style=left: 300px; top: 280px;>
+                <div class=label>💾 Memory</div>
+                <div class=value>SOUL.md + MEMORY.md</div>
+                <div class=sublabel>Persistent Context</div>
+            </div>
+            
+            <div class=flow-node style=left: 570px; top: 280px; border-color: var(--warning-orange); box-shadow: 0 0 15px rgba(255,165,0,0.4);>
+                <div class=label>⚙️ Admin Agent</div>
+                <div class=value>Node Monitor</div>
+                <div class=sublabel>Health + Security</div>
+            </div>
+            
+            <div class=flow-node style=left: 350px; top: 330px; font-size: 0.8rem;>
+                <div class=label>🏥 Health</div>
+                <div class=value>Every 30m</div>
+            </div>
+            
+            <div class=flow-node style=left: 730px; top: 200px; font-size: 0.8rem;>
+                <div class=label>🔒 Security</div>
+                <div class=value>2-4x/day</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SECTION 2: Node Topology with Flow -->
+    <div class=section>
+        <div class=section-title>🌐 Node Topology (with data flow)</div>
+        
+        <div class=flowchart style=height: 350px;>
+            <svg class=flow-lines viewBox=0 0 800 300 preserveAspectRatio=none>
+                <defs>
+                    <marker id=arrow2 markerWidth=10 markerHeight=7 refX=9 refY=3.5 orient=auto>
+                        <polygon class=flow-arrow points=0 0, 10 3.5, 0 7 />
+                    </marker>
+                </defs>
+                <!-- Tailscale mesh lines -->
+                <path class=flow-line animated d=M 200 150 L 400 100 marker-end=url(#arrow2) style=stroke: var(--success-green);/>
+                <path class=flow-line animated d=M 400 100 L 200 150 marker-end=url(#arrow2) style=stroke: var(--success-green); animation-delay: 0.5s;/>
+                <path class=flow-line animated d=M 200 150 L 400 200 marker-end=url(#arrow2) style=stroke: var(--success-green);/>
+                <path class=flow-line animated d=M 400 200 L 200 150 marker-end=url(#arrow2) style=stroke: var(--success-green); animation-delay: 0.5s;/>
+                <path class=flow-line animated d=M 400 100 L 400 200 marker-end=url(#arrow2) style=stroke: var(--accent-purple); stroke-dasharray: 5 3;/>
+                <!-- Gateway to API -->
+                <path class=flow-line animated d=M 500 100 L 650 100 marker-end=url(#arrow2)/>
+                <path class=flow-line animated d=M 500 200 L 650 150 marker-end=url(#arrow2)/>
+            </svg>
+            
+            <!-- Mac Mini - Orchestrator -->
+            <div class=flow-node primary style=left: 80px; top: 100px; min-width: 180px;>
+                <div class=label>🖥️ Mac Mini</div>
+                <div class=value>ORCHESTRATOR</div>
+                <div class=sublabel>YOUR_SERVER_IP</div>
+                <div style=margin-top: 10px; font-size: 0.75rem; color: var(--success-green);>
+                    Disk: 19% | Load: 1.1<br>
+                    Ollama: qwen2.5:3b
+                </div>
+            </div>
+            
+            <!-- Mac Pro -->
+            <div class=flow-node success style=left: 350px; top: 50px; min-width: 160px;>
+                <div class=label>🗄️ Mac Pro</div>
+                <div class=value>COMPUTE + FORT KNOX</div>
+                <div class=sublabel>YOUR_SERVER_IP</div>
+                <div style=margin-top: 10px; font-size: 0.75rem; color: var(--success-green);>
+                    Disk: 6% | RAM: 88% free<br>
+                    Backup Archives
+                </div>
+            </div>
+            
+            <!-- Dell -->
+            <div class=flow-node style=left: 350px; top: 180px; min-width: 160px; border-color: var(--warning-orange); box-shadow: 0 0 15px rgba(255,165,0,0.4);>
+                <div class=label>💻 Dell</div>
+                <div class=value>WORKSTATION</div>
+                <div class=sublabel>YOUR_SERVER_IP</div>
+                <div style=margin-top: 10px; font-size: 0.75rem; color: var(--warning-orange);>
+                    Windows 11<br>
+                    Primary Workspace
+                </div>
+            </div>
+            
+            <!-- External APIs -->
+            <div class=flow-node style=left: 600px; top: 70px; font-size: 0.85rem;>
+                <div class=label>🌐 APIs</div>
+                <div class=value>Anthropic + NVIDIA</div>
+                <div class=sublabel>External</div>
+            </div>
+            
+            <div class=flow-node style=left: 600px; top: 170px; font-size: 0.85rem;>
+                <div class=label>📱 Telegram</div>
+                <div class=value>Bot Gateway</div>
+                <div class=sublabel>Inbound/Outbound</div>
+            </div>
+            
+            <!-- Tailscale label -->
+            <div style=position: absolute; left: 250px; top: 130px; color: var(--success-green); font-size: 0.7rem; background: rgba(0,255,136,0.1); padding: 4px 8px; border-radius: 4px;>
+                🔐 Tailscale Mesh (100.x.x.x)
+            </div>
+        </div>
+    </div>
+    
+    <div class=section style=background: linear-gradient(135deg, var(--bg-card), rgba(157, 78, 221, 0.1));>
+        <h2 style=color: var(--accent-purple); margin-bottom: 1rem;>📋 What This Demo Shows</h2>
+        <ul style=list-style: none; line-height: 2;>
+            <li>✅ <strong>Same sleek dark theme</strong> as v2</li>
+            <li>✅ <strong>Actual flowcharts</strong> with connected nodes</li>
+            <li>✅ <strong>Animated flow lines</strong> showing data movement</li>
+            <li>✅ <strong>Arrows</strong> indicating direction</li>
+            <li>✅ <strong>Live data</strong> in each node (disk, load, etc.)</li>
+            <li>✅ <strong>Color coding</strong> by role (primary, compute, workstation)</li>
+            <li>✅ <strong>Traceable paths</strong> - you can follow how things connect</li>
+        </ul>
+        <p style=margin-top: 1.5rem; color: var(--text-secondary);>
+            <strong>Next:</strong> If this direction looks right, I will apply this flowchart approach to all sections of the infrastructure dashboard while keeping the visual improvements.
+        </p>
+    </div>
+    
+</body>
+</html>
+HTMLEOF
+

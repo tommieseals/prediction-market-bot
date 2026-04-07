@@ -1,0 +1,11 @@
+{
+    "services":  {
+                     "Dell-Ollama":  {
+                                         "lastCheck":  "2026-03-10T09:04:03.1898917-05:00",
+                                         "running":  true
+                                     }
+                 },
+    "heals":  [
+
+              ]
+}

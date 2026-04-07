@@ -3,7 +3,7 @@
 # AUTO-CLEANUP.SH - Automated Disk Cleanup Script
 #==============================================================================
 # Purpose: Cleans logs and temp files when disk usage exceeds threshold
-# Target:  Mac Mini (100.82.234.66) / Mac Pro (100.67.192.21) via SSH
+# Target:  Mac Mini (100.88.105.106) / Mac Pro (100.89.75.126) via SSH
 # Usage:   ./auto-cleanup.sh [OPTIONS]
 #
 # Options:
@@ -38,8 +38,8 @@ LOCAL_MODE=false
 TARGET_HOST=""
 
 # Default hosts (from TOOLS.md)
-MAC_MINI="100.82.234.66"
-MAC_PRO="100.67.192.21"
+MAC_MINI="100.88.105.106"
+MAC_PRO="100.89.75.126"
 
 #------------------------------------------------------------------------------
 # Cleanup Targets - Paths that are safe to clean

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shared Brain - Clawd Dashboard</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.2);
+        }
+        .nav-brand h1 { font-size: 1.8rem; }
+        .nav-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .nav-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .page-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #00d9ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .page-header p { color: rgba(255,255,255,0.7); font-size: 1.1rem; }
+        .section-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .tab-btn:hover { 
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.3);
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #00d9ff, #7c3aed);
+            box-shadow: 0 4px 20px rgba(0,217,255,0.3);
+            border-color: transparent;
+        }
+        .diagram-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+        .diagram-title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .diagram-title h3 {
+            color: #fff;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .diagram-title p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.95rem;
+        }
+        .diagram-svg {
+            width: 100%;
+            overflow-x: auto;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .status-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .status-card h4 {
+            color: #00d9ff;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .status-card p {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.85rem;
+        }
+        .status-card .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse { animation: pulse 2s infinite; }
+        @media (max-width: 768px) {
+            .nav-bar { flex-wrap: wrap; gap: 1rem; padding: 1rem; }
+            .nav-links { width: 100%; justify-content: center; }
+            .container { padding: 1rem; }
+            .diagram-card { padding: 1rem; }
+            .tab-btn { padding: 0.5rem 1rem; font-size: 0.85rem; }
+            .page-header h2 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><h1>🧠 Shared Brain</h1></div>
+        <div class="nav-links" id="navLinks">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/infrastructure" class="nav-link">Infrastructure</a>
+                <a href="/agents" class="nav-link">Agents</a>
+                <a href="/projects" class="nav-link">Projects</a>
+                <a href="/apis" class="nav-link">APIs</a>
+                <a href="/skills" class="nav-link">Skills</a>
+                <a href="/tools" class="nav-link">Tools</a>
+                <a href="/achievements" class="nav-link">Achievements</a>
+                <a href="/shared-brain" class="nav-link active">🧠 Brain</a>
+                <a href="/swarm-monitor" class="nav-link">🐝 Swarm</a>
+                <a href="/pharma" class="nav-link">💊 Pharma</a>
+                <a href="/terminator" class="nav-link">🤖 Terminator</a>
+                <a href="/vault" class="nav-link">💰 Vault</a>
+                <a href="/fort-knox" class="nav-link">🏦 Fort Knox</a>
+                <a href="/whales" class="nav-link">🐋 Whales</a>
+                <a href="/legion-tracker" class="nav-link">🎖️ Legion</a>
+                <a href="/legion" class="nav-link">⚔️ Legion HQ</a>
+                <a href="/fraud-detection" class="nav-link">🛡️ Fraud</a>
+                <a href="n8n-hub.html" class="nav-link">⚡ n8n</a>
+                <a href="/fiverr" class="nav-link">🛒 Fiverr</a>
+                <a href="/kdp" class="nav-link">📚 KDP</a>
+                <a href="tascosaur.html" class="nav-link">🦖 Tascosaur</a>
+                <a href="taskbot.html" class="nav-link">📋 TaskBot</a>
+                <a href="teams-translator.html" class="nav-link">🌐 Translator</a>
+                <a href="sidekick-paas.html" class="nav-link">🦸 Sidekick</a>
+                <a href="memory.html" class="nav-link">🧬 Memory</a>
+                <a href="sessions.html" class="nav-link">💬 Sessions</a>
+                <a href="a2a-server.html" class="nav-link">🔗 A2A</a>
+                <a href="/docs" class="nav-link">Docs</a>
+            </div>
+        </nav>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Animated flowing particle line component
+        function FlowingLine({ x1, y1, x2, y2, color = "#00d9ff", delay = 0, curved = false, bidirectional = false }) {
+            const midX = (x1 + x2) / 2;
+            const midY = curved ? Math.min(y1, y2) - 50 : (y1 + y2) / 2;
+            const pathD = curved 
+                ? `M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}`
+                : `M ${x1} ${y1} L ${x2} ${y2}`;
+
+            return (
+                <g>
+                    <path d={pathD} fill="none" stroke={color + "40"} strokeWidth="2" strokeDasharray="8,4" />
+                    <circle r="6" fill={color} filter="url(#glow)">
+                        <animateMotion dur="2s" repeatCount="indefinite" begin={delay + "s"} path={pathD} />
+                    </circle>
+                    {bidirectional && (
+                        <circle r="5" fill={color} opacity="0.7">
+                            <animateMotion dur="2s" repeatCount="indefinite" begin={(delay + 1) + "s"} path={pathD} keyPoints="1;0" keyTimes="0;1" />
+                        </circle>
+                    )}
+                    <circle cx={x1} cy={y1} r="4" fill={color} opacity="0.6" />
+                    <circle cx={x2} cy={y2} r="4" fill={color} opacity="0.6" />
+                </g>
+            );
+        }
+
+        // Card node component with colored top bar
+        function ArchNode({ x, y, w, h, title, subtitle, icon, color, small = false, glow = false }) {
+            const titleY = small ? 50 : 60;
+            const subtitleY = small ? 66 : 80;
+            const iconSize = small ? 22 : 30;
+            
+            return (
+                <g>
+                    {glow && <rect x={x-2} y={y-2} width={w+4} height={h+4} rx={14} fill="none" stroke={color} strokeWidth="2" opacity="0.4" />}
+                    <rect x={x} y={y} width={w} height={h} rx={12} fill="#1a1a2e" stroke={color + "60"} strokeWidth="1" filter="url(#shadow)" />
+                    <rect x={x} y={y} width={w} height={8} rx={4} fill={color} />
+                    <circle cx={x + w/2} cy={y + 32} r={small ? 18 : 24} fill={color + "25"} stroke={color + "40"} strokeWidth="1" />
+                    <text x={x + w/2} y={y + 38} textAnchor="middle" fontSize={iconSize} dominantBaseline="middle">{icon}</text>
+                    <text x={x + w/2} y={y + titleY} textAnchor="middle" fill="#fff" fontSize={small ? 11 : 13} fontWeight="600">{title}</text>
+                    {subtitle && <text x={x + w/2} y={y + subtitleY} textAnchor="middle" fill="#a0aec0" fontSize={small ? 9 : 10}>{subtitle}</text>}
+                </g>
+            );
+        }
+
+        // File node for knowledge files
+        function FileNode({ x, y, name, icon, color }) {
+            return (
+                <g>
+                    <rect x={x} y={y} width={100} height={40} rx={8} fill={color + "20"} stroke={color} strokeWidth="1" />
+                    <text x={x + 18} y={y + 25} fontSize="14">{icon}</text>
+                    <text x={x + 38} y={y + 26} fill="#fff" fontSize="10" fontWeight="500">{name}</text>
+                </g>
+            );
+        }
+
+        // Tab 1: Knowledge Hub - Central brain architecture
+        function KnowledgeHub() {
+            return (
+                <svg viewBox="0 0 900 550" style={{width: "100%", minWidth: 700, height: "auto"}}>
+                    <defs>
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#000" floodOpacity="0.3" />
+                        </filter>
+                        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                        </filter>
+                        <linearGradient id="brainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#00d9ff" />
+                            <stop offset="100%" stopColor="#7c3aed" />
+                        </linearGradient>
+                    </defs>
+                    
+                    {/* Central Brain - Mac Pro */}
+                    <circle cx={450} cy={220} r={100} fill="url(#brainGrad)" opacity="0.15" />
+                    <circle cx={450} cy={220} r={80} fill="#0f3460" stroke="url(#brainGrad)" strokeWidth="3" filter="url(#glow)" />
+                    <text x={450} y={200} textAnchor="middle" fontSize="45">🧠</text>
+                    <text x={450} y={240} textAnchor="middle" fill="#fff" fontSize="14" fontWeight="700">SHARED BRAIN</text>
+                    <text x={450} y={258} textAnchor="middle" fill="#00d9ff" fontSize="10">Mac Pro • Fort Knox</text>
+                    <text x={450} y={273} textAnchor="middle" fill="#a0aec0" fontSize="9">100.101.89.80</text>
+                    
+                    {/* Knowledge Files orbiting brain */}
+                    <FileNode x={300} y={100} name="HOT.md" icon="🔥" color="#f56565" />
+                    <FileNode x={500} y={100} name="INDEX.md" icon="📑" color="#48bb78" />
+                    <FileNode x={600} y={180} name="CHANGELOG.md" icon="📝" color="#ed8936" />
+                    <FileNode x={200} y={180} name="MEMORY.md" icon="💾" color="#9f7aea" />
+                    <FileNode x={250} y={320} name="AGENTS.md" icon="🤖" color="#3182ce" />
+                    <FileNode x={500} y={320} name="TOOLS.md" icon="🔧" color="#38b2ac" />
+                    
+                    {/* Flowing connections to brain */}
+                    <FlowingLine x1={350} y1={120} x2={400} y2={170} color="#f56565" delay={0} curved={true} />
+                    <FlowingLine x1={550} y1={120} x2={500} y2={170} color="#48bb78" delay={0.3} curved={true} />
+                    <FlowingLine x1={600} y1={200} x2={530} y2={220} color="#ed8936" delay={0.6} />
+                    <FlowingLine x1={250} y1={200} x2={370} y2={220} color="#9f7aea" delay={0.9} />
+                    <FlowingLine x1={300} y1={340} x2={400} y2={280} color="#3182ce" delay={1.2} curved={true} />
+                    <FlowingLine x1={550} y1={340} x2={500} y2={280} color="#38b2ac" delay={1.5} curved={true} />
+                    
+                    {/* Connected Nodes */}
+                    <ArchNode x={50} y={380} w={150} h={100} title="Mac Mini" subtitle="Orchestrator" icon="🖥️" color="#667eea" />
+                    <text x={125} y={495} textAnchor="middle" fill="#667eea" fontSize="9">100.88.105.106</text>
+                    
+                    <ArchNode x={700} y={380} w={150} h={100} title="Dell" subtitle="Workstation" icon="💻" color="#ed8936" />
+                    <text x={775} y={495} textAnchor="middle" fill="#ed8936" fontSize="9">100.119.87.108</text>
+                    
+                    {/* Node to Brain connections */}
+                    <FlowingLine x1={200} y1={430} x2={370} y2={270} color="#667eea" delay={0.4} bidirectional={true} />
+                    <FlowingLine x1={700} y1={430} x2={530} y2={270} color="#ed8936" delay={0.8} bidirectional={true} />
+                    
+                    {/* Git sync indicator */}
+                    <rect x={380} y={380} width={140} height={50} rx={10} fill="#1a1a2e" stroke="#48bb78" strokeWidth="2" />
+                    <text x={450} y={400} textAnchor="middle" fontSize="18">🔄</text>
+                    <text x={450} y={420} textAnchor="middle" fill="#48bb78" fontSize="10" fontWeight="600">Git Sync Active</text>
+                    
+                    <FlowingLine x1={125} y1={380} x2={380} y2={405} color="#48bb78" delay={1.8} />
+                    <FlowingLine x1={775} y1={380} x2={520} y2={405} color="#48bb78" delay={2.2} />
+                </svg>
+            );
+        }
+
+        // Tab 2: Agent Collaboration
+        function AgentCollaboration() {
+            return (
+                <svg viewBox="0 0 900 520" style={{width: "100%", minWidth: 700, height: "auto"}}>
+                    <defs>
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#000" floodOpacity="0.3" />
+                        </filter>
+                        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                        </filter>
+                    </defs>
+                    
+                    {/* Main Agent - Center */}
+                    <ArchNode x={350} y={30} w={200} h={120} title="Main Agent" subtitle="Claude Opus 4.5 • Telegram" icon="🧠" color="#00d9ff" glow={true} />
+                    
+                    {/* Sub-agents around */}
+                    <ArchNode x={80} y={180} w={140} h={95} title="Sub-Agent" subtitle="Research Tasks" icon="🔍" color="#9f7aea" small={true} />
+                    <ArchNode x={260} y={200} w={140} h={95} title="Sub-Agent" subtitle="Code Tasks" icon="💻" color="#48bb78" small={true} />
+                    <ArchNode x={500} y={200} w={140} h={95} title="Sub-Agent" subtitle="Analysis" icon="📊" color="#ed8936" small={true} />
+                    <ArchNode x={680} y={180} w={140} h={95} title="Admin Agent" subtitle="Health Monitor" icon="🛡️" color="#f56565" small={true} />
+                    
+                    {/* Connections to main agent */}
+                    <FlowingLine x1={150} y1={180} x2={350} y2={90} color="#9f7aea" delay={0} curved={true} />
+                    <FlowingLine x1={330} y1={200} x2={380} y2={150} color="#48bb78" delay={0.4} curved={true} />
+                    <FlowingLine x1={570} y1={200} x2={520} y2={150} color="#ed8936" delay={0.8} curved={true} />
+                    <FlowingLine x1={750} y1={180} x2={550} y2={90} color="#f56565" delay={1.2} curved={true} />
+                    
+                    {/* Shared Memory Pool */}
+                    <rect x={300} y={340} width={300} height={140} rx={16} fill="#0f3460" stroke="#00d9ff" strokeWidth="2" strokeDasharray="8,4" />
+                    <text x={450} y={375} textAnchor="middle" fill="#00d9ff" fontSize="12" fontWeight="600">📂 SHARED MEMORY POOL</text>
+                    
+                    {/* Memory files */}
+                    <rect x={320} y={395} width={80} height={30} rx={6} fill="#9f7aea30" stroke="#9f7aea" />
+                    <text x={360} y={415} textAnchor="middle" fill="#fff" fontSize="9">session.json</text>
+                    
+                    <rect x={410} y={395} width={80} height={30} rx={6} fill="#48bb7830" stroke="#48bb78" />
+                    <text x={450} y={415} textAnchor="middle" fill="#fff" fontSize="9">context.json</text>
+                    
+                    <rect x={500} y={395} width={80} height={30} rx={6} fill="#ed893630" stroke="#ed8936" />
+                    <text x={540} y={415} textAnchor="middle" fill="#fff" fontSize="9">tasks.json</text>
+                    
+                    <rect x={365} y={435} width={80} height={30} rx={6} fill="#f5656530" stroke="#f56565" />
+                    <text x={405} y={455} textAnchor="middle" fill="#fff" fontSize="9">health.json</text>
+                    
+                    <rect x={455} y={435} width={80} height={30} rx={6} fill="#00d9ff30" stroke="#00d9ff" />
+                    <text x={495} y={455} textAnchor="middle" fill="#fff" fontSize="9">state.json</text>
+                    
+                    {/* Connections to shared memory */}
+                    <FlowingLine x1={150} y1={275} x2={350} y2={340} color="#9f7aea" delay={1.6} />
+                    <FlowingLine x1={330} y1={295} x2={380} y2={340} color="#48bb78" delay={2.0} />
+                    <FlowingLine x1={570} y1={295} x2={520} y2={340} color="#ed8936" delay={2.4} />
+                    <FlowingLine x1={750} y1={275} x2={550} y2={340} color="#f56565" delay={2.8} />
+                    <FlowingLine x1={450} y1={150} x2={450} y2={340} color="#00d9ff" delay={0.2} />
+                    
+                    {/* Legend */}
+                    <rect x={30} y={420} width={180} height={80} rx={10} fill="#1a1a2e" stroke="#ffffff20" />
+                    <text x={120} y={442} textAnchor="middle" fill="#fff" fontSize="11" fontWeight="600">Agent Communication</text>
+                    <circle cx={50} cy={462} r={4} fill="#00d9ff" />
+                    <text x={65} y={466} fill="#a0aec0" fontSize="9">Task dispatch</text>
+                    <circle cx={50} cy={482} r={4} fill="#48bb78" />
+                    <text x={65} y={486} fill="#a0aec0" fontSize="9">Result return</text>
+                </svg>
+            );
+        }
+
+        // Tab 3: Sync Flow - Git synchronization
+        function SyncFlow() {
+            return (
+                <svg viewBox="0 0 900 480" style={{width: "100%", minWidth: 700, height: "auto"}}>
+                    <defs>
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#000" floodOpacity="0.3" />
+                        </filter>
+                        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                        </filter>
+                    </defs>
+                    
+                    {/* Mac Mini - Left */}
+                    <ArchNode x={50} y={140} w={180} h={130} title="Mac Mini" subtitle="Clawd Orchestrator" icon="🖥️" color="#667eea" glow={true} />
+                    <text x={140} y={290} textAnchor="middle" fill="#667eea" fontSize="10">~/clawd/</text>
+                    
+                    {/* GitHub - Center */}
+                    <circle cx={450} cy={205} r={70} fill="#1a1a2e" stroke="#ffffff" strokeWidth="2" filter="url(#shadow)" />
+                    <text x={450} y={195} textAnchor="middle" fontSize="40">🐙</text>
+                    <text x={450} y={230} textAnchor="middle" fill="#fff" fontSize="12" fontWeight="600">GitHub</text>
+                    <text x={450} y={248} textAnchor="middle" fill="#a0aec0" fontSize="9">tommieseals/clawd</text>
+                    
+                    {/* Dell - Right */}
+                    <ArchNode x={670} y={140} w={180} h={130} title="Dell" subtitle="Windows Workstation" icon="💻" color="#ed8936" glow={true} />
+                    <text x={760} y={290} textAnchor="middle" fill="#ed8936" fontSize="10">C:\Users\tommi\clawd\</text>
+                    
+                    {/* Mac Pro - Bottom */}
+                    <ArchNode x={360} y={350} w={180} h={110} title="Mac Pro" subtitle="Fort Knox • Backups" icon="🗄️" color="#48bb78" />
+                    <text x={450} y={475} textAnchor="middle" fill="#48bb78" fontSize="10">~/fort-knox/clawd/</text>
+                    
+                    {/* Git sync arrows */}
+                    <FlowingLine x1={230} y1={205} x2={380} y2={205} color="#48bb78" delay={0} bidirectional={true} />
+                    <FlowingLine x1={520} y1={205} x2={670} y2={205} color="#48bb78" delay={0.5} bidirectional={true} />
+                    <FlowingLine x1={450} y1={275} x2={450} y2={350} color="#48bb78" delay={1.0} bidirectional={true} />
+                    
+                    {/* Sync labels */}
+                    <rect x={270} y={175} width={70} height={24} rx={6} fill="#48bb7830" stroke="#48bb78" />
+                    <text x={305} y={191} textAnchor="middle" fill="#48bb78" fontSize="9" fontWeight="600">git push</text>
+                    
+                    <rect x={270} y={210} width={70} height={24} rx={6} fill="#3182ce30" stroke="#3182ce" />
+                    <text x={305} y={226} textAnchor="middle" fill="#3182ce" fontSize="9" fontWeight="600">git pull</text>
+                    
+                    <rect x={560} y={175} width={70} height={24} rx={6} fill="#48bb7830" stroke="#48bb78" />
+                    <text x={595} y={191} textAnchor="middle" fill="#48bb78" fontSize="9" fontWeight="600">git push</text>
+                    
+                    <rect x={560} y={210} width={70} height={24} rx={6} fill="#3182ce30" stroke="#3182ce" />
+                    <text x={595} y={226} textAnchor="middle" fill="#3182ce" fontSize="9" fontWeight="600">git pull</text>
+                    
+                    {/* File flow indicators */}
+                    <rect x={50} y={320} width={180} height={100} rx={10} fill="#0f3460" stroke="#667eea40" />
+                    <text x={140} y={345} textAnchor="middle" fill="#667eea" fontSize="10" fontWeight="600">📁 Local Changes</text>
+                    <text x={140} y={365} textAnchor="middle" fill="#a0aec0" fontSize="9">MEMORY.md</text>
+                    <text x={140} y={380} textAnchor="middle" fill="#a0aec0" fontSize="9">memory/*.md</text>
+                    <text x={140} y={395} textAnchor="middle" fill="#a0aec0" fontSize="9">TOOLS.md</text>
+                    
+                    <rect x={670} y={320} width={180} height={100} rx={10} fill="#0f3460" stroke="#ed893640" />
+                    <text x={760} y={345} textAnchor="middle" fill="#ed8936" fontSize="10" fontWeight="600">📁 Local Changes</text>
+                    <text x={760} y={365} textAnchor="middle" fill="#a0aec0" fontSize="9">dashboard/*.html</text>
+                    <text x={760} y={380} textAnchor="middle" fill="#a0aec0" fontSize="9">configs/*.json</text>
+                    <text x={760} y={395} textAnchor="middle" fill="#a0aec0" fontSize="9">scripts/*.py</text>
+                    
+                    {/* Cross-node sync */}
+                    <FlowingLine x1={140} y1={320} x2={360} y2={380} color="#667eea" delay={1.5} />
+                    <FlowingLine x1={760} y1={320} x2={540} y2={380} color="#ed8936" delay={2.0} />
+                    
+                    {/* Sync status */}
+                    <rect x={720} y={30} width={150} height={80} rx={10} fill="#1a1a2e" stroke="#48bb78" strokeWidth="2" />
+                    <text x={795} y={55} textAnchor="middle" fill="#48bb78" fontSize="11" fontWeight="700">✅ SYNC STATUS</text>
+                    <text x={795} y={75} textAnchor="middle" fill="#fff" fontSize="10">All nodes synced</text>
+                    <text x={795} y={93} textAnchor="middle" fill="#a0aec0" fontSize="9">Last: 2 min ago</text>
+                </svg>
+            );
+        }
+
+        function App() {
+            const [activeTab, setActiveTab] = useState("knowledge");
+            
+            const tabs = [
+                { id: "knowledge", label: "🧠 Knowledge Hub", component: KnowledgeHub, desc: "Central brain architecture with knowledge files" },
+                { id: "agents", label: "🤖 Agent Collaboration", component: AgentCollaboration, desc: "How agents share context and communicate" },
+                { id: "sync", label: "🔄 Sync Flow", component: SyncFlow, desc: "Git synchronization between all nodes" }
+            ];
+            
+            const ActiveDiagram = tabs.find(t => t.id === activeTab)?.component || KnowledgeHub;
+            const activeDesc = tabs.find(t => t.id === activeTab)?.desc || "";
+            
+            return (
+                <div className="container">
+                    <div className="page-header">
+                        <h2>🧠 Shared Brain Architecture</h2>
+                        <p>Multi-node knowledge synchronization and agent collaboration</p>
+                    </div>
+                    
+                    <div className="section-tabs">
+                        {tabs.map(tab => (
+                            <button 
+                                key={tab.id}
+                                className={"tab-btn " + (activeTab === tab.id ? "active" : "")}
+                                onClick={() => setActiveTab(tab.id)}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                    
+                    <div className="diagram-card">
+                        <div className="diagram-title">
+                            <h3>{tabs.find(t => t.id === activeTab)?.label}</h3>
+                            <p>{activeDesc}</p>
+                        </div>
+                        <div className="diagram-svg">
+                            <ActiveDiagram />
+                        </div>
+                    </div>
+                    
+                    <div className="status-grid">
+                        <div className="status-card">
+                            <h4>🧠 Brain Location</h4>
+                            <p className="value">Mac Pro</p>
+                            <p>100.101.89.80 • Fort Knox</p>
+                        </div>
+                        <div className="status-card">
+                            <h4>📂 Knowledge Files</h4>
+                            <p className="value">6 Active</p>
+                            <p>HOT • INDEX • CHANGELOG • MEMORY • AGENTS • TOOLS</p>
+                        </div>
+                        <div className="status-card">
+                            <h4>🔄 Sync Status</h4>
+                            <p className="value" style={{color: "#48bb78"}}>✅ Synced</p>
+                            <p>All 3 nodes in sync</p>
+                        </div>
+                        <div className="status-card">
+                            <h4>🤖 Active Agents</h4>
+                            <p className="value">4</p>
+                            <p>Main + 2 Sub + Admin</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+</body>
+</html>
+

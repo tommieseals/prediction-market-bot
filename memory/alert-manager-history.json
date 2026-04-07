@@ -1,0 +1,44 @@
+[
+    {
+        "action":  "fired",
+        "message":  "Ollama down on Mac-Mini",
+        "source":  "Service-Healer",
+        "timestamp":  "2026-03-13T09:06:19.5006910-05:00",
+        "key":  "service-healer-ollama-down-on-mac-mini",
+        "severity":  "critical"
+    },
+    {
+        "action":  "fired",
+        "message":  "Ollama down on Mac-Mini",
+        "source":  "Service-Healer",
+        "timestamp":  "2026-03-13T09:06:28.5186038-05:00",
+        "key":  "service-healer-ollama-down-on-mac-mini",
+        "severity":  "critical"
+    },
+    {
+        "action":  "fired",
+        "message":  "Mac-Pro unreachable",
+        "source":  "Tailscale",
+        "timestamp":  "2026-03-13T09:06:33.2977042-05:00",
+        "key":  "tailscale-mac-pro-unreachable",
+        "severity":  "warning"
+    },
+    {
+        "action":  "resolved",
+        "message":  "Ollama down on Mac-Mini",
+        "source":  "Service-Healer",
+        "timestamp":  "2026-03-13T09:06:44.9894068-05:00",
+        "duration":  "00:00:16.4708030",
+        "key":  "service-healer-ollama-down-on-mac-mini",
+        "severity":  "critical"
+    },
+    {
+        "action":  "resolved",
+        "message":  "Mac-Pro unreachable",
+        "source":  "Tailscale",
+        "timestamp":  "2026-03-13T09:07:36.0159940-05:00",
+        "duration":  "00:01:02.7182898",
+        "key":  "tailscale-mac-pro-unreachable",
+        "severity":  "warning"
+    }
+]

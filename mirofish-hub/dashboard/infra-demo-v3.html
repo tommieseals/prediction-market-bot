@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content=width=device-width, initial-scale=1.0>
+    <title>Infrastructure v3 Demo - Mermaid Flowcharts</title>
+    <script src=https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js></script>
+    <style>
+        :root {
+            --bg-deep-space: #0a0e17;
+            --bg-card: #0d1321;
+            --accent-cyan: #00ffff;
+            --accent-purple: #9d4edd;
+            --success-green: #00ff88;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Segoe UI, system-ui, sans-serif;
+            background: var(--bg-deep-space);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .demo-banner {
+            background: linear-gradient(90deg, #00ff88, #00d2ff);
+            color: #000;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        h1 {
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+        .section {
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .section-title {
+            color: var(--accent-cyan);
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+        }
+        .diagram-container {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .comparison > div {
+            background: rgba(0,255,255,0.05);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        .comparison h4 { color: var(--accent-cyan); margin-bottom: 0.5rem; }
+        .good { color: var(--success-green); }
+        .bad { color: #ff6b6b; }
+    </style>
+</head>
+<body>
+    <div class=demo-banner>
+        🎨 DEMO v3 - Using Mermaid.js for REAL flowcharts (like the original)
+    </div>
+    
+    <h1>🚀 Infrastructure Dashboard - Mermaid Approach</h1>
+    
+    <!-- Agent Architecture -->
+    <div class=section>
+        <div class=section-title>🤖 Agent Architecture</div>
+        <p style=color: var(--text-secondary); margin-bottom: 1rem;>
+            This is a REAL flowchart - you can trace the data flow from User → Gateway → Agents → Memory → Dashboard
+        </p>
+        <div class=diagram-container>
+            <div class=mermaid>
+graph TB
+    User[👤 Rusty] -->|Telegram| Gateway[Clawdbot Gateway]
+    
+    Gateway -->|spawns on startup| MainAgent[Main Agent<br/>Claude Opus 4.5]
+    Gateway -->|spawns on startup| AdminAgent[Admin Agent<br/>Security + Health Monitor]
+    
+    subgraph MainSession[Main Agent Session]
+        MainAgent -->|reads| Context[AGENTS.md<br/>SOUL.md<br/>USER.md<br/>MEMORY.md<br/>TOOLS.md]
+        MainAgent -->|conversation| User
+        MainAgent -->|heartbeat poll| HEARTBEAT[HEARTBEAT.md]
+        MainAgent -->|logs to| DailyLog[memory/2026-02-28.md]
+    end
+    
+    subgraph SubAgents[Sub-Agent Spawning]
+        MainAgent -->|sessions_spawn| Sub1[Sub-Agent<br/>Background Task]
+        MainAgent -->|sessions_spawn| Sub2[Sub-Agent<br/>Research Task]
+        Sub1 -->|result| MainAgent
+        Sub2 -->|result| MainAgent
+    end
+    
+    subgraph AdminTasks[Admin Agent Tasks]
+        AdminAgent -->|every 30 min| Health[Check System Health]
+        AdminAgent -->|every 30 min| Network[Check Network Status]
+        AdminAgent -->|2-4x daily| Security[Security Audit]
+        Health -->|writes| SM1[shared-memory/systems.json]
+        Network -->|writes| SM2[shared-memory/network.json]
+        Security -->|writes| AuditLog[memory/security-audit-*.md]
+    end
+    
+    SM1 -->|read by| Dashboard[Dashboard :8080]
+    SM2 -->|read by| Dashboard
+    
+    style Gateway fill:#667eea,color:#fff
+    style MainAgent fill:#3b82f6,color:#fff
+    style AdminAgent fill:#ef4444,color:#fff
+    style Sub1 fill:#8b5cf6,color:#fff
+    style Sub2 fill:#8b5cf6,color:#fff
+    style Dashboard fill:#f59e0b,color:#000
+            </div>
+        </div>
+    </div>
+
+    <!-- Node Topology -->
+    <div class=section>
+        <div class=section-title>🌐 Multi-Node Infrastructure</div>
+        <p style=color: var(--text-secondary); margin-bottom: 1rem;>
+            Shows how Mac Mini orchestrates to Mac Pro and Dell, with external API connections
+        </p>
+        <div class=diagram-container>
+            <div class=mermaid>
+graph TB
+    User[👤 Rusty] -->|Telegram| Gateway[LLM Gateway v2.0]
+    
+    subgraph MacMini[Mac Mini - Orchestrator - YOUR_SERVER_IP]
+        Gateway -->|task routing| Router{Smart Router}
+        Router -->|spawns| MainAgent[Clawdbot Main]
+        MainAgent -->|spawns| SubAgents[Sub-Agents]
+        Router -->|local fast| OllamaMini[Ollama<br/>qwen2.5:3b]
+        Watchdog[Watchdog<br/>Every 5 min] -.->|monitors| MacPro
+        Watchdog -.->|monitors| Dell
+        Watchdog -->|alerts| User
+        Dashboard[Dashboard :8080] -.->|reads| SharedMem[~/shared-memory/*.json]
+    end
+    
+    subgraph MacProNode[Mac Pro - Fort Knox - YOUR_SERVER_IP]
+        MacPro[Mac Pro<br/>✅ Operational]
+        OllamaPro[Ollama<br/>deepseek:6.7b]
+        FortKnox[Fort Knox<br/>Backup Archives]
+        SharedBrain[Shared Brain<br/>Knowledge Hub]
+        MacPro --> OllamaPro
+        MacPro --> FortKnox
+        MacPro --> SharedBrain
+    end
+    
+    subgraph DellNode[Dell - Workstation - YOUR_SERVER_IP]
+        Dell[Dell Windows 11<br/>Primary Workspace]
+        ClawdBot[Clawdbot<br/>Main Session]
+        ProjectVault[Project Vault<br/>Trading System]
+        Dell --> ClawdBot
+        Dell --> ProjectVault
+    end
+    
+    Router -->|heavy compute| MacPro
+    Router -->|failover| Dell
+    Router -->|vision| Kimi[Kimi K2.5<br/>NVIDIA API]
+    
+    Watchdog -->|SSH recovery| MacPro
+    
+    style Gateway fill:#667eea,color:#fff
+    style Router fill:#8b5cf6,color:#fff
+    style MainAgent fill:#3b82f6,color:#fff
+    style OllamaMini fill:#10b981,color:#fff
+    style OllamaPro fill:#10b981,color:#fff
+    style Watchdog fill:#f59e0b,color:#000
+    style Dashboard fill:#ec4899,color:#fff
+    style MacPro fill:#fbbf24,color:#000
+    style Dell fill:#3b82f6,color:#fff
+    style Kimi fill:#8b5cf6,color:#fff
+    style FortKnox fill:#10b981,color:#fff
+    style SharedBrain fill:#00d2ff,color:#000
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Flow -->
+    <div class=section>
+        <div class=section-title>📊 Data Flow & Memory</div>
+        <div class=diagram-container>
+            <div class=mermaid>
+graph LR
+    subgraph Input[User Input]
+        TG[Telegram Message] -->|webhook| Gateway[Gateway]
+    end
+    
+    subgraph Processing[Processing]
+        Gateway -->|spawns| Agent[Main Agent]
+        Agent -->|reads| Memory[MEMORY.md<br/>TOOLS.md<br/>AGENTS.md]
+        Agent -->|spawns| SubAgent[Sub-Agent]
+        Agent -->|queries| Ollama[Ollama Local]
+        Agent -->|API| External[Claude API]
+    end
+    
+    subgraph Output[Output & Logging]
+        Agent -->|writes| DailyLog[memory/YYYY-MM-DD.md]
+        Agent -->|replies| TG
+        SubAgent -->|result| Agent
+        AdminAgent[Admin Agent] -->|writes| SharedMem[shared-memory/*.json]
+    end
+    
+    subgraph Monitor[Monitoring]
+        SharedMem -->|read by| Dashboard[Dashboard]
+        Dashboard -->|serves| Browser[Browser :8080]
+    end
+    
+    style Gateway fill:#667eea,color:#fff
+    style Agent fill:#3b82f6,color:#fff
+    style SubAgent fill:#8b5cf6,color:#fff
+    style AdminAgent fill:#ef4444,color:#fff
+    style Dashboard fill:#f59e0b,color:#000
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison -->
+    <div class=section>
+        <div class=section-title>📋 Why This Works</div>
+        <div class=comparison>
+            <div>
+                <h4 class=bad>❌ My Previous Attempt (CSS boxes)</h4>
+                <ul style=list-style: none; line-height: 1.8;>
+                    <li>• Just colored boxes floating around</li>
+                    <li>• SVG lines that didnt connect properly</li>
+                    <li>• No actual flow you could trace</li>
+                    <li>• Pretty but useless</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class=good>✅ Mermaid.js (Original Approach)</h4>
+                <ul style=list-style: none; line-height: 1.8;>
+                    <li>• Real flowchart with proper arrows</li>
+                    <li>• Subgraphs group related items</li>
+                    <li>• You can trace User → Gateway → Agent → Memory</li>
+                    <li>• Same approach as the working original</li>
+                </ul>
+            </div>
+        </div>
+        <p style=margin-top: 1.5rem; color: var(--text-secondary);>
+            <strong>Next step:</strong> If this looks right, I will rebuild the main infrastructure.html using Mermaid diagrams + the dark theme styling.
+        </p>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: dark,
+            themeVariables: {
+                primaryColor: #3b82f6,
+                primaryTextColor: #fff,
+                primaryBorderColor: #667eea,
+                lineColor: #00ffff,
+                secondaryColor: #8b5cf6,
+                tertiaryColor: #10b981,
+                background: #0d1321,
+                mainBkg: #1a1a2e,
+                nodeBorder: #667eea
+            }
+        });
+    </script>
+</body>
+</html>
+ENDHTML
+
