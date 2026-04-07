@@ -23,7 +23,7 @@ from openclaw.config import Config
 
 logger = logging.getLogger("openclaw.dashboard")
 
-app = FastAPI(title="OpenClaw Anomaly Dashboard", version="1.0.0")
+app = FastAPI(title=f"{Config.BRAND_NAME} Dashboard", version="1.0.0")
 
 
 # ---------------------------------------------------------------------------
@@ -167,6 +167,14 @@ def _get_mission_state() -> dict | None:
         return None
 
 
+def _get_routing_summary() -> dict:
+    from openclaw.quota_ledger import QuotaLedger
+    try:
+        return QuotaLedger().get_routing_summary()
+    except Exception:
+        return {"providers": {}, "recent_decisions": [], "successful_providers": 0}
+
+
 # ---------------------------------------------------------------------------
 # Shared state for last heartbeat
 # ---------------------------------------------------------------------------
@@ -207,6 +215,7 @@ async def api_status():
     worker_count = await asyncio.to_thread(_get_worker_count)
     quarantine_count = await asyncio.to_thread(_count_quarantine)
     fitness_scores = await asyncio.to_thread(_get_fitness_scores)
+    routing_summary = await asyncio.to_thread(_get_routing_summary)
 
     variant = variant or {}
     budget = {}
@@ -258,7 +267,8 @@ async def api_status():
         },
         "quarantine_count": quarantine_count,
         "last_heartbeat": _last_heartbeat.get("timestamp") if _last_heartbeat else None,
-        "projects_tracked": len(json.loads(Config.PROJECT_ADAPTERS_PATH.read_text())) if Config.PROJECT_ADAPTERS_PATH.exists() else 0,
+        "projects_tracked": len(json.loads(Config.PROJECT_ADAPTERS_PATH.read_text(encoding="utf-8"))) if Config.PROJECT_ADAPTERS_PATH.exists() else 0,
+        "routing_summary": routing_summary,
     })
 
 
@@ -373,6 +383,7 @@ async def dashboard():
     quarantine_count = await asyncio.to_thread(_count_quarantine)
     fitness_scores = await asyncio.to_thread(_get_fitness_scores)
     stalled = await asyncio.to_thread(_get_stalled_projects)
+    routing_summary = await asyncio.to_thread(_get_routing_summary)
 
     variant = variant or {}
     generation = variant.get("generation", 0)
@@ -454,6 +465,16 @@ async def dashboard():
     if not rows_html:
         rows_html = '<tr><td colspan="4" style="color:#555;text-align:center">No audit entries yet</td></tr>'
 
+    provider_rows = ""
+    for provider, stats in sorted(routing_summary.get("providers", {}).items()):
+        provider_rows += (
+            f'<div class="kv"><span class="label">{escape(provider)}</span>'
+            f'<span class="value">{stats.get("successes", 0)}/{stats.get("requests", 0)} ok '
+            f'via {escape(str(stats.get("last_model", "--")))}</span></div>'
+        )
+    if not provider_rows:
+        provider_rows = '<div style="color:#555">No routing decisions recorded yet</div>'
+
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
     html = f"""<!DOCTYPE html>
@@ -461,11 +482,11 @@ async def dashboard():
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OpenClaw Anomaly Dashboard</title>
+<title>{Config.BRAND_NAME} Dashboard</title>
 <style>{_CSS}</style>
 </head>
 <body>
-<h1>OpenClaw Anomaly Dashboard</h1>
+<h1>{Config.BRAND_NAME} Dashboard</h1>
 <div class="subtitle">Generation {generation} &middot; {now_str} &middot; <a href="/api/status">/api/status</a></div>
 
 <div class="grid">
@@ -503,6 +524,13 @@ async def dashboard():
     <div class="kv"><span class="label">Quarantined Variants</span><span class="value">{quarantine_count}</span></div>
   </div>
 
+  <!-- Routing Card -->
+  <div class="card">
+    <h2>Model Routing</h2>
+    <div class="kv"><span class="label">Healthy Providers</span><span class="value">{routing_summary.get("successful_providers", 0)}</span></div>
+    {provider_rows}
+  </div>
+
   <!-- Stalled Projects Card -->
   <div class="card">
     <h2>Stalled Projects (&ge;3d idle)</h2>
@@ -527,7 +555,7 @@ async def dashboard():
   </div>
 </div>
 
-<div class="footer">OpenClaw Anomaly v1 &middot; port {Config.DASHBOARD_PORT} &middot; <a href="/api/status">JSON API</a></div>
+<div class="footer">{Config.BRAND_NAME} v2 &middot; port {Config.DASHBOARD_PORT} &middot; <a href="/api/status">JSON API</a></div>
 </body>
 </html>"""
 

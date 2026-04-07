@@ -4,10 +4,16 @@ All paths, constants, weights, and deployment topology.
 """
 from __future__ import annotations
 
+import os
+import platform
 from pathlib import Path
 
 
 class Config:
+    BRAND_NAME = "Anomaly Bot"
+    BRAND_CODE_NAME = "OpenClaw Anomaly"
+    BRAND_SKILL_NAME = "anomaly-bot"
+
     # -- Paths ----------------------------------------------------------------
     BASE_DIR = Path(__file__).resolve().parent          # openclaw/
     WORKSPACE_DIR = BASE_DIR.parent                     # clawd/
@@ -48,8 +54,13 @@ class Config:
 
     # -- Network / Ports ------------------------------------------------------
     DASHBOARD_PORT = 5201
-    CLAWDBOT_GATEWAY_PORT = 18789
-    CLAWDBOT_GATEWAY_HOST = "100.88.105.106"  # Tom / Mac Mini (where ClawdBot gateway runs)
+    CLAWDBOT_GATEWAY_PORT = 18790
+    CLAWDBOT_GATEWAY_HOST = "100.89.75.126"  # Jarvis / Mac Pro (merged sovereign runtime)
+    CLAWDBOT_PRIMARY_AGENT = "main"
+    JARVIS_HOST = "100.89.75.126"
+    TOM_HOST = "100.88.105.106"
+    RTX_HOST = "100.115.12.91"
+    OLLAMA_PORT = 11434
 
     # -- Jarvis Super-Agent Topology ------------------------------------------
     OGE_CONTROLLER = "jarvis"
@@ -146,6 +157,213 @@ class Config:
 
     # -- Quota / Model --------------------------------------------------------
     UNUSED_QUOTA_ALERT_THRESHOLD = 0.30  # alert if >30% remaining
+    FREE_QUOTA_BURN_THRESHOLD = 0.30
+
+    ROUTE_COST_ORDER = {
+        "free": 0,
+        "mixed": 1,
+        "paid": 2,
+    }
+
+    MODEL_PROVIDER_ENV_VARS = {
+        "gemini_flash": "GOOGLE_API_KEY",
+        "kimi_nvidia": "NVIDIA_API_KEY",
+        "perplexity": "PERPLEXITY_API_KEY",
+        "openrouter": "OPENROUTER_API_KEY",
+        "openai_mini": "OPENAI_API_KEY",
+        "openai_codex": "OPENAI_API_KEY",
+        "anthropic": "ANTHROPIC_API_KEY",
+    }
+
+    MODEL_PROVIDER_CATALOG = {
+        "ollama_local_fast": {
+            "provider": "ollama",
+            "machine": "local",
+            "host": "127.0.0.1",
+            "port": OLLAMA_PORT,
+            "model": "qwen3:4b",
+            "cost_tier": "free",
+            "quality": "fast",
+        },
+        "ollama_local_reasoning": {
+            "provider": "ollama",
+            "machine": "local",
+            "host": "127.0.0.1",
+            "port": OLLAMA_PORT,
+            "model": "gemma4:e4b",
+            "cost_tier": "free",
+            "quality": "standard",
+        },
+        "ollama_tom_reasoning": {
+            "provider": "ollama",
+            "machine": "tom",
+            "host": TOM_HOST,
+            "port": OLLAMA_PORT,
+            "model": "gemma4:e4b",
+            "cost_tier": "free",
+            "quality": "standard",
+        },
+        "ollama_tom_fast": {
+            "provider": "ollama",
+            "machine": "tom",
+            "host": TOM_HOST,
+            "port": OLLAMA_PORT,
+            "model": "qwen3:4b",
+            "cost_tier": "free",
+            "quality": "fast",
+        },
+        "ollama_jarvis_reasoning": {
+            "provider": "ollama",
+            "machine": "jarvis",
+            "host": JARVIS_HOST,
+            "port": OLLAMA_PORT,
+            "model": "qwen2.5:14b",
+            "cost_tier": "free",
+            "quality": "high",
+        },
+        "ollama_jarvis_backup": {
+            "provider": "ollama",
+            "machine": "jarvis",
+            "host": JARVIS_HOST,
+            "port": OLLAMA_PORT,
+            "model": "qwen2.5:7b",
+            "cost_tier": "free",
+            "quality": "standard",
+        },
+        "clawdbot_gateway": {
+            "provider": "clawdbot",
+            "machine": "jarvis",
+            "host": CLAWDBOT_GATEWAY_HOST,
+            "port": CLAWDBOT_GATEWAY_PORT,
+            "model": "clawdbot-managed",
+            "cost_tier": "mixed",
+            "quality": "managed",
+        },
+        "gemini_flash": {
+            "provider": "gemini",
+            "machine": "api",
+            "model": "gemini-flash",
+            "cost_tier": "free",
+            "quality": "standard",
+            "execution": "inventory_only",
+        },
+        "kimi_nvidia": {
+            "provider": "nvidia",
+            "machine": "api",
+            "model": "kimi-2.5",
+            "cost_tier": "free",
+            "quality": "high",
+            "execution": "inventory_only",
+        },
+        "perplexity_search": {
+            "provider": "perplexity",
+            "machine": "api",
+            "model": "search",
+            "cost_tier": "free",
+            "quality": "high",
+            "execution": "inventory_only",
+        },
+        "openrouter_fallback": {
+            "provider": "openrouter",
+            "machine": "api",
+            "model": "router",
+            "cost_tier": "mixed",
+            "quality": "standard",
+            "execution": "inventory_only",
+        },
+        "openai_mini": {
+            "provider": "openai",
+            "machine": "api",
+            "model": "gpt-4o-mini",
+            "cost_tier": "paid",
+            "quality": "high",
+            "execution": "inventory_only",
+        },
+        "openai_codex": {
+            "provider": "openai",
+            "machine": "api",
+            "model": "gpt-5.2-codex",
+            "cost_tier": "paid",
+            "quality": "high",
+            "execution": "inventory_only",
+        },
+        "anthropic_strategic": {
+            "provider": "anthropic",
+            "machine": "api",
+            "model": "claude",
+            "cost_tier": "paid",
+            "quality": "high",
+            "execution": "inventory_only",
+        },
+    }
+
+    TASK_ROUTE_PREFERENCES = {
+        "general": [
+            "ollama_local_reasoning",
+            "ollama_tom_reasoning",
+            "ollama_jarvis_backup",
+            "clawdbot_gateway",
+        ],
+        "monitoring": [
+            "ollama_local_reasoning",
+            "ollama_tom_reasoning",
+            "ollama_local_fast",
+            "ollama_tom_fast",
+            "ollama_jarvis_backup",
+        ],
+        "health_check": [
+            "ollama_local_fast",
+            "ollama_tom_fast",
+            "ollama_jarvis_backup",
+        ],
+        "analysis": [
+            "ollama_local_reasoning",
+            "ollama_jarvis_reasoning",
+            "ollama_tom_reasoning",
+            "clawdbot_gateway",
+        ],
+        "self_thought": [
+            "ollama_local_reasoning",
+            "ollama_tom_reasoning",
+            "ollama_jarvis_reasoning",
+            "clawdbot_gateway",
+        ],
+        "research": [
+            "clawdbot_gateway",
+            "ollama_jarvis_reasoning",
+            "ollama_local_reasoning",
+        ],
+        "code": [
+            "clawdbot_gateway",
+            "ollama_jarvis_reasoning",
+            "ollama_local_reasoning",
+        ],
+        "strategic": [
+            "clawdbot_gateway",
+            "ollama_jarvis_reasoning",
+            "ollama_local_reasoning",
+        ],
+        "absorption": [
+            "ollama_tom_reasoning",
+            "ollama_local_reasoning",
+            "clawdbot_gateway",
+        ],
+        "parallel_overflow": [
+            "ollama_tom_reasoning",
+            "ollama_local_reasoning",
+            "ollama_jarvis_backup",
+        ],
+        "morning_pulse": [
+            "ollama_local_reasoning",
+            "ollama_tom_reasoning",
+            "ollama_local_fast",
+        ],
+        "stalled_followup": [
+            "ollama_tom_reasoning",
+            "ollama_local_reasoning",
+            "ollama_jarvis_backup",
+        ],
+    }
 
     # -- Retention ------------------------------------------------------------
     RETENTION_COMPACT_DAYS = 90
@@ -157,11 +375,75 @@ class Config:
     @classmethod
     def get_principal_id(cls) -> str | None:
         if cls.PRINCIPAL_ID_PATH.exists():
-            return cls.PRINCIPAL_ID_PATH.read_text().strip()
+            return cls.PRINCIPAL_ID_PATH.read_text(encoding="utf-8").strip()
         return None
 
     @classmethod
     def get_install_id(cls) -> str | None:
         if cls.INSTALL_ID_PATH.exists():
-            return cls.INSTALL_ID_PATH.read_text().strip()
+            return cls.INSTALL_ID_PATH.read_text(encoding="utf-8").strip()
         return None
+
+    @classmethod
+    def get_provider_env_var(cls, provider_id: str) -> str | None:
+        return cls.MODEL_PROVIDER_ENV_VARS.get(provider_id)
+
+    @classmethod
+    def provider_is_configured(cls, provider_id: str) -> bool:
+        env_var = cls.get_provider_env_var(provider_id)
+        return bool(env_var and os.getenv(env_var))
+
+    @classmethod
+    def get_runtime_machine(cls) -> str:
+        explicit = os.getenv("OGE_RUNTIME_MACHINE")
+        if explicit in {"jarvis", "tom", "rtx"}:
+            return explicit
+        if platform.system() == "Windows":
+            return "rtx"
+        return "jarvis"
+
+    @classmethod
+    def get_local_ollama_profile(cls) -> dict[str, str | int]:
+        runtime = cls.get_runtime_machine()
+        if runtime == "jarvis":
+            return {
+                "machine": "jarvis",
+                "host": "127.0.0.1",
+                "reasoning_model": "qwen2.5:14b",
+                "fast_model": "qwen2.5:7b",
+                "embeddings_model": "nomic-embed-text",
+                "port": cls.OLLAMA_PORT,
+            }
+        if runtime == "tom":
+            return {
+                "machine": "tom",
+                "host": "127.0.0.1",
+                "reasoning_model": "gemma4:e4b",
+                "fast_model": "qwen3:4b",
+                "embeddings_model": "nomic-embed-text",
+                "port": cls.OLLAMA_PORT,
+            }
+        return {
+            "machine": "rtx",
+            "host": "127.0.0.1",
+            "reasoning_model": "gemma4:e4b",
+            "fast_model": "qwen3:4b",
+            "embeddings_model": "nomic-embed-text",
+            "port": cls.OLLAMA_PORT,
+        }
+
+    @classmethod
+    def get_telegram_delivery_mode(cls) -> str:
+        mode = os.getenv("OGE_TELEGRAM_DELIVERY_MODE", "direct").strip().lower()
+        if mode in {"direct", "gateway", "auto"}:
+            return mode
+        return "direct"
+
+    @classmethod
+    def get_telegram_gateway_send_path(cls) -> str | None:
+        raw = os.getenv("OGE_GATEWAY_SEND_PATH", "").strip()
+        if not raw:
+            return None
+        if raw.startswith("/"):
+            return raw
+        return f"/{raw}"

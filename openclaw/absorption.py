@@ -196,7 +196,7 @@ def absorption_scan() -> dict:
                 "content_hash": finding.get("content_hash", ""),
             }
             try:
-                with open(Config.TRADER_MEMORY_PATH, "a") as f:
+                with open(Config.TRADER_MEMORY_PATH, "a", encoding="utf-8") as f:
                     f.write(json.dumps(entry) + "\n")
             except OSError:
                 pass

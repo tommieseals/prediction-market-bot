@@ -1,0 +1,46 @@
+You are auditing a live incremental integration in `C:\Users\User\clawd\openclaw`.
+
+Goal:
+Review the new Anomaly Bot router/dashboard/quota work and the Jarvis-first merge pivot without duplicating or reverting anything.
+
+Important:
+- You are not alone in the codebase.
+- Do not revert existing edits.
+- Prefer read-only verification.
+- If you patch anything, keep your write scope narrow and list the files you changed.
+
+Primary files to inspect:
+- `C:\Users\User\clawd\openclaw\model_router.py`
+- `C:\Users\User\clawd\openclaw\main.py`
+- `C:\Users\User\clawd\openclaw\config.py`
+- `C:\Users\User\clawd\openclaw\quota_ledger.py`
+- `C:\Users\User\clawd\openclaw\dashboard.py`
+- `C:\Users\User\clawd\openclaw\jarvis_merge_check.py`
+- `C:\Users\User\clawd\openclaw\jarvis_task_runner.sh`
+- `C:\Users\User\clawd\openclaw\jarvis_setup_launchd.sh`
+- `C:\Users\User\clawd\openclaw\tests\test_model_router.py`
+- `C:\Users\User\clawd\openclaw\tests\test_quota_ledger.py`
+
+What to verify:
+1. `main._llm_call()` now routes through `ModelRouter` instead of hand-rolled fallback logic.
+2. Free local Ollama routes are preferred for low-cost tasks.
+3. Mixed-cost fallback to Clawdbot still exists when free routes fail.
+4. Routing telemetry is stored in `keys_ledger.json` and visible through dashboard/API.
+5. Primary control-plane assumptions now point at Jarvis (`100.89.75.126:18790`) rather than Tom.
+6. Local route resolution maps correctly when runtime machine is Jarvis.
+7. No destructive rollback commands were added.
+8. Branding changes are user-facing only and do not rename code directories.
+
+Suggested commands:
+- `python -m py_compile C:\Users\User\clawd\openclaw\config.py C:\Users\User\clawd\openclaw\model_router.py C:\Users\User\clawd\openclaw\quota_ledger.py C:\Users\User\clawd\openclaw\dashboard.py C:\Users\User\clawd\openclaw\main.py`
+- `pytest -q C:\Users\User\clawd\openclaw\tests\test_model_router.py C:\Users\User\clawd\openclaw\tests\test_quota_ledger.py C:\Users\User\clawd\openclaw\tests\test_main_runtime_helpers.py`
+- `python -c "from openclaw.model_router import ModelRouter; import json; print(json.dumps(ModelRouter().routing_report(), indent=2)[:1200])"`
+
+Report format:
+- Findings first, ordered by severity.
+- Include exact file references and line numbers.
+- If no issues are found, say that explicitly and note any residual risks.
+
+Optional isolated sidecar task:
+- If you want to contribute a non-overlapping improvement, add only dashboard/API tests in a new file under `C:\Users\User\clawd\openclaw\tests\`.
+- Do not modify `main.py`, `model_router.py`, `config.py`, or `quota_ledger.py` for that sidecar task.

@@ -22,7 +22,7 @@ class MemoryManager:
         if not self.core_path.exists():
             return {}
         try:
-            return json.loads(self.core_path.read_text())
+            return json.loads(self.core_path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             return {}
 
@@ -31,7 +31,7 @@ class MemoryManager:
         core[key] = value
         core["updated_at"] = datetime.now(timezone.utc).isoformat()
         tmp = self.core_path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(core, indent=2))
+        tmp.write_text(json.dumps(core, indent=2, ensure_ascii=False), encoding="utf-8")
         os.replace(str(tmp), str(self.core_path))
 
     def promote_to_core(self, key: str, value: str) -> None:
@@ -43,7 +43,7 @@ class MemoryManager:
             del core[key]
             core["updated_at"] = datetime.now(timezone.utc).isoformat()
             tmp = self.core_path.with_suffix(".tmp")
-            tmp.write_text(json.dumps(core, indent=2))
+            tmp.write_text(json.dumps(core, indent=2, ensure_ascii=False), encoding="utf-8")
             os.replace(str(tmp), str(self.core_path))
 
     def get_recall(self, limit: int | None = None) -> list[dict]:
@@ -52,7 +52,7 @@ class MemoryManager:
             return []
         entries = []
         try:
-            with open(self.recall_path, "r") as f:
+            with open(self.recall_path, "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if line:
@@ -98,7 +98,7 @@ class MemoryManager:
         for p in self.archival_paths:
             if p.exists():
                 try:
-                    with open(p, "r") as f:
+                    with open(p, "r", encoding="utf-8") as f:
                         archival_count += sum(1 for line in f if line.strip())
                 except OSError:
                     pass
@@ -121,7 +121,7 @@ def retrieve_relevant_memory(query: str, top_k: int = 5) -> list[dict]:
         if not path.exists():
             continue
         try:
-            with open(path, "r") as f:
+            with open(path, "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if line:

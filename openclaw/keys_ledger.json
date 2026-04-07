@@ -3,7 +3,10 @@
     {
       "provider": "openai",
       "key_id_label": "openai_codex_primary",
-      "scope": ["clawdbot_gateway", "all_agents"],
+      "scope": [
+        "clawdbot_gateway",
+        "all_agents"
+      ],
       "last_used": null,
       "usage_today_tokens": 0,
       "usage_today_requests": 0,
@@ -15,7 +18,10 @@
     {
       "provider": "openai",
       "key_id_label": "openai_mini",
-      "scope": ["interview_agent", "meta_jarvis"],
+      "scope": [
+        "interview_agent",
+        "meta_jarvis"
+      ],
       "last_used": null,
       "usage_today_tokens": 0,
       "usage_today_requests": 0,
@@ -27,10 +33,13 @@
     {
       "provider": "ollama",
       "key_id_label": "ollama_qwen2.5:7b",
-      "scope": ["jarvis_local", "proactive_cycle"],
-      "last_used": null,
-      "usage_today_tokens": 0,
-      "usage_today_requests": 0,
+      "scope": [
+        "jarvis_local",
+        "proactive_cycle"
+      ],
+      "last_used": "2026-04-06T23:31:42.233096+00:00",
+      "usage_today_tokens": 54,
+      "usage_today_requests": 1,
       "daily_limit_tokens": null,
       "daily_limit_requests": null,
       "status": "active",
@@ -39,7 +48,10 @@
     {
       "provider": "ollama",
       "key_id_label": "ollama_qwen2.5:14b",
-      "scope": ["jarvis_local", "deep_reasoning"],
+      "scope": [
+        "jarvis_local",
+        "deep_reasoning"
+      ],
       "last_used": null,
       "usage_today_tokens": 0,
       "usage_today_requests": 0,
@@ -48,5 +60,65 @@
       "status": "active",
       "notes": "Local Ollama on Jarvis. Heavier model for complex tasks."
     }
-  ]
+  ],
+  "routing": {
+    "current_day": "2026-04-06",
+    "providers": {
+      "ollama": {
+        "requests": 3,
+        "successes": 1,
+        "failures": 2,
+        "last_model": "qwen2.5:7b",
+        "last_route_id": "ollama_jarvis_backup",
+        "last_task_type": "health_check",
+        "last_latency_ms": 7296,
+        "last_used": "2026-04-06T23:31:42.224202+00:00",
+        "cost_tier": "free"
+      }
+    },
+    "recent_decisions": [
+      {
+        "timestamp": "2026-04-06T23:31:26.851272+00:00",
+        "provider": "ollama",
+        "model": "qwen3:4b",
+        "task_type": "health_check",
+        "route_id": "ollama_local_fast",
+        "cost_tier": "free",
+        "success": false,
+        "latency_ms": 4371,
+        "details": {
+          "machine": "local",
+          "error": "Ollama route ollama_local_fast returned empty text"
+        }
+      },
+      {
+        "timestamp": "2026-04-06T23:31:34.914367+00:00",
+        "provider": "ollama",
+        "model": "qwen3:4b",
+        "task_type": "health_check",
+        "route_id": "ollama_tom_fast",
+        "cost_tier": "free",
+        "success": false,
+        "latency_ms": 8056,
+        "details": {
+          "machine": "tom",
+          "error": "HTTPConnectionPool(host='100.88.105.106', port=11434): Read timed out. (read timeout=8)"
+        }
+      },
+      {
+        "timestamp": "2026-04-06T23:31:42.224202+00:00",
+        "provider": "ollama",
+        "model": "qwen2.5:7b",
+        "task_type": "health_check",
+        "route_id": "ollama_jarvis_backup",
+        "cost_tier": "free",
+        "success": true,
+        "latency_ms": 7296,
+        "details": {
+          "machine": "jarvis",
+          "reason": "Burn free local/mesh capacity first for health_check."
+        }
+      }
+    ]
+  }
 }

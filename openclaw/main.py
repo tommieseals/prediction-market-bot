@@ -12,7 +12,10 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import shutil
+import subprocess
 import sys
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -34,7 +37,7 @@ def _audit(event: str, details: dict | None = None) -> None:
         **(details or {}),
     }
     try:
-        with open(Config.PAPERCLIP_AUDIT_PATH, "a") as f:
+        with open(Config.PAPERCLIP_AUDIT_PATH, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry) + "\n")
     except OSError:
         log.warning("Failed to write audit entry")
@@ -46,42 +49,67 @@ def _telegram_send(message: str) -> None:
     _audit("telegram_send", {"message": message[:500]})
 
     CHAT_ID = 939543801  # Rusty's Telegram user ID
+    mode = Config.get_telegram_delivery_mode()
 
-    # Try 1: ClawdBot gateway API (preferred — handles formatting/chunking)
+    if mode in {"gateway", "auto"} and _send_via_gateway(message, CHAT_ID):
+        return
+
+    if not _send_via_direct_api(message, CHAT_ID):
+        log.warning("Telegram delivery unavailable: no successful delivery strategy")
+
+
+def _send_via_gateway(message: str, chat_id: int) -> bool:
+    """Optionally send via an explicit ClawdBot delivery endpoint."""
+    gateway_path = Config.get_telegram_gateway_send_path()
+    if not gateway_path:
+        if Config.get_telegram_delivery_mode() == "gateway":
+            log.warning("Gateway delivery requested but OGE_GATEWAY_SEND_PATH is not configured")
+        return False
+
     try:
         import requests as _req
+
         gateway_token = _read_gateway_token()
-        if gateway_token:
-            resp = _req.post(
-                f"http://{Config.CLAWDBOT_GATEWAY_HOST}:{Config.CLAWDBOT_GATEWAY_PORT}/hooks/agent",
-                json={
-                    "message": message[:4000],
-                    "channel": "telegram",
-                    "to": str(CHAT_ID),
-                    "deliver": True,
-                },
-                headers={"Authorization": f"Bearer {gateway_token}"},
-                timeout=10,
-            )
-            if resp.status_code == 200:
-                return
-            log.warning(f"Gateway send failed ({resp.status_code}), falling back to direct API")
-    except Exception as e:
-        log.warning(f"Gateway unavailable: {e}, falling back to direct API")
+        if not gateway_token:
+            log.warning("Gateway delivery requested but no gateway auth token is available")
+            return False
 
-    # Try 2: Direct Telegram Bot API (fallback)
+        resp = _req.post(
+            f"http://{Config.CLAWDBOT_GATEWAY_HOST}:{Config.CLAWDBOT_GATEWAY_PORT}{gateway_path}",
+            json={
+                "message": message[:4000],
+                "channel": "telegram",
+                "to": str(chat_id),
+                "deliver": True,
+            },
+            headers={"Authorization": f"Bearer {gateway_token}"},
+            timeout=10,
+        )
+        if resp.status_code == 200:
+            return True
+        log.warning(f"Gateway send failed ({resp.status_code}) via {gateway_path}")
+    except Exception as e:
+        log.warning(f"Gateway unavailable: {e}")
+    return False
+
+
+def _send_via_direct_api(message: str, chat_id: int) -> bool:
+    """Send directly to Telegram Bot API using the configured bot token."""
     try:
         import requests as _req
+
         bot_token = _read_bot_token()
-        if bot_token:
-            _req.post(
-                f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                json={"chat_id": CHAT_ID, "text": message[:4000], "parse_mode": "HTML"},
-                timeout=10,
-            )
+        if not bot_token:
+            return False
+        _req.post(
+            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+            json={"chat_id": chat_id, "text": message[:4000], "parse_mode": "HTML"},
+            timeout=10,
+        )
+        return True
     except Exception as e:
         log.warning(f"Telegram direct API failed: {e}")
-
+        return False
 
 def _read_gateway_token() -> str | None:
     """Read gateway auth token from clawdbot.json (read-only)."""
@@ -107,59 +135,68 @@ def _read_bot_token() -> str | None:
     return None
 
 
-def _llm_call(prompt: str, model: str | None = None) -> str:
-    """Call LLM via local Ollama or Telegram Bot API for self-thought.
-
-    Priority:
-    1. Local Ollama on Jarvis (qwen2.5:14b) — fast, free, private
-    2. Fallback: stub response if nothing available
-
-    All LLM calls wrapped in try/except for graceful degradation.
-    """
-    log.info(f"[LLM] Prompt: {prompt[:100]}...")
+def _llm_call(
+    prompt: str,
+    model: str | None = None,
+    timeout_seconds: int = 45,
+    task_type: str = "general",
+    max_cost: str = "free",
+    quality: str = "standard",
+) -> str:
+    """Route LLM work through the verified model router."""
+    log.info(f"[LLM/{task_type}] Prompt: {prompt[:100]}...")
     try:
-        import requests as _req
+        from openclaw.model_router import ModelRouter
 
-        # Try local Ollama first (Jarvis has qwen2.5:7b for speed)
-        ollama_model = model or "qwen2.5:7b"
-        # Truncate long prompts and cap output to prevent timeouts
-        truncated_prompt = prompt[:2000] if len(prompt) > 2000 else prompt
-        resp = _req.post(
-            "http://localhost:11434/api/generate",
-            json={
-                "model": ollama_model,
-                "prompt": truncated_prompt,
-                "stream": False,
-                "options": {"num_predict": 300},  # cap response length
-            },
-            timeout=90,
+        router = ModelRouter()
+        routed = router.route_with_metadata(
+            prompt=prompt,
+            task_type=task_type,
+            max_cost=max_cost,
+            quality=quality,
+            model=model,
+            timeout_seconds=timeout_seconds,
         )
-        if resp.status_code == 200:
-            data = resp.json()
-            response = data.get("response", "")
-            if response:
-                # Track token usage in quota ledger
-                try:
-                    from openclaw.quota_ledger import QuotaLedger
-                    tokens = data.get("eval_count", 0) + data.get("prompt_eval_count", 0)
-                    QuotaLedger().record_usage_event(
-                        provider="ollama",
-                        key_label=f"ollama_{ollama_model}",
-                        tokens_used=tokens,
-                        requests_used=1,
-                    )
-                except Exception:
-                    pass
-                return response
-        log.warning(f"Ollama returned {resp.status_code}")
+        decision = routed.get("decision", {})
+        _audit(
+            "llm_route",
+            {
+                "task_type": task_type,
+                "provider": decision.get("provider"),
+                "model": decision.get("model"),
+                "route_id": decision.get("route_id"),
+                "cost_tier": decision.get("cost_tier"),
+            },
+        )
+        return routed["text"]
     except Exception as e:
-        log.warning(f"Ollama unavailable: {e}")
-
-    # Fallback: stub
-    return f"[LLM unavailable — stub for: {prompt[:80]}]"
+        log.warning(f"ModelRouter unavailable: {e}")
+        return f"[LLM unavailable - stub for: {prompt[:80]}]"
 
 
-# ─── Fitness Helpers ──────────────────────────────────────────────────────
+def _normalize_prompt(prompt: str, max_chars: int) -> str:
+    """Collapse noisy whitespace so shell handoff stays stable on Windows."""
+    compact = " ".join(prompt.split())
+    return compact[:max_chars] if len(compact) > max_chars else compact
+
+
+def _extract_json_payload(raw: str | None) -> dict | None:
+    """Parse JSON even if banner or warning text surrounds the payload."""
+    if not raw:
+        return None
+    cleaned = raw.lstrip("\ufeff\r\n\t ")
+    candidates = [cleaned]
+    first = cleaned.find("{")
+    last = cleaned.rfind("}")
+    if first != -1 and last != -1 and last > first:
+        candidates.append(cleaned[first:last + 1])
+    for candidate in candidates:
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+    return None
+
 
 def _compute_user_alignment() -> float:
     """Compute user alignment from recent corrections.
@@ -205,16 +242,27 @@ def run_proactive_cycle() -> dict:
     from openclaw.project_health import ProjectHealth
     from openclaw.memory_manager import MemoryManager, retrieve_relevant_memory
     from openclaw.mission_manager import MissionManager
+    from openclaw.model_router import ModelRouter
     from openclaw.worker_manager import WorkerManager
+    from openclaw.remote_exec import RemoteExec
     from openclaw.env_health import EnvHealth
     from openclaw.recurrence_engine import RecurrenceEngine
     from openclaw.source_registry import SourceRegistry
     from openclaw.model_registry import ModelRegistry
     from openclaw.quota_ledger import QuotaLedger
     from openclaw.shadow_replay import ShadowReplay
+    from openclaw.autonomy_planner import (
+        build_action_queue,
+        format_action_queue,
+        load_project_adapters,
+        queue_next_focus_mission,
+    )
+    from openclaw.autonomy_executor import execute_safe_first_step
 
     sm = StateMachine()
     mm = MissionManager()
+    wm = WorkerManager()
+    rx = RemoteExec()
     results = {"steps_completed": 0, "errors": [], "fitness": 0.0}
 
     # Initialize variables that may be referenced in later steps
@@ -226,14 +274,46 @@ def run_proactive_cycle() -> dict:
     open_incidents = []
     mem_stats = {}
     core = {}
+    action_queue = []
+    adapters = {}
+    worker_activity = []
+    focus_mission = None
+    cycle_owns_mission = False
+    preserved_focus_mission = None
 
     try:
         # Step 1: Acquire run_lock + transition
         log.info("Step 1: Acquiring run lock...")
         with RunLock("proactive_cycle"):
+            if sm.get_state() == AgentState.PROACTIVE_CYCLE:
+                log.warning("Recovered stale proactive_cycle state before starting a new cycle.")
+                sm.force_state(AgentState.IDLE)
+                _audit("state_recovered", {"from": "proactive_cycle", "to": "idle"})
             sm.transition(AgentState.PROACTIVE_CYCLE)
-            mm.enqueue_mission("proactive_cycle", "22-step proactive cycle")
-            mm.start_mission()
+            existing_mission = mm.get_active_mission()
+            if (
+                existing_mission
+                and existing_mission.get("mission_id")
+                and existing_mission.get("mission_id") != "proactive_cycle"
+                and existing_mission.get("state") in ("queued", "active", "blocked", "waiting")
+            ):
+                preserved_focus_mission = existing_mission
+                focus_mission = existing_mission
+                log.info(
+                    "Preserving existing focus mission during proactive cycle: %s",
+                    existing_mission.get("mission_id"),
+                )
+                _audit(
+                    "focus_preserved",
+                    {
+                        "mission_id": existing_mission.get("mission_id"),
+                        "state": existing_mission.get("state"),
+                    },
+                )
+            else:
+                mm.enqueue_mission("proactive_cycle", "22-step proactive cycle")
+                mm.start_mission()
+                cycle_owns_mission = True
 
             # Step 2: Loyalty gate
             log.info("Step 2: Loyalty gate...")
@@ -241,11 +321,13 @@ def run_proactive_cycle() -> dict:
             if not ok:
                 results["errors"].append(f"Loyalty failed: {msg}")
                 _telegram_send(f"LOYALTY FAILED: {msg}")
-                mm.mark_failed(f"Loyalty: {msg}")
+                if cycle_owns_mission:
+                    mm.mark_failed(f"Loyalty: {msg}")
                 sm.transition(AgentState.IDLE)
                 return results
             results["steps_completed"] = 2
-            mm.checkpoint("loyalty_gate")
+            if cycle_owns_mission:
+                mm.checkpoint("loyalty_gate")
 
             # Step 3: Load genome + conditional assembler
             log.info("Step 3: Loading genome...")
@@ -286,7 +368,8 @@ def run_proactive_cycle() -> dict:
                     })
             manager.select_variant()  # handles auto-graduation internally
             results["steps_completed"] = 5
-            mm.checkpoint("shadow_check")
+            if cycle_owns_mission:
+                mm.checkpoint("shadow_check")
 
             # Step 6: Memory tier management
             log.info("Step 6: Memory tier management...")
@@ -298,6 +381,7 @@ def run_proactive_cycle() -> dict:
             log.info("Step 7: Loading memory...")
             core = mem.get_core()
             recent_memory = retrieve_relevant_memory("revenue project status opportunity", top_k=5)
+            adapters = load_project_adapters()
             results["steps_completed"] = 7
 
             # Step 8: Self-thought protocol (with real project context)
@@ -318,15 +402,35 @@ def run_proactive_cycle() -> dict:
                 project_context = f"Project health check failed: {e}"
                 health_results = {"stalled": [], "healthy": [], "projects": {}}
 
+            action_queue = build_action_queue(
+                health_results,
+                adapters=adapters,
+                core_goals=core.get("active_goals", []),
+                limit=3,
+            )
+            action_context = format_action_queue(action_queue, numbered=True)
+
             thought_prompt = f"""You are Jarvis, Rusty's autonomous super-agent. Current project status:
 {project_context}
 
 Active machines: RTX (Windows, compute), Tom (Mac Mini, job automation), Jarvis (Mac Pro, you — shared memory + monitoring).
 Revenue status: $0.
+Priority action queue:
+{action_context}
 
 What would make Rusty money right now? Be specific. Name the project, the action, and the expected outcome. Give 3 concrete actions ranked by impact."""
-            thought = _llm_call(thought_prompt)
-            _audit("self_thought", {"thought": thought[:500]})
+            thought = _llm_call(
+                thought_prompt,
+                task_type="analysis",
+                max_cost="free",
+                quality="high",
+            )
+            if "stub" in thought.lower() or "unavailable" in thought.lower():
+                thought = action_context
+            _audit("self_thought", {"thought": thought[:500], "action_queue": action_queue})
+            if action_queue:
+                mem.update_core("current_focus", action_queue[0])
+                mem.update_core("priority_actions", action_queue)
             results["steps_completed"] = 8
 
             # Step 9: System health check
@@ -371,43 +475,96 @@ What would make Rusty money right now? Be specific. Name the project, the action
             if open_incidents:
                 log.info(f"Open incidents: {len(open_incidents)}")
             results["steps_completed"] = 10
-            mm.checkpoint("recurrence_check")
+            if cycle_owns_mission:
+                mm.checkpoint("recurrence_check")
 
             # Step 11: Money momentum report
             log.info("Step 11: Money momentum report...")
             revenue_state = core.get("recent_revenue_state")
             if revenue_state is None or revenue_state == 0:
-                money_prompt = f"""Revenue is $0. You have these active projects:
-- Legion (Tom/Mac Mini): browser-driven job automation — finds and applies to jobs
-- TerminatorBot (RTX): prediction market trading — arb detection, contrarian bets
-- TaskBot (RTX): enterprise automation platform
-
-Current project health:
+                actions = action_context or _llm_call(
+                    f"""Revenue is $0. Current project health:
 {project_context}
 
 Generate 3 concrete revenue actions ranked by fastest path to money.
-For each: name the project, the specific action, expected revenue, and time to execute."""
-                actions = _llm_call(money_prompt)
-                _audit("money_momentum", {"revenue": 0, "proposed_actions": actions[:500]})
+For each: name the project, the specific action, expected revenue, and time to execute.""",
+                    task_type="strategic",
+                    max_cost="mixed",
+                    quality="high",
+                )
+                _audit(
+                    "money_momentum",
+                    {
+                        "revenue": 0,
+                        "proposed_actions": actions[:500],
+                        "top_project": action_queue[0]["project_id"] if action_queue else None,
+                    },
+                )
             results["steps_completed"] = 11
 
-            # Step 12: Stalled project detection (uses real health data from step 8)
-            log.info("Step 12: Stalled project detection...")
+            # Step 12: Follow-through planning + worker activation
+            log.info("Step 12: Follow-through planning...")
             stalled_projects = health_results.get("stalled", [])
-            if stalled_projects:
-                for pid in stalled_projects:
-                    pdata = health_results.get("projects", {}).get(pid, {})
-                    idle = pdata.get("days_idle", 0)
-                    log.warning(f"Stalled: {pid} idle {idle} days")
-                    # Generate follow-up action for stalled projects
-                    followup = _llm_call(
-                        f"Project '{pid}' has been idle for {idle} days. "
-                        f"Details: {json.dumps(pdata, default=str)[:500]}. "
-                        f"Draft a specific next action to unblock it. One sentence."
+            existing_workers = wm.get_active_workers()
+            if action_queue:
+                for action in action_queue:
+                    suggested_type = action.get("suggested_worker_type")
+                    project_id = action["project_id"]
+                    adapter = adapters.get(project_id, {})
+                    if not suggested_type or adapter.get("agent_recruitment") == "none":
+                        continue
+                    already_active = any(
+                        w.get("target_project") == project_id
+                        and w.get("state") in ("pending", "running")
+                        for w in existing_workers
                     )
-                    _telegram_send(f"Stalled: {pid} ({idle}d idle). Proposed: {followup[:200]}")
+                    if already_active:
+                        continue
+                    ttl = adapter.get("worker_ttl_override") or Config.DEFAULT_WORKER_TTL_MINUTES
+                    machine = action.get("target_machine", "jarvis")
+                    if machine == "jarvis":
+                        worker = wm.spawn_local_worker(action["mission_id"], suggested_type, ttl_minutes=ttl)
+                    elif suggested_type == "monitor":
+                        worker = wm.spawn_remote_monitor(
+                            action["mission_id"],
+                            machine,
+                            target_project=project_id,
+                            ttl_minutes=ttl,
+                        )
+                    else:
+                        worker = wm.spawn_remote_worker(
+                            action["mission_id"],
+                            suggested_type,
+                            machine,
+                            target_project=project_id,
+                            ttl_minutes=ttl,
+                        )
+                    existing_workers.append(worker)
+                    worker_activity.append(
+                        {
+                            "project_id": project_id,
+                            "worker_id": worker["worker_id"],
+                            "worker_type": worker["worker_type"],
+                        }
+                    )
+                    execution_result = execute_safe_first_step(
+                        action,
+                        adapter,
+                        rx,
+                        worker_manager=wm,
+                        worker_id=worker["worker_id"],
+                    )
+                    worker_activity[-1]["execution"] = {
+                        "mode": execution_result.get("mode"),
+                        "status": execution_result.get("status"),
+                        "summary": execution_result.get("summary"),
+                    }
+                    if len(worker_activity) >= 2:
+                        break
+                if worker_activity:
+                    _audit("worker_follow_through", {"workers": worker_activity})
             else:
-                log.info("No stalled projects.")
+                log.info("No action queue generated.")
             results["steps_completed"] = 12
 
             # Step 13: Business opportunity scan
@@ -439,6 +596,16 @@ For each: name the project, the specific action, expected revenue, and time to e
                 drift = model_reg.run_drift_audit()
                 quota = QuotaLedger()
                 routing = quota.recommend_routing()
+                router = ModelRouter(quota)
+                routing["burn_plan"] = router.burn_free_quota()
+                _audit(
+                    "model_router_status",
+                    {
+                        "active_keys": routing.get("active_keys", 0),
+                        "successful_providers": routing.get("routing_summary", {}).get("successful_providers", 0),
+                        "burn_triggered": routing.get("burn_plan", {}).get("triggered", False),
+                    },
+                )
             except Exception as e:
                 results["errors"].append(f"Model/quota: {e}")
             results["steps_completed"] = 15
@@ -456,6 +623,11 @@ For each: name the project, the specific action, expected revenue, and time to e
                 "TerminatorBot (prediction markets), Legion (job automation), FastAPI dashboards, "
                 "Tailscale mesh, Mac + Windows. Focus on: agent frameworks, trading tools, "
                 "job automation, browser automation. For each: name, what it does, how to integrate."
+                ,
+                task_type="research",
+                max_cost="mixed",
+                quality="high",
+                timeout_seconds=90,
             )
             _audit("research_scan", {"proposals": research[:500]})
             results["steps_completed"] = 17
@@ -504,7 +676,7 @@ For each: name the project, the specific action, expected revenue, and time to e
             log.info("Step 19: Updating last_session.md...")
             session_entry = f"\n## {datetime.now(timezone.utc).isoformat()}\n- Fitness: {fitness:.2f}\n- Health: {'OK' if not unhealthy else ', '.join(unhealthy)}\n- Thought: {thought[:200]}\n"
             try:
-                with open(Config.LAST_SESSION_PATH, "a") as f:
+                with open(Config.LAST_SESSION_PATH, "a", encoding="utf-8") as f:
                     f.write(session_entry)
             except OSError:
                 pass
@@ -521,7 +693,7 @@ For each: name the project, the specific action, expected revenue, and time to e
                 "provenance": "proactive_cycle",
             }
             try:
-                with open(Config.TRADER_MEMORY_PATH, "a") as f:
+                with open(Config.TRADER_MEMORY_PATH, "a", encoding="utf-8") as f:
                     f.write(json.dumps(mem_entry) + "\n")
             except OSError:
                 pass
@@ -538,9 +710,14 @@ Health: {'OK' if not unhealthy else ', '.join(unhealthy)}
 Open Incidents: {len(open_incidents)}
 Absorption: {abs_result if isinstance(abs_result, dict) else 'error'}
 Self-Thought: {thought[:300]}
+Routing: {routing.get('routing_summary', {}) if isinstance(routing, dict) else 'unavailable'}
+Burn Plan: {routing.get('burn_plan', {}) if isinstance(routing, dict) else 'unavailable'}
+Priority Actions:
+{format_action_queue(action_queue, numbered=True)}
+Workers Spawned: {worker_activity if worker_activity else 'none'}
 """
             try:
-                Config.UPDATE_DOC_PATH.write_text(update)
+                Config.UPDATE_DOC_PATH.write_text(update, encoding="utf-8")
             except OSError:
                 pass
             results["steps_completed"] = 21
@@ -550,26 +727,44 @@ Self-Thought: {thought[:300]}
             stalled_count = len(stalled_projects)
             healthy_count = len(health_results.get("healthy", []))
             summary = (
-                f"<b>Proactive Cycle Complete</b>\n"
+                f"<b>{Config.BRAND_NAME} - Proactive Cycle Complete</b>\n"
                 f"Variant: {variant_id} (Gen {gen})\n"
                 f"Fitness: {fitness:.2f}\n"
                 f"Infra: {'OK' if not unhealthy else ', '.join(unhealthy)}\n"
                 f"Projects: {healthy_count} healthy, {stalled_count} stalled\n"
+                f"Focus: {action_queue[0]['focus_summary'] if action_queue else 'No focus selected'}\n"
+                f"Workers: {len(worker_activity)} spawned\n"
                 f"Absorption: {abs_result.get('proposed', 0) if isinstance(abs_result, dict) else 0} proposed\n"
-                f"Incidents: {len(open_incidents)}"
+                f"Incidents: {len(open_incidents)}\n"
+                f"Routing: {routing.get('routing_summary', {}).get('successful_providers', 0) if isinstance(routing, dict) else 0} providers active"
             )
             _telegram_send(summary)
             _audit("proactive_complete", {"fitness": fitness, "steps": 22})
             results["steps_completed"] = 22
 
-            mm.mark_complete(f"22/22 steps, fitness {fitness:.2f}")
+            if action_queue:
+                if preserved_focus_mission and preserved_focus_mission.get("mission_id") == action_queue[0]["mission_id"]:
+                    focus_mission = mm.checkpoint(
+                        "focus_revalidated",
+                        {
+                            "selected_at": datetime.now(timezone.utc).isoformat(),
+                            "top_action": action_queue[0],
+                        },
+                    ) or preserved_focus_mission
+                    _audit("focus_revalidated", {"mission": focus_mission})
+                else:
+                    focus_mission = queue_next_focus_mission(mm, action_queue[0])
+                    _audit("focus_queued", {"mission": focus_mission})
+            elif cycle_owns_mission:
+                mm.mark_complete(f"22/22 steps, fitness {fitness:.2f}")
             sm.transition(AgentState.IDLE)
 
     except Exception as e:
         log.error(f"Proactive cycle failed at step {results['steps_completed']}: {e}")
         results["errors"].append(str(e))
         try:
-            mm.mark_failed(f"Failed at step {results['steps_completed']}: {e}")
+            if cycle_owns_mission:
+                mm.mark_failed(f"Failed at step {results['steps_completed']}: {e}")
             StateMachine().force_state(AgentState.IDLE)
         except Exception:
             pass
@@ -587,6 +782,7 @@ def run_morning_pulse() -> dict:
     from openclaw.genome_manager import GenomeManager
     from openclaw.fitness_tracker import FitnessTracker
     from openclaw.memory_manager import MemoryManager, retrieve_relevant_memory
+    from openclaw.model_router import ModelRouter
     from openclaw.model_registry import ModelRegistry
     from openclaw.quota_ledger import QuotaLedger
 
@@ -629,6 +825,7 @@ def run_morning_pulse() -> dict:
             try:
                 quota = QuotaLedger()
                 routing = quota.recommend_routing()
+                routing["burn_plan"] = ModelRouter(quota).burn_free_quota()
             except Exception:
                 routing = {}
 
@@ -641,10 +838,11 @@ def run_morning_pulse() -> dict:
             })
 
             briefing = (
-                f"Good morning. "
+                f"{Config.BRAND_NAME} morning pulse. "
                 f"Variant: {variant_id} | Fitness: {fitness:.2f} | "
                 f"Revenue: {'$' + str(revenue) if revenue else '$0'} | "
-                f"Absorption: {abs_result.get('proposed', 0)} new proposals"
+                f"Absorption: {abs_result.get('proposed', 0)} new proposals | "
+                f"Routing providers: {routing.get('routing_summary', {}).get('successful_providers', 0) if isinstance(routing, dict) else 0}"
             )
             _telegram_send(briefing)
             _audit("morning_pulse", {"fitness": fitness, "briefing": briefing[:500]})

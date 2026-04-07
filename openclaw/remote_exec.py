@@ -6,6 +6,7 @@ Supports dry-run, apply, verify, rollback. Blocks undeclared hosts.
 from __future__ import annotations
 
 import json
+import platform
 import subprocess
 import time
 from datetime import datetime, timezone
@@ -52,7 +53,7 @@ class RemoteExec:
         if not self.adapters_path.exists():
             return None
         try:
-            adapters = json.loads(self.adapters_path.read_text())
+            adapters = json.loads(self.adapters_path.read_text(encoding="utf-8"))
             return adapters.get(project_id)
         except (json.JSONDecodeError, OSError):
             return None
@@ -102,8 +103,9 @@ class RemoteExec:
 
         transport = adapter.get("transport_profile", "manual_only")
         machine = adapter.get("machine", "unknown")
+        effective_transport = self._resolve_transport(machine, transport)
 
-        if transport == TransportProfile.MANUAL_ONLY:
+        if effective_transport == TransportProfile.MANUAL_ONLY:
             return {
                 "stdout": "",
                 "stderr": f"Transport is manual_only for {project_id}. Cannot execute remotely.",
@@ -119,7 +121,7 @@ class RemoteExec:
             "project_id": project_id,
             "machine": machine,
             "command": command,
-            "transport": transport,
+            "transport": effective_transport,
             "dry_run": dry_run,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
@@ -137,21 +139,21 @@ class RemoteExec:
             self._actions_this_hour.append(now)
             self._host_actions.setdefault(machine, []).append(now)
 
-            if transport == TransportProfile.LOCAL_RUNNER:
+            if effective_transport == TransportProfile.LOCAL_RUNNER:
                 import shlex
                 proc = subprocess.run(
                     shlex.split(command),
-                    capture_output=True, text=True, timeout=timeout,
+                    capture_output=True, text=True, timeout=timeout, encoding="utf-8", errors="replace",
                 )
-            elif transport == TransportProfile.SSH:
+            elif effective_transport == TransportProfile.SSH:
                 ssh_target = MACHINE_SSH_MAP.get(machine, machine)
                 # Pass command as single arg to SSH — no shell interpolation
                 proc = subprocess.run(
                     ["ssh", ssh_target, command],
-                    capture_output=True, text=True, timeout=timeout,
+                    capture_output=True, text=True, timeout=timeout, encoding="utf-8", errors="replace",
                 )
             else:
-                result["stderr"] = f"Transport '{transport}' not yet implemented."
+                result["stderr"] = f"Transport '{effective_transport}' not yet implemented."
                 result["exit_code"] = -1
                 self._audit(result)
                 return result
@@ -203,7 +205,18 @@ class RemoteExec:
                 "exit_code": result.get("exit_code"),
                 "dry_run": result.get("dry_run", False),
             }
-            with open(self.audit_path, "a") as f:
+            with open(self.audit_path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(entry) + "\n")
         except OSError:
             pass
+
+    @staticmethod
+    def _resolve_transport(machine: str, transport: str) -> str:
+        """Prefer local execution for the current RTX host instead of SSHing to self."""
+        if (
+            machine == "rtx"
+            and transport == TransportProfile.SSH
+            and platform.system() == "Windows"
+        ):
+            return TransportProfile.LOCAL_RUNNER
+        return transport

@@ -20,17 +20,48 @@ class QuotaLedger:
         self.path = path or Config.KEYS_LEDGER_PATH
 
     def _load(self) -> dict:
+        default = self._default_ledger()
         if not self.path.exists():
-            return {"keys": []}
+            return default
         try:
-            return json.loads(self.path.read_text())
+            data = json.loads(self.path.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                return default
+            data.setdefault("keys", [])
+            routing = data.setdefault("routing", {})
+            routing.setdefault("current_day", default["routing"]["current_day"])
+            routing.setdefault("providers", {})
+            routing.setdefault("recent_decisions", [])
+            return data
         except (json.JSONDecodeError, OSError):
-            return {"keys": []}
+            return default
 
     def _save(self, data: dict) -> None:
         tmp = self.path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(data, indent=2))
+        tmp.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
         os.replace(str(tmp), str(self.path))
+
+    @staticmethod
+    def _default_ledger() -> dict:
+        return {
+            "keys": [],
+            "routing": {
+                "current_day": datetime.now(timezone.utc).date().isoformat(),
+                "providers": {},
+                "recent_decisions": [],
+            },
+        }
+
+    @staticmethod
+    def _ensure_routing_day(ledger: dict) -> None:
+        routing = ledger.setdefault("routing", {})
+        today = datetime.now(timezone.utc).date().isoformat()
+        if routing.get("current_day") != today:
+            routing["current_day"] = today
+            routing["providers"] = {}
+            routing["recent_decisions"] = []
+        routing.setdefault("providers", {})
+        routing.setdefault("recent_decisions", [])
 
     def record_usage_event(
         self,
@@ -114,6 +145,7 @@ class QuotaLedger:
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "active_keys": len([k for k in ledger.get("keys", []) if k.get("status") != "revoked"]),
             "recommendations": recommendations,
+            "routing_summary": self.get_routing_summary(),
         }
 
     def reset_daily_counters(self) -> None:
@@ -122,4 +154,73 @@ class QuotaLedger:
         for key in ledger.get("keys", []):
             key["usage_today_tokens"] = 0
             key["usage_today_requests"] = 0
+        self._ensure_routing_day(ledger)
+        ledger["routing"]["providers"] = {}
+        ledger["routing"]["recent_decisions"] = []
         self._save(ledger)
+
+    def record_route_decision(
+        self,
+        provider: str,
+        model: str,
+        task_type: str,
+        route_id: str,
+        cost_tier: str,
+        success: bool,
+        latency_ms: int | None = None,
+        details: dict | None = None,
+    ) -> None:
+        """Track which route actually handled a request."""
+        ledger = self._load()
+        self._ensure_routing_day(ledger)
+        routing = ledger["routing"]
+
+        provider_stats = routing["providers"].setdefault(provider, {
+            "requests": 0,
+            "successes": 0,
+            "failures": 0,
+            "last_model": None,
+            "last_route_id": None,
+            "last_task_type": None,
+            "last_latency_ms": None,
+            "last_used": None,
+            "cost_tier": cost_tier,
+        })
+        provider_stats["requests"] += 1
+        provider_stats["successes" if success else "failures"] += 1
+        provider_stats["last_model"] = model
+        provider_stats["last_route_id"] = route_id
+        provider_stats["last_task_type"] = task_type
+        provider_stats["last_latency_ms"] = latency_ms
+        provider_stats["last_used"] = datetime.now(timezone.utc).isoformat()
+        provider_stats["cost_tier"] = cost_tier
+
+        event = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "provider": provider,
+            "model": model,
+            "task_type": task_type,
+            "route_id": route_id,
+            "cost_tier": cost_tier,
+            "success": success,
+        }
+        if latency_ms is not None:
+            event["latency_ms"] = latency_ms
+        if details:
+            event["details"] = details
+
+        routing["recent_decisions"].append(event)
+        routing["recent_decisions"] = routing["recent_decisions"][-25:]
+        self._save(ledger)
+
+    def get_routing_summary(self) -> dict:
+        ledger = self._load()
+        self._ensure_routing_day(ledger)
+        routing = ledger["routing"]
+        providers = routing.get("providers", {})
+        return {
+            "current_day": routing.get("current_day"),
+            "providers": providers,
+            "recent_decisions": routing.get("recent_decisions", [])[-10:],
+            "successful_providers": len([p for p in providers.values() if p.get("successes", 0) > 0]),
+        }

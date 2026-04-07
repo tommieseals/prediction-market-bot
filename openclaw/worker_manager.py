@@ -50,13 +50,13 @@ class WorkerManager:
         if not self.registry_path.exists():
             return {"workers": []}
         try:
-            return json.loads(self.registry_path.read_text())
+            return json.loads(self.registry_path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             return {"workers": []}
 
     def _save_registry(self, data: dict) -> None:
         tmp = self.registry_path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(data, indent=2))
+        tmp.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
         os.replace(str(tmp), str(self.registry_path))
 
     def spawn_local_worker(
@@ -125,6 +125,49 @@ class WorkerManager:
                 worker["termination_reason"] = reason
                 self._save_registry(registry)
                 return worker
+        return None
+
+    def mark_running(self, worker_id: str) -> dict | None:
+        """Mark a worker as actively executing."""
+        return self._update_worker(
+            worker_id,
+            {"state": WorkerState.RUNNING},
+            allowed_from={WorkerState.PENDING, WorkerState.RUNNING},
+        )
+
+    def mark_done(self, worker_id: str, note: str = "completed") -> dict | None:
+        """Mark a worker as done."""
+        return self._update_worker(
+            worker_id,
+            {
+                "state": WorkerState.DONE,
+                "terminated_at": datetime.now(timezone.utc).isoformat(),
+                "termination_reason": note,
+            },
+            allowed_from={WorkerState.PENDING, WorkerState.RUNNING},
+        )
+
+    def mark_failed(self, worker_id: str, reason: str) -> dict | None:
+        """Mark a worker as failed."""
+        return self._update_worker(
+            worker_id,
+            {
+                "state": WorkerState.FAILED,
+                "terminated_at": datetime.now(timezone.utc).isoformat(),
+                "termination_reason": reason,
+            },
+            allowed_from={WorkerState.PENDING, WorkerState.RUNNING},
+        )
+
+    def append_action_log(self, worker_id: str, entry: dict) -> dict | None:
+        """Append an action record to a worker."""
+        registry = self._load_registry()
+        for worker in registry["workers"]:
+            if worker["worker_id"] != worker_id:
+                continue
+            worker.setdefault("actions_log", []).append(entry)
+            self._save_registry(registry)
+            return worker
         return None
 
     def recall_all(self, reason: str = "freeze_recall") -> int:
@@ -227,3 +270,20 @@ class WorkerManager:
             raise WorkerLimitError(
                 f"Lifetime worker limit reached ({Config.MAX_TOTAL_WORKERS_EVER}). Manual review required."
             )
+
+    def _update_worker(
+        self,
+        worker_id: str,
+        updates: dict,
+        allowed_from: set[str] | None = None,
+    ) -> dict | None:
+        registry = self._load_registry()
+        for worker in registry["workers"]:
+            if worker["worker_id"] != worker_id:
+                continue
+            if allowed_from and worker["state"] not in allowed_from:
+                return None
+            worker.update(updates)
+            self._save_registry(registry)
+            return worker
+        return None

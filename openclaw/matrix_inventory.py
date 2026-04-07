@@ -22,14 +22,14 @@ class MatrixInventory:
         if not self.path.exists():
             return self._default()
         try:
-            return json.loads(self.path.read_text())
+            return json.loads(self.path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             return self._default()
 
     def save_inventory_atomic(self, data: dict) -> None:
         data["last_updated"] = datetime.now(timezone.utc).isoformat()
         tmp = self.path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(data, indent=2))
+        tmp.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
         os.replace(str(tmp), str(self.path))
 
     def update_machine_snapshot(self, machine_id: str, snapshot: dict) -> None:

@@ -43,7 +43,7 @@ class EnvHealth:
                     containers.append({"name": name, "status": status})
             return {"status": "ok", "containers": containers, "count": len(containers)}
         except FileNotFoundError:
-            return {"status": "not_installed", "message": "Docker not found"}
+            return {"status": "ok", "available": False, "message": "Docker not found (optional on this host)"}
         except subprocess.TimeoutExpired:
             return {"status": "timeout", "message": "Docker command timed out"}
         except OSError as e:
@@ -92,16 +92,20 @@ class EnvHealth:
             return {"status": "error", "message": str(e)[:200]}
 
     def check_services(self) -> dict:
-        """Check key service endpoints (ClawdBot gateway, etc.)."""
+        """Check key service endpoints with Jarvis as the primary control plane."""
         services = {}
-        # Check ClawdBot gateway
+        # Primary merged control plane: Jarvis gateway
         try:
             import socket
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(3)
-            result = sock.connect_ex(("127.0.0.1", Config.CLAWDBOT_GATEWAY_PORT))
+            result = sock.connect_ex((Config.CLAWDBOT_GATEWAY_HOST, Config.CLAWDBOT_GATEWAY_PORT))
             services["clawdbot_gateway"] = "up" if result == 0 else "down"
+            services["control_plane"] = "jarvis"
+            services["control_plane_target"] = f"{Config.CLAWDBOT_GATEWAY_HOST}:{Config.CLAWDBOT_GATEWAY_PORT}"
             sock.close()
         except OSError:
             services["clawdbot_gateway"] = "error"
+            services["control_plane"] = "jarvis"
+            services["control_plane_target"] = f"{Config.CLAWDBOT_GATEWAY_HOST}:{Config.CLAWDBOT_GATEWAY_PORT}"
         return {"status": "ok", "services": services}

@@ -1,0 +1,32 @@
+# OpenClaw runtime/state
+.run_lock
+.install_id
+.principal_id
+active_variant.json
+agent_state.json
+active_mission.json
+worker_registry.json
+memory_core.json
+project_status.json
+matrix_inventory.json
+keys_ledger.json
+pending_approvals.json
+fitness.db
+
+# OpenClaw generated logs/reports
+paperclip_audit.jsonl
+trader_memory.jsonl
+correction_log.jsonl
+incidents.jsonl
+last_session.md
+GENETIC-PROJECT-AUTONOMY-UPDATE.md
+
+# OpenClaw generated directories
+audits/
+gene_pool/
+quarantine/
+__pycache__/
+.pytest_cache/
+
+# Local task runner output
+task-runs/

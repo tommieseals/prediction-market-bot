@@ -40,6 +40,22 @@ class TestQuotaLedger(unittest.TestCase):
         self.assertEqual(data["keys"][0]["usage_today_tokens"], 0)
         self.assertEqual(data["keys"][0]["usage_today_requests"], 0)
 
+    def test_record_route_decision_updates_summary(self):
+        self.ledger.record_route_decision(
+            provider="ollama",
+            model="gemma4:e4b",
+            task_type="monitoring",
+            route_id="ollama_local_reasoning",
+            cost_tier="free",
+            success=True,
+            latency_ms=123,
+        )
+        summary = self.ledger.get_routing_summary()
+        self.assertEqual(summary["successful_providers"], 1)
+        self.assertEqual(summary["providers"]["ollama"]["successes"], 1)
+        self.assertEqual(summary["providers"]["ollama"]["last_model"], "gemma4:e4b")
+        self.assertEqual(summary["recent_decisions"][-1]["route_id"], "ollama_local_reasoning")
+
 
 if __name__ == "__main__":
     unittest.main()

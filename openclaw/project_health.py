@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import os
+import platform
 import subprocess
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -17,9 +18,9 @@ from openclaw.config import Config
 class ProjectHealth:
     """Check real project health across the workspace."""
 
-    def __init__(self):
-        self.status_path = Config.PROJECT_STATUS_PATH
-        self.adapters_path = Config.PROJECT_ADAPTERS_PATH
+    def __init__(self, status_path: Path | None = None, adapters_path: Path | None = None):
+        self.status_path = status_path or Config.PROJECT_STATUS_PATH
+        self.adapters_path = adapters_path or Config.PROJECT_ADAPTERS_PATH
 
     def check_all(self) -> dict:
         """Run health checks on all projects. Returns summary."""
@@ -36,7 +37,10 @@ class ProjectHealth:
             try:
                 status = self._check_project(project_id, adapter)
                 results["projects"][project_id] = status
-                if status.get("days_idle", 0) > 14:
+                if (
+                    status.get("days_idle", 0) > 14
+                    or status.get("status") in {"error", "degraded", "unknown"}
+                ):
                     results["stalled"].append(project_id)
                 else:
                     results["healthy"].append(project_id)
@@ -73,58 +77,75 @@ class ProjectHealth:
 
     def check_terminatorbot(self) -> dict:
         """Check TerminatorBot on RTX via SSH."""
+        checks = {
+            "repo_exists": self._windows_powershell(
+                "if (Test-Path 'C:\\Users\\User\\clawd\\TerminatorBot') { 'yes' } else { 'no' }"
+            ),
+            "last_git_commit": self._windows_powershell(
+                "if (Test-Path 'C:\\Users\\User\\clawd\\TerminatorBot') { "
+                "git -C 'C:\\Users\\User\\clawd\\TerminatorBot' log -1 --format='%ai %s' 2>$null "
+                "} else { 'no repo' }"
+            ),
+            "python_processes": self._windows_powershell(
+                "(Get-Process python,python3 -ErrorAction SilentlyContinue | Measure-Object).Count"
+            ),
+            "config_exists": self._windows_powershell(
+                "if (Test-Path 'C:\\Users\\User\\clawd\\TerminatorBot\\.env') { 'yes' } else { 'no' }"
+            ),
+        }
+        if platform.system() == "Windows":
+            result = {
+                "project_id": "terminatorbot",
+                "machine": "rtx",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+            for name, cmd in checks.items():
+                result[name] = self._run_local_command(cmd)
+            last_commit = result.get("last_git_commit", "")
+            if last_commit and last_commit != "no repo":
+                try:
+                    date_str = last_commit[:25]
+                    commit_date = datetime.fromisoformat(date_str.strip())
+                    if commit_date.tzinfo is None:
+                        commit_date = commit_date.replace(tzinfo=timezone.utc)
+                    result["days_idle"] = (datetime.now(timezone.utc) - commit_date).days
+                except (ValueError, TypeError):
+                    result["days_idle"] = -1
+            processes_running = self._safe_int(result.get("python_processes", 0)) > 0
+            result["status"] = "active" if processes_running else ("idle" if result.get("repo_exists") == "yes" else "unknown")
+            return result
+
         return self._ssh_check(
             host="100.115.12.91",
             user="User",
-            checks={
-                "repo_exists": "test -d '$USERPROFILE/clawd/TerminatorBot' && echo 'yes' || test -d '$HOME/clawd/TerminatorBot' && echo 'yes' || echo 'no'",
-                "last_git_commit": "cd '$USERPROFILE/clawd/TerminatorBot' 2>/dev/null && git log -1 --format='%ai %s' 2>/dev/null || cd '$HOME/clawd/TerminatorBot' 2>/dev/null && git log -1 --format='%ai %s' 2>/dev/null || echo 'no repo'",
-                "python_processes": "ps -W 2>/dev/null | grep -ic python || echo 0",
-                "config_exists": "test -f '$USERPROFILE/clawd/TerminatorBot/.env' && echo 'yes' || test -f '$HOME/clawd/TerminatorBot/.env' && echo 'yes' || echo 'no'",
-            },
+            checks=checks,
             project_id="terminatorbot",
         )
 
     def check_shared_memory(self) -> dict:
-        """Check Shared Memory Platform on Jarvis (local)."""
+        """Check Shared Memory Platform on Jarvis via SSH from any machine."""
         result = {
             "project_id": "shared_memory",
             "machine": "jarvis",
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
+        checks = {
+            "qdrant": "curl -sf http://localhost:6333/collections >/dev/null && echo up || echo down",
+            "postgres": "pg_isready -h localhost -p 55432 >/dev/null 2>&1 && echo up || echo down",
+            "jarvis_status": "test -f ~/shared-memory/jarvis-status.json && echo present || echo missing",
+            "infrastructure_status": "test -f ~/shared-memory/infrastructure/infrastructure-status.json && echo present || echo missing",
+            "memory_index": "test -f ~/shared-memory/analytics/memory-index-status.json && echo present || echo missing",
+        }
+        for name, cmd in checks.items():
+            result[name] = self._run_ssh_command("100.89.75.126", "administrator", cmd)
 
-        # Check Qdrant
-        try:
-            import requests
-            r = requests.get("http://localhost:6333/collections", timeout=5)
-            result["qdrant"] = "up" if r.status_code == 200 else f"error_{r.status_code}"
-        except Exception:
-            result["qdrant"] = "down"
-
-        # Check Postgres
-        try:
-            proc = subprocess.run(
-                "pg_isready -h localhost 2>/dev/null",
-                shell=True, capture_output=True, text=True, timeout=5,
-            )
-            result["postgres"] = "up" if proc.returncode == 0 else "down"
-        except (subprocess.TimeoutExpired, OSError):
-            result["postgres"] = "unknown"
-
-        # Check shared-memory status files
-        sm_paths = [
-            Path.home() / "shared-memory" / "jarvis-status.json",
-            Path.home() / "shared-memory" / "infrastructure" / "infrastructure-status.json",
-        ]
-        for p in sm_paths:
-            if p.exists():
-                try:
-                    age_hours = (datetime.now(timezone.utc).timestamp() - p.stat().st_mtime) / 3600
-                    result[f"status_file_{p.stem}"] = f"fresh ({age_hours:.1f}h old)" if age_hours < 2 else f"stale ({age_hours:.1f}h)"
-                except OSError:
-                    pass
-
-        result["status"] = "active"
+        result["days_idle"] = 0
+        healthy = (
+            result.get("qdrant") == "up"
+            and result.get("postgres") == "up"
+            and result.get("jarvis_status") == "present"
+        )
+        result["status"] = "active" if healthy else "degraded"
         return result
 
     def _check_project(self, project_id: str, adapter: dict) -> dict:
@@ -170,9 +191,16 @@ class ProjectHealth:
             if machine in machine_map:
                 user, host = machine_map[machine]
                 try:
+                    if machine == "rtx":
+                        check_cmd = self._windows_powershell(f"if (Test-Path '{repo_path}') {{ 'yes' }} else {{ 'no' }}")
+                        if platform.system() == "Windows":
+                            result["repo_exists"] = self._run_local_command(check_cmd)
+                            return result
+                    else:
+                        check_cmd = f"test -d '{repo_path}' && echo yes || echo no"
                     proc = subprocess.run(
-                        ["ssh", f"{user}@{host}", f"test -d '{repo_path}' && echo yes || echo no"],
-                        capture_output=True, text=True, timeout=10,
+                        ["ssh", f"{user}@{host}", check_cmd],
+                        capture_output=True, text=True, timeout=10, encoding="utf-8", errors="replace",
                     )
                     result["repo_exists"] = proc.stdout.strip()
                 except (subprocess.TimeoutExpired, OSError):
@@ -188,16 +216,7 @@ class ProjectHealth:
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         for name, cmd in checks.items():
-            try:
-                proc = subprocess.run(
-                    ["ssh", f"{user}@{host}", cmd],
-                    capture_output=True, text=True, timeout=15,
-                )
-                result[name] = proc.stdout.strip()
-            except subprocess.TimeoutExpired:
-                result[name] = "timeout"
-            except OSError as e:
-                result[name] = f"error: {e}"
+            result[name] = self._run_ssh_command(host, user, cmd)
 
         # Compute days_idle from last git commit
         last_commit = result.get("last_git_commit", "")
@@ -213,8 +232,8 @@ class ProjectHealth:
 
         # Determine status from multiple signals
         repo_ok = result.get("main_repo") == "yes" or result.get("repo_exists") == "yes"
-        chrome_running = int(result.get("chrome_running", 0) or 0) > 0
-        processes_running = int(result.get("python_processes", 0) or 0) > 0
+        chrome_running = self._safe_int(result.get("chrome_running", 0)) > 0
+        processes_running = self._safe_int(result.get("python_processes", 0)) > 0
         if chrome_running or processes_running:
             result["status"] = "active"
         elif repo_ok:
@@ -223,11 +242,40 @@ class ProjectHealth:
             result["status"] = "unknown"
         return result
 
+    def _run_ssh_command(self, host: str, user: str, command: str) -> str:
+        try:
+            proc = subprocess.run(
+                ["ssh", f"{user}@{host}", command],
+                capture_output=True, text=True, timeout=15, encoding="utf-8", errors="replace",
+            )
+            return proc.stdout.strip() or proc.stderr.strip() or "unknown"
+        except subprocess.TimeoutExpired:
+            return "timeout"
+        except OSError as e:
+            return f"error: {e}"
+
+    def _run_local_command(self, command: str) -> str:
+        try:
+            proc = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=15,
+                encoding="utf-8",
+                errors="replace",
+                shell=True,
+            )
+            return proc.stdout.strip() or proc.stderr.strip() or "unknown"
+        except subprocess.TimeoutExpired:
+            return "timeout"
+        except OSError as e:
+            return f"error: {e}"
+
     def _load_adapters(self) -> dict:
         if not self.adapters_path.exists():
             return {}
         try:
-            return json.loads(self.adapters_path.read_text())
+            return json.loads(self.adapters_path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             return {}
 
@@ -246,5 +294,17 @@ class ProjectHealth:
 
         status = {"projects": projects, "updated_at": datetime.now(timezone.utc).isoformat()}
         tmp = self.status_path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(status, indent=2))
+        tmp.write_text(json.dumps(status, indent=2, ensure_ascii=False), encoding="utf-8")
         os.replace(str(tmp), str(self.status_path))
+
+    @staticmethod
+    def _safe_int(value) -> int:
+        try:
+            return int(str(value).strip())
+        except (TypeError, ValueError):
+            return 0
+
+    @staticmethod
+    def _windows_powershell(command: str) -> str:
+        escaped = command.replace('"', '`"')
+        return f'powershell -NoProfile -Command "{escaped}"'

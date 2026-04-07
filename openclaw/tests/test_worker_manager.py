@@ -45,6 +45,16 @@ class TestWorkerManager(unittest.TestCase):
             with self.assertRaises(WorkerLimitError):
                 self.mgr.spawn_local_worker("m3", "patcher")
 
+    def test_mark_done_and_append_action_log(self):
+        worker = self.mgr.spawn_local_worker("m4", "monitor")
+        self.mgr.mark_running(worker["worker_id"])
+        self.mgr.append_action_log(worker["worker_id"], {"step": "probe", "status": "ok"})
+        result = self.mgr.mark_done(worker["worker_id"], "finished")
+        self.assertEqual(result["state"], WorkerState.DONE)
+        self.assertEqual(result["termination_reason"], "finished")
+        stored = self.mgr.get_worker_status(worker["worker_id"])
+        self.assertEqual(len(stored["actions_log"]), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

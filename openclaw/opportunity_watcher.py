@@ -127,7 +127,7 @@ class OpportunityWatcher:
                 "provenance": "opportunity_watcher",
             }
             try:
-                with open(self.memory_path, "a") as f:
+                with open(self.memory_path, "a", encoding="utf-8") as f:
                     f.write(json.dumps(entry) + "\n")
                 stored += 1
             except OSError:

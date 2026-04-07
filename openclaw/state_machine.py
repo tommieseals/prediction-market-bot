@@ -115,7 +115,7 @@ class StateMachine:
         if not self.path.exists():
             return AgentState.IDLE
         try:
-            data = json.loads(self.path.read_text())
+            data = json.loads(self.path.read_text(encoding="utf-8"))
             return AgentState(data["state"])
         except (json.JSONDecodeError, KeyError, ValueError):
             return AgentState.IDLE
@@ -129,7 +129,7 @@ class StateMachine:
                 "lock_holder": None,
             }
         try:
-            return json.loads(self.path.read_text())
+            return json.loads(self.path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             return {"state": "idle", "last_transition": "", "pid": None, "lock_holder": None}
 
@@ -148,7 +148,7 @@ class StateMachine:
             "lock_holder": f"pid_{os.getpid()}",
         }
         tmp = self.path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(data, indent=2))
+        tmp.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
         os.replace(str(tmp), str(self.path))
 
     def force_state(self, new_state: AgentState) -> None:
@@ -160,7 +160,7 @@ class StateMachine:
             "lock_holder": f"pid_{os.getpid()}_forced",
         }
         tmp = self.path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(data, indent=2))
+        tmp.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
         os.replace(str(tmp), str(self.path))
 
     def is_frozen(self) -> bool:

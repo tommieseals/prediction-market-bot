@@ -8,8 +8,13 @@
     "description": "Shared Brain — cross-machine knowledge sync via git",
     "execution_scope": "remote_assist",
     "agent_recruitment": "monitor_only",
-    "allowed_actions": ["read_status", "propose_fix"],
-    "allowed_worker_types": ["monitor"],
+    "allowed_actions": [
+      "read_status",
+      "propose_fix"
+    ],
+    "allowed_worker_types": [
+      "monitor"
+    ],
     "max_remote_workers": 1,
     "test_command": null,
     "rollback_command": "git checkout .",
@@ -17,9 +22,15 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Keep shared-brain sync healthy across machines"],
+    "current_goals": [
+      "Keep shared-brain sync healthy across machines"
+    ],
     "blockers": [],
-    "success_metrics": ["sync_healthy"]
+    "success_metrics": [
+      "sync_healthy"
+    ],
+    "status_command": "powershell -NoProfile -Command \"$report='C:\\Users\\User\\shared-memory\\shared-brain-sync-report.json'; if (Test-Path $report) { Get-Content $report -TotalCount 40 }; Write-Output '---'; if (Test-Path 'C:\\Users\\User\\clawd\\shared-brain') { git -C 'C:\\Users\\User\\clawd\\shared-brain' status --short --branch 2>$null | Select-Object -First 20 }; exit 0\"",
+    "status_timeout": 25
   },
   "swarm": {
     "owner_agent": "jarvis",
@@ -29,8 +40,12 @@
     "description": "Swarm Monitor — multi-agent coordination and monitoring",
     "execution_scope": "remote_assist",
     "agent_recruitment": "monitor_only",
-    "allowed_actions": ["read_status"],
-    "allowed_worker_types": ["monitor"],
+    "allowed_actions": [
+      "read_status"
+    ],
+    "allowed_worker_types": [
+      "monitor"
+    ],
     "max_remote_workers": 1,
     "test_command": null,
     "rollback_command": null,
@@ -38,9 +53,13 @@
     "identity_boundary": "bot_runtime_forbidden",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Monitor agent swarm health"],
+    "current_goals": [
+      "Monitor agent swarm health"
+    ],
     "blockers": [],
-    "success_metrics": ["agents_responsive"]
+    "success_metrics": [
+      "agents_responsive"
+    ]
   },
   "pharma": {
     "owner_agent": "jarvis",
@@ -51,8 +70,15 @@
     "description": "Pharma Arbitrage — pharmacy outreach and deal scanning",
     "execution_scope": "remote_assist",
     "agent_recruitment": "work_only",
-    "allowed_actions": ["read_status", "propose_fix", "draft_followup"],
-    "allowed_worker_types": ["monitor", "researcher"],
+    "allowed_actions": [
+      "read_status",
+      "propose_fix",
+      "draft_followup"
+    ],
+    "allowed_worker_types": [
+      "monitor",
+      "researcher"
+    ],
     "max_remote_workers": 2,
     "test_command": null,
     "rollback_command": null,
@@ -60,9 +86,15 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Identify pharmacy arbitrage opportunities", "Draft outreach emails"],
+    "current_goals": [
+      "Identify pharmacy arbitrage opportunities",
+      "Draft outreach emails"
+    ],
     "blockers": [],
-    "success_metrics": ["deals_identified > 0"]
+    "success_metrics": [
+      "deals_identified > 0"
+    ],
+    "status_command": "powershell -NoProfile -Command \"if (Test-Path 'C:\\Users\\User\\clawd\\arbitrage-pharma') { git -C 'C:\\Users\\User\\clawd\\arbitrage-pharma' status --short --branch 2>$null | Select-Object -First 20 } else { Write-Output 'repo_missing' }\""
   },
   "terminator": {
     "owner_agent": "jarvis",
@@ -73,8 +105,13 @@
     "description": "TerminatorBot — prediction market trading (arb, contrarian, alpha)",
     "execution_scope": "remote_assist",
     "agent_recruitment": "monitor_only",
-    "allowed_actions": ["read_status", "propose_parameter_change"],
-    "allowed_worker_types": ["monitor"],
+    "allowed_actions": [
+      "read_status",
+      "propose_parameter_change"
+    ],
+    "allowed_worker_types": [
+      "monitor"
+    ],
     "max_remote_workers": 1,
     "test_command": null,
     "rollback_command": "git checkout .",
@@ -82,10 +119,19 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "approval_on": ["parameter_change"],
-    "current_goals": ["Improve arb detection accuracy", "Live trading on prediction markets"],
+    "approval_on": [
+      "parameter_change"
+    ],
+    "current_goals": [
+      "Improve arb detection accuracy",
+      "Live trading on prediction markets"
+    ],
     "blockers": [],
-    "success_metrics": ["profitable_trades_per_week > 0"]
+    "success_metrics": [
+      "profitable_trades_per_week > 0"
+    ],
+    "status_command": "powershell -NoProfile -Command \"if (Test-Path 'C:\\Users\\User\\clawd\\TerminatorBot') { git -C 'C:\\Users\\User\\clawd\\TerminatorBot' status --short --branch 2>$null | Select-Object -First 20; Write-Output '---'; Get-ChildItem 'C:\\Users\\User\\clawd\\TerminatorBot\\data' -ErrorAction SilentlyContinue | Select-Object -First 8 Name,Length,LastWriteTime } else { Write-Output 'repo_missing' }\"",
+    "status_timeout": 25
   },
   "vault": {
     "owner_agent": "jarvis",
@@ -96,7 +142,9 @@
     "description": "Project Vault — financial tracking and revenue management",
     "execution_scope": "remote_assist",
     "agent_recruitment": "none",
-    "allowed_actions": ["read_status"],
+    "allowed_actions": [
+      "read_status"
+    ],
     "allowed_worker_types": [],
     "max_remote_workers": 0,
     "test_command": null,
@@ -105,9 +153,13 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Track revenue across all projects"],
+    "current_goals": [
+      "Track revenue across all projects"
+    ],
     "blockers": [],
-    "success_metrics": ["revenue_tracked"]
+    "success_metrics": [
+      "revenue_tracked"
+    ]
   },
   "fort_knox": {
     "owner_agent": "jarvis",
@@ -117,18 +169,31 @@
     "description": "Fort Knox — backup system, disaster recovery, data integrity",
     "execution_scope": "remote_auto",
     "agent_recruitment": "monitor_only",
-    "allowed_actions": ["read_status", "run_tests", "propose_fix"],
-    "allowed_worker_types": ["monitor"],
+    "allowed_actions": [
+      "read_status",
+      "run_tests",
+      "propose_fix"
+    ],
+    "allowed_worker_types": [
+      "monitor"
+    ],
     "max_remote_workers": 1,
     "test_command": null,
     "rollback_command": null,
     "risk_class": "low",
     "identity_boundary": "project_only",
-    "transport_profile": "local_runner",
+    "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Ensure all backups are current and verified"],
+    "current_goals": [
+      "Ensure all backups are current and verified"
+    ],
     "blockers": [],
-    "success_metrics": ["backups_verified", "no_stale_backups"]
+    "success_metrics": [
+      "backups_verified",
+      "no_stale_backups"
+    ],
+    "status_command": "test -f ~/shared-memory/analytics/shared-memory-audit-latest.json && head -40 ~/shared-memory/analytics/shared-memory-audit-latest.json; echo '---'; test -f ~/shared-memory/analytics/memory-index-status.json && head -40 ~/shared-memory/analytics/memory-index-status.json",
+    "status_timeout": 30
   },
   "whales": {
     "owner_agent": "jarvis",
@@ -138,8 +203,15 @@
     "description": "Whale Hunter — large deal tracking and high-value opportunity scanner",
     "execution_scope": "remote_assist",
     "agent_recruitment": "work_only",
-    "allowed_actions": ["read_status", "propose_fix", "draft_followup"],
-    "allowed_worker_types": ["monitor", "researcher"],
+    "allowed_actions": [
+      "read_status",
+      "propose_fix",
+      "draft_followup"
+    ],
+    "allowed_worker_types": [
+      "monitor",
+      "researcher"
+    ],
     "max_remote_workers": 2,
     "test_command": null,
     "rollback_command": null,
@@ -147,9 +219,13 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Identify high-value deals and opportunities"],
+    "current_goals": [
+      "Identify high-value deals and opportunities"
+    ],
     "blockers": [],
-    "success_metrics": ["whale_deals_tracked > 0"]
+    "success_metrics": [
+      "whale_deals_tracked > 0"
+    ]
   },
   "legion": {
     "owner_agent": "jarvis",
@@ -160,8 +236,18 @@
     "description": "Project Legion — browser-driven job automation and application workflows",
     "execution_scope": "remote_auto",
     "agent_recruitment": "full",
-    "allowed_actions": ["read_status", "propose_fix", "apply_fix", "run_tests", "draft_followup"],
-    "allowed_worker_types": ["monitor", "tester", "patcher"],
+    "allowed_actions": [
+      "read_status",
+      "propose_fix",
+      "apply_fix",
+      "run_tests",
+      "draft_followup"
+    ],
+    "allowed_worker_types": [
+      "monitor",
+      "tester",
+      "patcher"
+    ],
     "max_remote_workers": 3,
     "test_command": null,
     "rollback_command": "git checkout .",
@@ -169,9 +255,18 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Fix submission pipeline", "Fix Gmail OAuth"],
-    "blockers": ["Gmail OAuth reauth"],
-    "success_metrics": ["submissions_per_day > 5"]
+    "current_goals": [
+      "Fix submission pipeline",
+      "Fix Gmail OAuth"
+    ],
+    "blockers": [
+      "Gmail OAuth reauth"
+    ],
+    "success_metrics": [
+      "submissions_per_day > 5"
+    ],
+    "status_command": "python3 ~/clawd/scripts/job-auth-status.py 2>/dev/null; echo '---'; test -f ~/shared-memory/shared-brain-sync-report.json && head -40 ~/shared-memory/shared-brain-sync-report.json; echo '---'; git -C ~/legion-ultimate status --short --branch 2>/dev/null | head -20",
+    "status_timeout": 45
   },
   "legion_hq": {
     "owner_agent": "jarvis",
@@ -181,8 +276,12 @@
     "description": "Legion HQ — command center for Legion operations",
     "execution_scope": "remote_assist",
     "agent_recruitment": "monitor_only",
-    "allowed_actions": ["read_status"],
-    "allowed_worker_types": ["monitor"],
+    "allowed_actions": [
+      "read_status"
+    ],
+    "allowed_worker_types": [
+      "monitor"
+    ],
     "max_remote_workers": 1,
     "test_command": null,
     "rollback_command": null,
@@ -190,7 +289,9 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Monitor Legion operations dashboard"],
+    "current_goals": [
+      "Monitor Legion operations dashboard"
+    ],
     "blockers": [],
     "success_metrics": []
   },
@@ -202,8 +303,13 @@
     "description": "Fraud Detection — security monitoring and anomaly detection",
     "execution_scope": "remote_assist",
     "agent_recruitment": "monitor_only",
-    "allowed_actions": ["read_status", "propose_fix"],
-    "allowed_worker_types": ["monitor"],
+    "allowed_actions": [
+      "read_status",
+      "propose_fix"
+    ],
+    "allowed_worker_types": [
+      "monitor"
+    ],
     "max_remote_workers": 1,
     "test_command": null,
     "rollback_command": null,
@@ -211,9 +317,13 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Monitor for security anomalies"],
+    "current_goals": [
+      "Monitor for security anomalies"
+    ],
     "blockers": [],
-    "success_metrics": ["no_breaches"]
+    "success_metrics": [
+      "no_breaches"
+    ]
   },
   "n8n": {
     "owner_agent": "jarvis",
@@ -223,7 +333,9 @@
     "description": "n8n Hub — workflow automation platform integration",
     "execution_scope": "remote_assist",
     "agent_recruitment": "none",
-    "allowed_actions": ["read_status"],
+    "allowed_actions": [
+      "read_status"
+    ],
     "allowed_worker_types": [],
     "max_remote_workers": 0,
     "test_command": null,
@@ -232,9 +344,13 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Maintain n8n workflow automations"],
+    "current_goals": [
+      "Maintain n8n workflow automations"
+    ],
     "blockers": [],
-    "success_metrics": ["workflows_running"]
+    "success_metrics": [
+      "workflows_running"
+    ]
   },
   "fiverr": {
     "owner_agent": "jarvis",
@@ -244,8 +360,13 @@
     "description": "Fiverr — freelance gig management and client automation",
     "execution_scope": "remote_assist",
     "agent_recruitment": "work_only",
-    "allowed_actions": ["read_status", "draft_followup"],
-    "allowed_worker_types": ["researcher"],
+    "allowed_actions": [
+      "read_status",
+      "draft_followup"
+    ],
+    "allowed_worker_types": [
+      "researcher"
+    ],
     "max_remote_workers": 1,
     "test_command": null,
     "rollback_command": null,
@@ -253,9 +374,14 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Manage Fiverr gigs and client communications"],
+    "current_goals": [
+      "Manage Fiverr gigs and client communications"
+    ],
     "blockers": [],
-    "success_metrics": ["active_gigs > 0", "revenue_from_fiverr > 0"]
+    "success_metrics": [
+      "active_gigs > 0",
+      "revenue_from_fiverr > 0"
+    ]
   },
   "kdp": {
     "owner_agent": "jarvis",
@@ -265,8 +391,13 @@
     "description": "KDP — Kindle Direct Publishing book automation",
     "execution_scope": "remote_assist",
     "agent_recruitment": "work_only",
-    "allowed_actions": ["read_status", "draft_followup"],
-    "allowed_worker_types": ["researcher"],
+    "allowed_actions": [
+      "read_status",
+      "draft_followup"
+    ],
+    "allowed_worker_types": [
+      "researcher"
+    ],
     "max_remote_workers": 1,
     "test_command": null,
     "rollback_command": null,
@@ -274,9 +405,15 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Publish books on KDP", "Optimize listings"],
+    "current_goals": [
+      "Publish books on KDP",
+      "Optimize listings"
+    ],
     "blockers": [],
-    "success_metrics": ["books_published > 0", "kdp_revenue > 0"]
+    "success_metrics": [
+      "books_published > 0",
+      "kdp_revenue > 0"
+    ]
   },
   "tascosaur": {
     "owner_agent": "jarvis",
@@ -287,7 +424,9 @@
     "description": "Tascosaur — NLP-powered task management and automation",
     "execution_scope": "remote_assist",
     "agent_recruitment": "none",
-    "allowed_actions": ["read_status"],
+    "allowed_actions": [
+      "read_status"
+    ],
     "allowed_worker_types": [],
     "max_remote_workers": 0,
     "test_command": null,
@@ -296,7 +435,9 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Maintain NLP task processing"],
+    "current_goals": [
+      "Maintain NLP task processing"
+    ],
     "blockers": [],
     "success_metrics": []
   },
@@ -309,7 +450,9 @@
     "description": "TaskBot — enterprise automation platform",
     "execution_scope": "remote_assist",
     "agent_recruitment": "none",
-    "allowed_actions": ["read_status"],
+    "allowed_actions": [
+      "read_status"
+    ],
     "allowed_worker_types": [],
     "max_remote_workers": 0,
     "test_command": null,
@@ -318,9 +461,12 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Review automation pipeline"],
+    "current_goals": [
+      "Review automation pipeline"
+    ],
     "blockers": [],
-    "success_metrics": []
+    "success_metrics": [],
+    "status_command": "powershell -NoProfile -Command \"if (Test-Path 'C:\\Users\\User\\clawd\\taskbot') { git -C 'C:\\Users\\User\\clawd\\taskbot' status --short --branch 2>$null | Select-Object -First 20 } else { Write-Output 'repo_missing' }\""
   },
   "translator": {
     "owner_agent": "jarvis",
@@ -330,7 +476,9 @@
     "description": "Teams Translator — real-time translation for MS Teams",
     "execution_scope": "remote_assist",
     "agent_recruitment": "none",
-    "allowed_actions": ["read_status"],
+    "allowed_actions": [
+      "read_status"
+    ],
     "allowed_worker_types": [],
     "max_remote_workers": 0,
     "test_command": null,
@@ -339,7 +487,9 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Maintain translation service"],
+    "current_goals": [
+      "Maintain translation service"
+    ],
     "blockers": [],
     "success_metrics": []
   },
@@ -352,7 +502,9 @@
     "description": "Sidekick PaaS — platform-as-a-service agent deployment",
     "execution_scope": "remote_assist",
     "agent_recruitment": "none",
-    "allowed_actions": ["read_status"],
+    "allowed_actions": [
+      "read_status"
+    ],
     "allowed_worker_types": [],
     "max_remote_workers": 0,
     "test_command": null,
@@ -361,7 +513,9 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Develop PaaS platform for agent deployment"],
+    "current_goals": [
+      "Develop PaaS platform for agent deployment"
+    ],
     "blockers": [],
     "success_metrics": []
   },
@@ -373,18 +527,31 @@
     "description": "Memory Platform — shared semantic memory (Mem0, Qdrant, Postgres)",
     "execution_scope": "remote_auto",
     "agent_recruitment": "monitor_only",
-    "allowed_actions": ["read_status", "run_tests", "propose_fix"],
-    "allowed_worker_types": ["monitor"],
+    "allowed_actions": [
+      "read_status",
+      "run_tests",
+      "propose_fix"
+    ],
+    "allowed_worker_types": [
+      "monitor"
+    ],
     "max_remote_workers": 1,
     "test_command": null,
     "rollback_command": null,
     "risk_class": "low",
     "identity_boundary": "project_only",
-    "transport_profile": "local_runner",
+    "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Maintain Qdrant + Postgres health", "Validate memory integrity"],
+    "current_goals": [
+      "Maintain Qdrant + Postgres health",
+      "Validate memory integrity"
+    ],
     "blockers": [],
-    "success_metrics": ["qdrant_up", "postgres_up", "memory_integrity_valid"]
+    "success_metrics": [
+      "qdrant_up",
+      "postgres_up",
+      "memory_integrity_valid"
+    ]
   },
   "sessions": {
     "owner_agent": "jarvis",
@@ -394,7 +561,9 @@
     "description": "Sessions — conversation session management and history",
     "execution_scope": "remote_assist",
     "agent_recruitment": "none",
-    "allowed_actions": ["read_status"],
+    "allowed_actions": [
+      "read_status"
+    ],
     "allowed_worker_types": [],
     "max_remote_workers": 0,
     "test_command": null,
@@ -403,7 +572,9 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Maintain session history"],
+    "current_goals": [
+      "Maintain session history"
+    ],
     "blockers": [],
     "success_metrics": []
   },
@@ -415,7 +586,9 @@
     "description": "A2A Server — agent-to-agent protocol and communication",
     "execution_scope": "remote_assist",
     "agent_recruitment": "none",
-    "allowed_actions": ["read_status"],
+    "allowed_actions": [
+      "read_status"
+    ],
     "allowed_worker_types": [],
     "max_remote_workers": 0,
     "test_command": null,
@@ -424,7 +597,9 @@
     "identity_boundary": "project_only",
     "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Maintain A2A protocol server"],
+    "current_goals": [
+      "Maintain A2A protocol server"
+    ],
     "blockers": [],
     "success_metrics": []
   },
@@ -435,17 +610,28 @@
     "description": "Monitoring & Fort Knox — alerting, backups, operational truth",
     "execution_scope": "remote_auto",
     "agent_recruitment": "monitor_only",
-    "allowed_actions": ["read_status", "run_tests", "propose_fix"],
-    "allowed_worker_types": ["monitor"],
+    "allowed_actions": [
+      "read_status",
+      "run_tests",
+      "propose_fix"
+    ],
+    "allowed_worker_types": [
+      "monitor"
+    ],
     "max_remote_workers": 1,
     "test_command": null,
     "rollback_command": null,
     "risk_class": "low",
     "identity_boundary": "project_only",
-    "transport_profile": "local_runner",
+    "transport_profile": "ssh",
     "credential_scope": [],
-    "current_goals": ["Monitor all systems", "Maintain alerting"],
+    "current_goals": [
+      "Monitor all systems",
+      "Maintain alerting"
+    ],
     "blockers": [],
-    "success_metrics": ["alerts_healthy"]
+    "success_metrics": [
+      "alerts_healthy"
+    ]
   }
 }

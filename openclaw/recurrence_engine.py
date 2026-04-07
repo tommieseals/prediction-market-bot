@@ -26,7 +26,7 @@ class RecurrenceEngine:
             return []
         incidents = []
         try:
-            with open(self.path, "r") as f:
+            with open(self.path, "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if line:
@@ -40,7 +40,7 @@ class RecurrenceEngine:
 
     def _append_incident(self, incident: dict) -> None:
         IncidentRecord.validate(incident)
-        with open(self.path, "a") as f:
+        with open(self.path, "a", encoding="utf-8") as f:
             f.write(json.dumps(incident) + "\n")
 
     def detect_recurring_incidents(self, alerts: list[dict]) -> list[dict]:
@@ -108,7 +108,7 @@ class RecurrenceEngine:
             return None
         # Atomic rewrite via tmp + os.replace
         tmp = self.path.with_suffix(".tmp")
-        with open(tmp, "w") as f:
+        with open(tmp, "w", encoding="utf-8") as f:
             for inc in incidents:
                 f.write(json.dumps(inc) + "\n")
         os.replace(str(tmp), str(self.path))

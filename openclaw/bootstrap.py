@@ -257,7 +257,7 @@ def _create_seed_files() -> int:
     created = 0
     for path, content in seeds.items():
         if not path.exists():
-            path.write_text(content)
+            path.write_text(content, encoding="utf-8")
             created += 1
     print(f"  Seed files: {created} created, {len(seeds) - created} already existed")
     return created
@@ -340,15 +340,15 @@ def bootstrap(cli_principal_id: str | None = None) -> dict:
         print(f"  New value differs: {principal_id[:16]}...")
         # Backup existing before overwrite
         bak = Config.PRINCIPAL_ID_PATH.with_suffix(".bak")
-        bak.write_text(existing_pid)
+        bak.write_text(existing_pid, encoding="utf-8")
         print(f"  Backed up existing to {bak.name}")
-    Config.PRINCIPAL_ID_PATH.write_text(principal_id)
+    Config.PRINCIPAL_ID_PATH.write_text(principal_id, encoding="utf-8")
     print(f"  PRINCIPAL_ID: {principal_id[:16]}... (saved to {Config.PRINCIPAL_ID_PATH.name})")
 
     # 4. INSTALL_ID
     print("\n[4/6] Generating INSTALL_ID...")
     install_id = generate_machine_id()
-    Config.INSTALL_ID_PATH.write_text(install_id)
+    Config.INSTALL_ID_PATH.write_text(install_id, encoding="utf-8")
     print(f"  INSTALL_ID: {install_id[:16]}... (machine: {platform.node()})")
 
     # 5. Seed files

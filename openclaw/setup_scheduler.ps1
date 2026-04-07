@@ -1,40 +1,32 @@
-# OpenClaw Anomaly — Windows Task Scheduler Setup (RTX)
-# Run as Administrator
+﻿# OpenClaw Anomaly - Windows Task Scheduler Setup (RTX)
+# Creates recurring tasks that run from the real project root via task_runner.ps1
 
-$pythonPath = "C:\Users\User\AppData\Local\Programs\Python\Python312\python.exe"
-$workDir = "C:\Users\User\clawd"
+$ErrorActionPreference = "Stop"
+$runnerPath = "C:\Users\User\clawd\openclaw\task_runner.ps1"
 
-# Proactive cycle every 6 hours
-schtasks /create /tn "OGE-Proactive" `
-  /tr "$pythonPath -m openclaw.main --mode=proactive" `
-  /sc hourly /mo 6 /st 00:17 `
-  /sd (Get-Date -Format "MM/dd/yyyy") `
-  /ru $env:USERNAME `
-  /f
+function Register-OpenClawTask {
+    param(
+        [string]$TaskName,
+        [string]$Mode,
+        [Microsoft.Management.Infrastructure.CimInstance]$Trigger,
+        [string]$Description
+    )
 
-# Morning pulse daily at 8:03 AM
-schtasks /create /tn "OGE-MorningPulse" `
-  /tr "$pythonPath -m openclaw.main --mode=morning-pulse" `
-  /sc daily /st 08:03 `
-  /sd (Get-Date -Format "MM/dd/yyyy") `
-  /ru $env:USERNAME `
-  /f
+    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$runnerPath`" -Mode $Mode"
+    $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -MultipleInstances IgnoreNew
+    Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $Trigger -Settings $settings -Description $Description -Force | Out-Null
+}
 
-# META cycle weekly Sunday 2:07 AM
-schtasks /create /tn "OGE-META" `
-  /tr "$pythonPath -m openclaw.main --mode=meta" `
-  /sc weekly /d SUN /st 02:07 `
-  /sd (Get-Date -Format "MM/dd/yyyy") `
-  /ru $env:USERNAME `
-  /f
+$now = Get-Date
+$proactiveTrigger = New-ScheduledTaskTrigger -Once -At ($now.AddMinutes(5)) -RepetitionInterval (New-TimeSpan -Hours 6) -RepetitionDuration (New-TimeSpan -Days 3650)
+$evalTrigger = New-ScheduledTaskTrigger -Once -At ($now.AddMinutes(20)) -RepetitionInterval (New-TimeSpan -Hours 12) -RepetitionDuration (New-TimeSpan -Days 3650)
+$morningTrigger = New-ScheduledTaskTrigger -Daily -At 8:03AM
+$metaTrigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At 2:07AM
 
-# Eval harness every 12 hours (offset from proactive)
-schtasks /create /tn "OGE-Eval" `
-  /tr "$pythonPath -m openclaw.main --mode=eval" `
-  /sc hourly /mo 12 /st 03:33 `
-  /sd (Get-Date -Format "MM/dd/yyyy") `
-  /ru $env:USERNAME `
-  /f
+Register-OpenClawTask -TaskName "OpenClaw-Proactive" -Mode "proactive" -Trigger $proactiveTrigger -Description "Run the 22-step OpenClaw proactive cycle every 6 hours"
+Register-OpenClawTask -TaskName "OpenClaw-MorningPulse" -Mode "morning-pulse" -Trigger $morningTrigger -Description "Run the OpenClaw morning pulse each day"
+Register-OpenClawTask -TaskName "OpenClaw-META" -Mode "meta" -Trigger $metaTrigger -Description "Run the weekly OpenClaw meta cycle"
+Register-OpenClawTask -TaskName "OpenClaw-Eval" -Mode "eval" -Trigger $evalTrigger -Description "Run the OpenClaw eval harness every 12 hours"
 
-Write-Host "Task Scheduler entries created:"
-schtasks /query /tn "OGE-*" /fo table
+Get-ScheduledTask | Where-Object { $_.TaskName -like "OpenClaw-*" } | Select-Object TaskName, State, TaskPath
+

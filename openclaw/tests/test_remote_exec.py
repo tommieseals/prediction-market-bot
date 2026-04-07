@@ -39,6 +39,11 @@ class TestRemoteExec(unittest.TestCase):
         self.assertEqual(result["exit_code"], -1)
         self.assertIn("manual_only", result["stderr"])
 
+    def test_rtx_ssh_transport_resolves_to_local_runner_on_windows(self):
+        rex = self._make_exec({"proj3": {"transport_profile": "ssh", "machine": "rtx"}})
+        with patch("platform.system", return_value="Windows"):
+            self.assertEqual(rex._resolve_transport("rtx", "ssh"), "local_runner")
+
 
 if __name__ == "__main__":
     unittest.main()
