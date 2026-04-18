@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 #
 # Mac Pro - Phase A Foundation Setup
 # Turns a fresh Mac into a production-grade core node
@@ -251,7 +251,7 @@ cat > "$CONFIG_DIR/service-registry.json" << 'REGISTRY'
   "node": {
     "name": "mac-pro",
     "role": "core-node",
-    "ip": "100.89.75.126",
+    "ip": "100.86.80.74",
     "capabilities": [
       "ollama-inference",
       "llm-gateway",
@@ -354,7 +354,7 @@ sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setstealthmode on
 
 log "macOS firewall enabled (stealth mode on)"
 warn "IMPORTANT: Ensure Tailscale is installed and connected!"
-warn "All external access should go through Tailscale (100.89.75.126)"
+warn "All external access should go through Tailscale (100.86.80.74)"
 
 # ============================================================================
 # Step 12: Create disaster recovery script
@@ -501,18 +501,18 @@ chmod +x "$SCRIPTS_DIR/status.sh"
 
 log ""
 log "========================================="
-log "Phase A Foundation Setup Complete! ✅"
+log "Phase A Foundation Setup Complete! âœ…"
 log "========================================="
 log ""
 log "What was installed:"
-log "  ✓ Homebrew + base tools"
-log "  ✓ PostgreSQL (databases: mac_pro_registry, n8n)"
-log "  ✓ Redis"
-log "  ✓ Centralized logging ($LOG_DIR/unified.log)"
-log "  ✓ Health monitoring (every 5 min)"
-log "  ✓ Daily backups (2 AM)"
-log "  ✓ Service registry"
-log "  ✓ Firewall hardening"
+log "  âœ“ Homebrew + base tools"
+log "  âœ“ PostgreSQL (databases: mac_pro_registry, n8n)"
+log "  âœ“ Redis"
+log "  âœ“ Centralized logging ($LOG_DIR/unified.log)"
+log "  âœ“ Health monitoring (every 5 min)"
+log "  âœ“ Daily backups (2 AM)"
+log "  âœ“ Service registry"
+log "  âœ“ Firewall hardening"
 log ""
 log "Key locations:"
 log "  Install: $INSTALL_DIR"
@@ -531,6 +531,6 @@ log "  1. Fill in secrets: $CONFIG_DIR/secrets.env"
 log "  2. Phase B: Install Ollama + models"
 log "  3. Phase C: Install LLM Gateway, n8n, Telegram bot"
 log ""
-warn "IMPORTANT: Ensure Tailscale is running! All access should be via 100.89.75.126"
+warn "IMPORTANT: Ensure Tailscale is running! All access should be via 100.86.80.74"
 log ""
 log "Run '$SCRIPTS_DIR/status.sh' to see current status"

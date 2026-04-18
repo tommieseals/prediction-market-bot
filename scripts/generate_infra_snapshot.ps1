@@ -1,4 +1,4 @@
-# Generate Infrastructure Snapshot (source-of-truth draft)
+﻿# Generate Infrastructure Snapshot (source-of-truth draft)
 $ErrorActionPreference = 'Continue'
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $docPath = "C:\Users\USER\clawd\docs\infra_snapshot.md"
@@ -23,7 +23,7 @@ $lines += "## Mac Mini (100.88.105.106)"
 if ($macMini) { $lines += $macMini } else { $lines += "UNREACHABLE" }
 $lines += ""
 $lines += "## Mac Pro"
-$lines += "IP mismatch in docs (100.84.100.23 vs 100.89.75.126). Verify live IP and update." 
+$lines += "IP mismatch in docs (100.84.100.23 vs 100.86.80.74). Verify live IP and update." 
 $lines += ""
 $lines += "## Google Cloud"
 $lines += "100.107.231.87 (backup node)"

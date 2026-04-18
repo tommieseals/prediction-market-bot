@@ -1,4 +1,4 @@
-# Infra Health Check
+﻿# Infra Health Check
 # Logs HTTP health for key services (local + remote)
 $ErrorActionPreference = 'Continue'
 
@@ -34,9 +34,9 @@ Check-Url -Name "Mac Mini Dashboard" -Url "http://100.88.105.106:8080/infrastruc
 Check-Url -Name "Mac Mini Gateway" -Url "http://100.88.105.106:18789/"
 
 # Mac Pro (Monitoring Stack) - IP may need verification
-Check-Url -Name "Grafana" -Url "http://100.89.75.126:3000"
-Check-Url -Name "Prometheus" -Url "http://100.89.75.126:9090"
-Check-Url -Name "Uptime Kuma" -Url "http://100.89.75.126:3001"
+Check-Url -Name "Grafana" -Url "http://100.86.80.74:3000"
+Check-Url -Name "Prometheus" -Url "http://100.86.80.74:9090"
+Check-Url -Name "Uptime Kuma" -Url "http://100.86.80.74:3001"
 
 "Done." | Out-File -FilePath $logFile -Append
 Write-Host "Health check complete: $logFile"

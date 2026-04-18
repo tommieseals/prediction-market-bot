@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Service Auto-Healer - Monitors and auto-restarts critical services across all nodes
 
@@ -82,8 +82,8 @@ $Script:Services = @{
         )
     }
     "Mac-Pro" = @{
-        Host = "administrator@100.89.75.126"
-        IP = "100.89.75.126"
+        Host = "administrator@100.86.80.74"
+        IP = "100.86.80.74"
         Critical = $false
         Services = @(
             @{
@@ -319,13 +319,13 @@ function Invoke-HealthCheck {
                         $healsPerformed++
                         Update-ServiceState -Node $nodeName -Service $serviceName -Running $true -Healed $true
                         
-                        Send-TelegramAlert "🩹 *Service Healed*`n`nNode: $nodeName`nService: $serviceName`nTime: $(Get-Date -Format 'HH:mm:ss')"
+                        Send-TelegramAlert "ðŸ©¹ *Service Healed*`n`nNode: $nodeName`nService: $serviceName`nTime: $(Get-Date -Format 'HH:mm:ss')"
                     } else {
                         Write-Log "$nodeName/$serviceName restart FAILED" -Level "ERROR"
                         $action = "FAILED"
                         Update-ServiceState -Node $nodeName -Service $serviceName -Running $false
                         
-                        Send-TelegramAlert "❌ *Service Restart FAILED*`n`nNode: $nodeName`nService: $serviceName`nTime: $(Get-Date -Format 'HH:mm:ss')`n`nManual intervention needed!"
+                        Send-TelegramAlert "âŒ *Service Restart FAILED*`n`nNode: $nodeName`nService: $serviceName`nTime: $(Get-Date -Format 'HH:mm:ss')`n`nManual intervention needed!"
                     }
                 }
             }

@@ -1,10 +1,10 @@
-# SHARED_MEMORY.md - Shared Brain and Live Status Rules
+﻿# SHARED_MEMORY.md - Shared Brain and Live Status Rules
 
 Last Updated: 2026-04-05 22:45 CT
 
 ## Shared-Memory Ownership
 - Jarvis / Mac Pro is the shared-memory host.
-- Current Jarvis / Mac Pro IP: `100.89.75.126`
+- Current Jarvis / Mac Pro IP: `100.86.80.74`
 - Retired Mac Pro IPs: `100.92.123.115` and `100.89.67.10`
 
 ## Canonical Live JSON

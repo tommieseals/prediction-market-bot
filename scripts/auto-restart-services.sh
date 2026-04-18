@@ -1,9 +1,9 @@
-#!/bin/bash
+﻿#!/bin/bash
 #==============================================================================
 # AUTO-RESTART-SERVICES.SH - Automated Service Recovery Script
 #==============================================================================
 # Purpose: Checks and restarts ollama/clawdbot services if they're down
-# Target:  Mac Mini (100.88.105.106) / Mac Pro (100.89.75.126) via SSH
+# Target:  Mac Mini (100.88.105.106) / Mac Pro (100.86.80.74) via SSH
 # Usage:   ./auto-restart-services.sh [OPTIONS]
 #
 # Options:
@@ -42,7 +42,7 @@ WAIT_TIME=10
 
 # Default hosts (from TOOLS.md)
 MAC_MINI="100.88.105.106"
-MAC_PRO="100.89.75.126"
+MAC_PRO="100.86.80.74"
 
 #------------------------------------------------------------------------------
 # Service Definitions
@@ -191,10 +191,10 @@ check_service() {
     log_debug "Checking $desc..."
     
     if run_cmd "$check_cmd" 2>/dev/null; then
-        log_info "✓ $desc is running"
+        log_info "âœ“ $desc is running"
         return 0
     else
-        log_warn "✗ $desc is NOT running"
+        log_warn "âœ— $desc is NOT running"
         return 1
     fi
 }
@@ -277,7 +277,7 @@ restart_service() {
         
         # Verify it's running
         if check_service "$service" && verify_service "$service"; then
-            log_success "✓ $desc restarted successfully!"
+            log_success "âœ“ $desc restarted successfully!"
             return 0
         fi
         
@@ -290,7 +290,7 @@ restart_service() {
         fi
     done
     
-    log_error "✗ Failed to restart $desc after $MAX_RETRIES attempts"
+    log_error "âœ— Failed to restart $desc after $MAX_RETRIES attempts"
     return 1
 }
 
@@ -340,9 +340,9 @@ generate_report() {
     for service in "${services_checked[@]}"; do
         local desc="${SERVICES[${service}_desc]}"
         if check_service "$service" > /dev/null 2>&1; then
-            log_info "✓ $desc: RUNNING"
+            log_info "âœ“ $desc: RUNNING"
         else
-            log_error "✗ $desc: DOWN"
+            log_error "âœ— $desc: DOWN"
         fi
     done
     

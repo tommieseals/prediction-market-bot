@@ -1,4 +1,4 @@
-# MEMORY.md - RTX Canonical Summary
+﻿# MEMORY.md - RTX Canonical Summary
 
 Last Updated: 2026-04-06 13:25 CT
 Purpose: Fast source of truth for the RTX workspace. Use this file first, then follow memory/INDEX.md for topic-level detail.
@@ -29,7 +29,7 @@ Last Verified: 2026-04-05
 Last Verified: 2026-04-05 via Tailscale and shared-memory status checks
 - RTX / Bottom Bitch: Tailscale IP 100.115.12.91, primary compute and local Ollama host on Windows.
 - Tom / Mac Mini: Tailscale IP 100.88.105.106, gateway 18789, job automation and dashboard host.
-- Jarvis / Mac Pro: Tailscale IP 100.89.75.126, gateway 18790, shared-memory host. Older Mac Pro IPs are retired history only.
+- Jarvis / Mac Pro: Tailscale IP 100.86.80.74, gateway 18790, shared-memory host. Older Mac Pro IPs are retired history only.
 
 ## Current Model Facts
 Last Verified: 2026-04-05

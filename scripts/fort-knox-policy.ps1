@@ -1,9 +1,9 @@
-# Fort Knox Backup Policy for Dell (Windows)
+﻿# Fort Knox Backup Policy for Dell (Windows)
 # Compresses backups older than 7 days and sends to Mac Pro
 # Run daily via Task Scheduler
 
 $BackupDir = "C:\Users\User\clawd\backups"
-$FortKnox = "administrator@100.89.75.126"
+$FortKnox = "administrator@100.86.80.74"
 $FortKnoxPath = "~/fort-knox/dell-backups"
 $LogFile = "C:\Users\User\clawd\logs\fort-knox.log"
 $DaysToKeepLocal = 7

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Complete morning status dashboard - all systems at a glance
 .DESCRIPTION
@@ -44,7 +44,7 @@ Write-Section "NODE STATUS"
 $nodes = @(
     @{ name = "Dell (This)"; ip = "localhost"; local = $true },
     @{ name = "Mac Mini"; ip = "100.88.105.106"; user = "tommie" },
-    @{ name = "Mac Pro"; ip = "100.89.75.126"; user = "administrator" }
+    @{ name = "Mac Pro"; ip = "100.86.80.74"; user = "administrator" }
 )
 
 foreach ($node in $nodes) {

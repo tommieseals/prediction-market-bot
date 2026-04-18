@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Security Audit Scanner - Multi-node security health checker
 .DESCRIPTION
@@ -34,7 +34,7 @@ $Nodes = @{
         Role = "Local AI / Ollama"
     }
     "Mac-Pro" = @{
-        IP = "100.89.75.126"
+        IP = "100.86.80.74"
         User = "administrator"
         Critical = $false
         Role = "Heavy Workloads"
@@ -314,7 +314,7 @@ function Generate-Report {
 "@
 
     foreach ($fw in $Results.Firewalls) {
-        $report += "`n| $($fw.Node) | $(if ($fw.FirewallEnabled) { '✅ ON' } else { '❌ OFF' }) | $(if ($fw.StealthMode) { '✅ ON' } else { '❌ OFF' }) | $($fw.Status) |"
+        $report += "`n| $($fw.Node) | $(if ($fw.FirewallEnabled) { 'âœ… ON' } else { 'âŒ OFF' }) | $(if ($fw.StealthMode) { 'âœ… ON' } else { 'âŒ OFF' }) | $($fw.Status) |"
     }
 
     if ($Results.ExposedPorts.Count -gt 0) {
@@ -418,7 +418,7 @@ if ($Results.Recommendations.Count -gt 0) {
     Write-Host ""
     Write-Host "  Recommendations ($($Results.Recommendations.Count)):" -ForegroundColor Yellow
     foreach ($rec in $Results.Recommendations | Select-Object -First 5) {
-        Write-Host "    • $rec" -ForegroundColor Gray
+        Write-Host "    â€¢ $rec" -ForegroundColor Gray
     }
     if ($Results.Recommendations.Count -gt 5) {
         Write-Host "    ... and $($Results.Recommendations.Count - 5) more" -ForegroundColor DarkGray

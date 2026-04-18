@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Tailscale Network Health Monitor
 .DESCRIPTION
@@ -42,8 +42,8 @@ $Nodes = @{
         Critical = $true
     }
     "Mac-Pro" = @{
-        IP = "100.89.75.126"
-        SSH = "administrator@100.89.75.126"
+        IP = "100.86.80.74"
+        SSH = "administrator@100.86.80.74"
         Role = "Heavy AI Workloads"
         Critical = $false
     }

@@ -1,4 +1,4 @@
-# Sync local shared-brain to/from Mac Pro (with git)
+﻿# Sync local shared-brain to/from Mac Pro (with git)
 # Usage: sync-shared-brain.ps1 [push|pull|status]
 
 param(
@@ -9,7 +9,7 @@ param(
 
 $RepoPath = "C:\Users\User\clawd"
 $LocalPath = "C:\Users\User\clawd\shared-brain"
-$RemoteHost = "administrator@100.89.75.126"
+$RemoteHost = "administrator@100.86.80.74"
 $RemotePath = "~/shared-brain"
 
 function Log($msg) {

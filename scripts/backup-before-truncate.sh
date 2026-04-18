@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 # Backup Before Truncate Script
 # Run this BEFORE truncating any logs
 # Sends backup to Mac Pro for permanent storage
@@ -6,7 +6,7 @@
 set -e
 
 DATE=$(date +%Y-%m-%d_%H%M%S)
-MAC_PRO="administrator@100.89.75.126"
+MAC_PRO="administrator@100.86.80.74"
 BACKUP_NAME="logs-backup-${DATE}"
 LOCAL_BACKUP="/tmp/${BACKUP_NAME}"
 REMOTE_BACKUP="~/fort-knox-backups/"

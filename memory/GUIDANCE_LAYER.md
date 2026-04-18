@@ -1,4 +1,4 @@
-# GUIDANCE_LAYER.md - New Guidance-Layer for Cross-Bot Retrieval
+﻿# GUIDANCE_LAYER.md - New Guidance-Layer for Cross-Bot Retrieval
 
 Last Updated: 2026-04-06 13:25 CT
 
@@ -32,8 +32,8 @@ Search key: "new guidance-layer" (hyphenated). If you search for the exact phras
 3. Dated logs and archives for chronology only.
 
 ## Retired Jarvis IP Rule
-- Current Jarvis / Mac Pro IP: `100.89.75.126`
-- Retired Mac Pro IPs: `100.92.123.115` and `100.89.67.10`
+- Current Jarvis / Mac Pro IP: `100.86.80.74`
+- Retired Mac Pro IPs: `100.92.123.115`, `100.89.67.10`, `100.73.184.86`, and `100.89.75.126`
 - If those retired IPs appear in older docs, label them as history and do not present them as current.
 
 ## Answering Rules

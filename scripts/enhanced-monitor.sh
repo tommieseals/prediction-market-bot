@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 # =============================================================================
 # Enhanced Clawd Infrastructure Health Monitor
 # =============================================================================
@@ -18,7 +18,7 @@ THRESHOLD_LOAD=4
 declare -A NODES=(
     ["Dell"]="local"
     ["Mac-Mini"]="100.88.105.106"
-    ["Mac-Pro"]="100.89.75.126"
+    ["Mac-Pro"]="100.86.80.74"
 )
 
 # Colors for output
@@ -38,19 +38,19 @@ EXIT_CODE=0
 # -----------------------------------------------------------------------------
 
 print_header() {
-    echo -e "\n${BOLD}${BLUE}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BOLD}${BLUE}║        CLAWD INFRASTRUCTURE HEALTH MONITOR                   ║${NC}"
-    echo -e "${BOLD}${BLUE}║        $(date '+%Y-%m-%d %H:%M:%S')                              ║${NC}"
-    echo -e "${BOLD}${BLUE}╚══════════════════════════════════════════════════════════════╝${NC}\n"
+    echo -e "\n${BOLD}${BLUE}â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—${NC}"
+    echo -e "${BOLD}${BLUE}â•‘        CLAWD INFRASTRUCTURE HEALTH MONITOR                   â•‘${NC}"
+    echo -e "${BOLD}${BLUE}â•‘        $(date '+%Y-%m-%d %H:%M:%S')                              â•‘${NC}"
+    echo -e "${BOLD}${BLUE}â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}\n"
 }
 
 status_icon() {
     local value=$1
     local threshold=$2
     if (( $(echo "$value >= $threshold" | bc -l 2>/dev/null || echo "0") )); then
-        echo -e "${RED}✗${NC}"
+        echo -e "${RED}âœ—${NC}"
     else
-        echo -e "${GREEN}✓${NC}"
+        echo -e "${GREEN}âœ“${NC}"
     fi
 }
 
@@ -80,9 +80,9 @@ format_load() {
 service_status() {
     local running=$1
     if [[ "$running" == "true" || "$running" == "1" ]]; then
-        echo -e "${GREEN}●${NC}"
+        echo -e "${GREEN}â—${NC}"
     else
-        echo -e "${RED}○${NC}"
+        echo -e "${RED}â—‹${NC}"
     fi
 }
 
@@ -303,40 +303,40 @@ check_nvidia_usage() {
 # -----------------------------------------------------------------------------
 
 print_summary() {
-    echo -e "\n${BOLD}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "\n${BOLD}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
     echo -e "${BOLD}                     HEALTH SUMMARY                             ${NC}"
-    echo -e "${BOLD}═══════════════════════════════════════════════════════════════${NC}\n"
+    echo -e "${BOLD}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}\n"
     
     # Table header
-    printf "%-12s │ %8s │ %8s │ %8s │ %7s │ %8s │ %7s\n" \
+    printf "%-12s â”‚ %8s â”‚ %8s â”‚ %8s â”‚ %7s â”‚ %8s â”‚ %7s\n" \
         "Node" "RAM" "Disk" "Load" "Ollama" "Clawdbot" "Docker"
-    echo "─────────────┼──────────┼──────────┼──────────┼─────────┼──────────┼────────"
+    echo "â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€"
     
     # Dell
-    printf "%-12s │ " "Dell"
-    printf "%s │ " "$(format_percent "${DELL_RAM:-N/A}" $THRESHOLD_RAM)"
-    printf "%s │ " "$(format_percent "${DELL_DISK:-N/A}" $THRESHOLD_DISK)"
-    printf "%s │ " "$(format_load "${DELL_LOAD:-0}")"
-    printf "   %s   │ " "$(service_status "${DELL_OLLAMA:-false}")"
-    printf "    %s    │ " "$(service_status "${DELL_CLAWDBOT:-false}")"
+    printf "%-12s â”‚ " "Dell"
+    printf "%s â”‚ " "$(format_percent "${DELL_RAM:-N/A}" $THRESHOLD_RAM)"
+    printf "%s â”‚ " "$(format_percent "${DELL_DISK:-N/A}" $THRESHOLD_DISK)"
+    printf "%s â”‚ " "$(format_load "${DELL_LOAD:-0}")"
+    printf "   %s   â”‚ " "$(service_status "${DELL_OLLAMA:-false}")"
+    printf "    %s    â”‚ " "$(service_status "${DELL_CLAWDBOT:-false}")"
     printf "   %s\n" "$(service_status "${DELL_DOCKER:-false}")"
     
     # Mac Mini
-    printf "%-12s │ " "Mac-Mini"
-    printf "%s │ " "$(format_percent "${Mac_Mini_RAM:-N/A}" $THRESHOLD_RAM)"
-    printf "%s │ " "$(format_percent "${Mac_Mini_DISK:-N/A}" $THRESHOLD_DISK)"
-    printf "%s │ " "$(format_load "${Mac_Mini_LOAD:-0}")"
-    printf "   %s   │ " "$(service_status "${Mac_Mini_OLLAMA:-false}")"
-    printf "    %s    │ " "$(service_status "${Mac_Mini_CLAWDBOT:-false}")"
+    printf "%-12s â”‚ " "Mac-Mini"
+    printf "%s â”‚ " "$(format_percent "${Mac_Mini_RAM:-N/A}" $THRESHOLD_RAM)"
+    printf "%s â”‚ " "$(format_percent "${Mac_Mini_DISK:-N/A}" $THRESHOLD_DISK)"
+    printf "%s â”‚ " "$(format_load "${Mac_Mini_LOAD:-0}")"
+    printf "   %s   â”‚ " "$(service_status "${Mac_Mini_OLLAMA:-false}")"
+    printf "    %s    â”‚ " "$(service_status "${Mac_Mini_CLAWDBOT:-false}")"
     printf "   %s\n" "$(service_status "${Mac_Mini_DOCKER:-false}")"
     
     # Mac Pro
-    printf "%-12s │ " "Mac-Pro"
-    printf "%s │ " "$(format_percent "${Mac_Pro_RAM:-N/A}" $THRESHOLD_RAM)"
-    printf "%s │ " "$(format_percent "${Mac_Pro_DISK:-N/A}" $THRESHOLD_DISK)"
-    printf "%s │ " "$(format_load "${Mac_Pro_LOAD:-0}")"
-    printf "   %s   │ " "$(service_status "${Mac_Pro_OLLAMA:-false}")"
-    printf "    %s    │ " "$(service_status "${Mac_Pro_CLAWDBOT:-false}")"
+    printf "%-12s â”‚ " "Mac-Pro"
+    printf "%s â”‚ " "$(format_percent "${Mac_Pro_RAM:-N/A}" $THRESHOLD_RAM)"
+    printf "%s â”‚ " "$(format_percent "${Mac_Pro_DISK:-N/A}" $THRESHOLD_DISK)"
+    printf "%s â”‚ " "$(format_load "${Mac_Pro_LOAD:-0}")"
+    printf "   %s   â”‚ " "$(service_status "${Mac_Pro_OLLAMA:-false}")"
+    printf "    %s    â”‚ " "$(service_status "${Mac_Pro_CLAWDBOT:-false}")"
     printf "   %s\n" "$(service_status "${Mac_Pro_DOCKER:-false}")"
     
     echo ""
@@ -345,19 +345,19 @@ print_summary() {
     echo -e "${BOLD}NVIDIA API Usage:${NC} ${NVIDIA_USED:-N/A}/${NVIDIA_LIMIT} calls today (${NVIDIA_REMAINING:-N/A} remaining)"
     
     # Thresholds reminder
-    echo -e "\n${BOLD}Thresholds:${NC} RAM >${THRESHOLD_RAM}% │ Disk >${THRESHOLD_DISK}% │ Load >${THRESHOLD_LOAD}"
-    echo -e "${BOLD}Legend:${NC} ${GREEN}●${NC} Running │ ${RED}○${NC} Stopped │ ${GREEN}✓${NC} OK │ ${YELLOW}⚠${NC} Warning │ ${RED}✗${NC} Critical"
+    echo -e "\n${BOLD}Thresholds:${NC} RAM >${THRESHOLD_RAM}% â”‚ Disk >${THRESHOLD_DISK}% â”‚ Load >${THRESHOLD_LOAD}"
+    echo -e "${BOLD}Legend:${NC} ${GREEN}â—${NC} Running â”‚ ${RED}â—‹${NC} Stopped â”‚ ${GREEN}âœ“${NC} OK â”‚ ${YELLOW}âš ${NC} Warning â”‚ ${RED}âœ—${NC} Critical"
     
     # Alerts section
     if [[ ${#ALERTS[@]} -gt 0 ]]; then
-        echo -e "\n${BOLD}${RED}═══════════════════════════════════════════════════════════════${NC}"
+        echo -e "\n${BOLD}${RED}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
         echo -e "${BOLD}${RED}                         ALERTS                                ${NC}"
-        echo -e "${BOLD}${RED}═══════════════════════════════════════════════════════════════${NC}"
+        echo -e "${BOLD}${RED}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
         for alert in "${ALERTS[@]}"; do
-            echo -e "${RED}  ⚠ ${alert}${NC}"
+            echo -e "${RED}  âš  ${alert}${NC}"
         done
     else
-        echo -e "\n${GREEN}✓ All systems healthy - no alerts${NC}"
+        echo -e "\n${GREEN}âœ“ All systems healthy - no alerts${NC}"
     fi
     
     echo ""
@@ -476,7 +476,7 @@ main() {
     
     check_dell_local
     check_mac_remote "Mac-Mini" "tommie@100.88.105.106"
-    check_mac_remote "Mac-Pro" "administrator@100.89.75.126"
+    check_mac_remote "Mac-Pro" "administrator@100.86.80.74"
     check_nvidia_usage
     
     # Output results

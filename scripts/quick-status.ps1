@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Quick Status CLI - Unified system status at a glance
 .DESCRIPTION
@@ -63,7 +63,7 @@ if (-not $Minimal) {
 $nodes = @(
     @{ name = "Dell"; ip = "localhost"; critical = $true },
     @{ name = "Mac-Mini"; ip = "100.88.105.106"; user = "tommie"; critical = $true },
-    @{ name = "Mac-Pro"; ip = "100.89.75.126"; user = "administrator"; critical = $false }
+    @{ name = "Mac-Pro"; ip = "100.86.80.74"; user = "administrator"; critical = $false }
 )
 
 foreach ($node in $nodes) {

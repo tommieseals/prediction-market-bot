@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Check infrastructure health across all nodes
 .EXAMPLE
@@ -11,7 +11,7 @@ Write-Host ""
 
 $nodes = @(
     @{ name = "Mac Mini"; ip = "100.88.105.106"; ollama = $true },
-    @{ name = "Mac Pro"; ip = "100.89.75.126"; ollama = $true },
+    @{ name = "Mac Pro"; ip = "100.86.80.74"; ollama = $true },
     @{ name = "Google Cloud"; ip = "100.107.231.87"; ollama = $true },
     @{ name = "iPhone"; ip = "100.114.130.38"; ollama = $false }
 )

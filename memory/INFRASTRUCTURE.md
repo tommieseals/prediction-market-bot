@@ -13,7 +13,7 @@ Last Verified: 2026-04-05
   - Role: orchestration, dashboards, browser automation, Gmail and Indeed checks
   - Local gateway: 18789
 - Jarvis / Mac Pro
-  - IP: 100.89.75.126
+  - IP: 100.86.80.74
   - Role: shared-memory host, monitoring stack, Fort Knox, memory services
   - Local gateway: 18790
 

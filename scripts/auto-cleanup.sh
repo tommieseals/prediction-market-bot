@@ -1,9 +1,9 @@
-#!/bin/bash
+﻿#!/bin/bash
 #==============================================================================
 # AUTO-CLEANUP.SH - Automated Disk Cleanup Script
 #==============================================================================
 # Purpose: Cleans logs and temp files when disk usage exceeds threshold
-# Target:  Mac Mini (100.88.105.106) / Mac Pro (100.89.75.126) via SSH
+# Target:  Mac Mini (100.88.105.106) / Mac Pro (100.86.80.74) via SSH
 # Usage:   ./auto-cleanup.sh [OPTIONS]
 #
 # Options:
@@ -39,7 +39,7 @@ TARGET_HOST=""
 
 # Default hosts (from TOOLS.md)
 MAC_MINI="100.88.105.106"
-MAC_PRO="100.89.75.126"
+MAC_PRO="100.86.80.74"
 
 #------------------------------------------------------------------------------
 # Cleanup Targets - Paths that are safe to clean
@@ -233,9 +233,9 @@ cleanup_path() {
         local result=$(run_cmd "$delete_cmd")
         
         if [[ "$result" == "0" ]]; then
-            log_info "  ✓ Cleaned $file_count files ($space freed)"
+            log_info "  âœ“ Cleaned $file_count files ($space freed)"
         else
-            log_warn "  ⚠ Some files could not be deleted (permission denied?)"
+            log_warn "  âš  Some files could not be deleted (permission denied?)"
         fi
     fi
 }

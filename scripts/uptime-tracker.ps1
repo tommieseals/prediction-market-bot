@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Uptime Tracker & SLA Dashboard - Track node/service uptime over time
     
@@ -49,7 +49,7 @@ $ReportDir = "$PSScriptRoot\..\memory"
 # Define targets using simple hashtables (PSCustomObject causes issues in some contexts)
 $nodes = @(
     @{ n = "Mac-Mini"; t = "node"; ip = "100.88.105.106"; crit = $true },
-    @{ n = "Mac-Pro"; t = "node"; ip = "100.89.75.126"; crit = $false },
+    @{ n = "Mac-Pro"; t = "node"; ip = "100.86.80.74"; crit = $false },
     @{ n = "Dell"; t = "node"; ip = "100.119.87.108"; crit = $true },
     @{ n = "Google-Cloud"; t = "node"; ip = "100.107.231.87"; crit = $false },
     @{ n = "Ollama-Mini"; t = "service"; cmd = "ssh tommie@100.88.105.106 'pgrep -x ollama'" },

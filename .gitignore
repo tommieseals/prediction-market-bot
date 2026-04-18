@@ -78,3 +78,23 @@ openclaw/memory_core.json
 
 # OpenClaw OGE — tracked JSONL (override global *.jsonl exclusion)
 !openclaw/correction_log.jsonl
+.gitnexus
+
+# Debris from 2026-04-17/18 migrations (IP sweep, mem0 rebuild, PS workaround docs)
+*.pre-ip-fix
+*.pre-ollama-bak
+*.pre-auth-bak
+*.pre-doctor-bak
+*.pre-reasoning-false-bak
+*.pre-proxy
+*.pre-ps-workaround
+temp_*.py
+temp_*.ps1
+tmp_*.ps1
+tmp_*.json
+tmp-*.json
+bb_dispatch.pid
+bb_offset.json
+bb_session.json
+diskpart_script.txt
+scripts/_tmp/
